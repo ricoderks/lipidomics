@@ -10,7 +10,7 @@
 #' @importFrom sessioninfo session_info
 #'
 #' @importFrom tibble tibble
-#' @importFrom dplyr filter mutate select arrange
+#' @importFrom dplyr filter mutate select arrange pull
 #' @importFrom rlang .data
 #' @importFrom purrr map
 #' @importFrom magrittr %>%
@@ -70,9 +70,7 @@ shinyAppServer <- function(input, output, session) {
   output$lipid_data_table <- renderTable({
     req(all_data$lipid_data)
 
-    # all_data$lipid_data %>%
-    #   head(20)
-    all_data$lipid_data_long %>%
+    all_data$lipid_data %>%
       head(20)
   })
 
@@ -84,7 +82,13 @@ shinyAppServer <- function(input, output, session) {
   })
 
   #### Select lipid classes ####
+  # get the lipid classes
+  output$lipid_classes <- renderText({
+    req(all_data$lipid_data_long)
 
+    all_data$lipid_data_long %>%
+      pull(.data$LipidClass)
+  })
 
   #### About / Help  section ####
   output$about_session <- renderPrint({

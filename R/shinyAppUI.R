@@ -30,6 +30,7 @@ shinyAppUI <- navbarPage(title = "CPM - Lipidomics",
                                     fluidRow(
                                       column(
                                         width = 12,
+                                        verbatimTextOutput(outputId = "lipid_classes"),
                                         uiOutput(outputId = "select_lipid_classes"),
                                         style = "background-color: #E8E8E8")
                                     )
