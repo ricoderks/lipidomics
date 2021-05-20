@@ -1,0 +1,15 @@
+Package: lipidomics
+Type: Package
+Title: Lipidomics workflow
+Version: 0.1.0
+Author: Rico Derks
+Maintainer: Rico Derks <r.j.e.derks@lumc.nl>
+Description: Lipidomics workflow to proces the result files (export alignment)
+    from MS-DIAL.
+License: GPL (>= 3)
+Encoding: UTF-8
+LazyData: true
+Imports:
+    sessioninfo,
+    shiny
+RoxygenNote: 7.1.1
