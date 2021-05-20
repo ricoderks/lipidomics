@@ -11,15 +11,20 @@ Encoding: UTF-8
 LazyData: true
 Imports:
     dplyr,
+    ggCPM,
+    ggplot2,
     magrittr,
     purrr,
     readr,
     rlang,
     sessioninfo,
     shiny,
+    stats,
     stringr,
     tibble,
     tidyr,
     tidyselect,
     utils
+Remotes:
+    github::ricoderks/ggCPM
 RoxygenNote: 7.1.1

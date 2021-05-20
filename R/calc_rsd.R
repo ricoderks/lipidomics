@@ -9,6 +9,7 @@
 #' @importFrom dplyr filter group_by summarise ungroup
 #' @importFrom magrittr %>%
 #' @importFrom rlang .data
+#' @importFrom stats sd
 #'
 #' @author Rico Derks
 #'

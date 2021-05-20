@@ -90,6 +90,17 @@ shinyAppServer <- function(input, output, session) {
       pull(.data$LipidClass)
   })
 
+  #### Calculate the RSD values of the QCpool ####
+  output$rsd_all <- renderPlot({
+    req(all_data$lipid_data_long)
+
+    # calculate the RSD values
+    qc_results <- calc_rsd(df = all_data$lipid_data_long)
+
+    # show histogram
+    show_rsd_histogram(df = qc_results)
+  })
+
   #### About / Help  section ####
   output$about_session <- renderPrint({
     session_info()

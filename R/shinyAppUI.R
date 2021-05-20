@@ -46,7 +46,11 @@ shinyAppUI <- navbarPage(title = "CPM - Lipidomics",
                          # tabpanel QC
                          tabPanel(title = "QC",
                                   fluidPage(
-                                    fluidRow(column = 12)
+                                    fluidRow(column = 12,
+                                             h4("Histogram"),
+                                             p("Histogram showing the RSD vales for all lipids over all QCpool samples."),
+                                             plotOutput(outputId = "rsd_all",
+                                                        width = "50%"))
                                   )
                          ), # end tabpanel QC
                          # tabPanel About
