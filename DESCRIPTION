@@ -18,5 +18,7 @@ Imports:
     sessioninfo,
     shiny,
     tibble,
-    tidyr
+    tidyr,
+    tidyselect,
+    utils
 RoxygenNote: 7.1.1

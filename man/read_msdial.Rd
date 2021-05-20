@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_msdial.R
 \name{read_msdial}
 \alias{read_msdial}
-\title{Read MS-DIAl fiels}
+\title{Read MS-DIAl files}
 \usage{
 read_msdial(filename)
 }
@@ -10,7 +10,7 @@ read_msdial(filename)
 \item{filename}{The filename of the MS-DIAL file.}
 }
 \value{
-Returns a data frame
+Returns a tibble
 }
 \description{
 Read the result files from MS-DIAL.
