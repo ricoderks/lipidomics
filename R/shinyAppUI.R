@@ -10,7 +10,7 @@ shinyAppUI <- navbarPage(title = "CPM - Lipidomics",
                          tabPanel(title = "Files",
                                   fluidPage(
                                     fluidRow(column = 12,
-                                             h4("Files")),
+                                             h4("NS-DIAL files")),
                                     fluidRow(column = 12,
                                              fileInput(inputId = "res_file_pos",
                                                        label = "Positive mode:",
@@ -22,8 +22,18 @@ shinyAppUI <- navbarPage(title = "CPM - Lipidomics",
                                                        multiple = FALSE,
                                                        accept = c(".txt"),
                                                        width = 400))
-                                  )
-                         ), # end tabPane Files
+                                  ),
+                                  fluidRow(column = 12,
+                                           h4("Meta data")),
+                                  fluidRow(column = 12,
+                                           fileInput(inputId = "meta_file",
+                                                     label = "Meta data file:",
+                                                     multiple = FALSE,
+                                                     accept = c(".xlsx", ".xls"),
+                                                     width = 400)),
+                                  fluidRow(column = 12,
+                                           tableOutput(outputId = "temp_table"))
+                         ), # end tabPanel Files
                          # tabPanel About
                          tabPanel(title = "About",
                                   fluidPage(
