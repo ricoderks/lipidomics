@@ -32,7 +32,7 @@ shinyAppServer <- function(input, output, session) {
                               meta_datapath = NULL)
 
   all_data <- reactiveValues(lipid_data = NULL,
-                             meta_data = NULL)
+                             lipid_data_long = NULL)
 
   #### Read the files ####
   # watch the positive mode file
@@ -70,9 +70,20 @@ shinyAppServer <- function(input, output, session) {
   output$lipid_data_table <- renderTable({
     req(all_data$lipid_data)
 
-    all_data$lipid_data %>%
+    # all_data$lipid_data %>%
+    #   head(20)
+    all_data$lipid_data_long %>%
       head(20)
   })
+
+  # make the lipid data in long format
+  observe({
+    req(all_data$lipid_data)
+
+    all_data$lipid_data_long <- tidy_lipids(df = all_data$lipid_data)
+  })
+
+  #### Select lipid classes ####
 
 
   #### About / Help  section ####

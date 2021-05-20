@@ -17,6 +17,7 @@ Imports:
     rlang,
     sessioninfo,
     shiny,
+    stringr,
     tibble,
     tidyr,
     tidyselect,

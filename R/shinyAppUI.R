@@ -11,7 +11,8 @@ shinyAppUI <- navbarPage(title = "CPM - Lipidomics",
                                   fluidPage(
                                     fluidRow(column = 12,
                                              h4("MS-DIAL files")),
-                                    fluidRow(column = 12,
+                                    fluidRow(
+                                      column(width = 12,
                                              fileInput(inputId = "res_file_pos",
                                                        label = "Positive mode:",
                                                        multiple = FALSE,
@@ -21,34 +22,32 @@ shinyAppUI <- navbarPage(title = "CPM - Lipidomics",
                                                        label = "Negative mode:",
                                                        multiple = FALSE,
                                                        accept = c(".txt"),
-                                                       width = 400)),
+                                                       width = 400),
+                                             style = "background-color: #E8E8E8")
+                                    ),
                                     fluidRow(column = 12,
-                                             h4("Meta data")),
-                                    fluidRow(column = 12,
-                                             fileInput(inputId = "meta_file",
-                                                       label = "Meta data file:",
-                                                       multiple = FALSE,
-                                                       accept = c(".xlsx", ".xls"),
-                                                       width = 400))
+                                             h4("Lipid classes")),
+                                    fluidRow(
+                                      column(
+                                        width = 12,
+                                        uiOutput(outputId = "select_lipid_classes"),
+                                        style = "background-color: #E8E8E8")
+                                    )
                                   )
                          ), # end tabPanel Files
-                         # menu data
-                         navbarMenu(title = "Data",
-                                    # tabpanel Lipid data
-                                    tabPanel(title = "Lipid data",
-                                             fluidPage(
-                                               fluidRow(column = 12,
-                                                        tableOutput(outputId = "lipid_data_table"))
-                                             )
-                                    ), # end tabPanel Data
-                                    # tabpanel meta data
-                                    tabPanel(title = "Meta data",
-                                             fluidPage(
-                                               fluidRow(column = 12,
-                                                        tableOutput(outputId = "meta_data_table"))
-                                             )
-                                    ) # end tabPanel Data
-                         ), # end menu data
+                         # tabpanel Lipid data
+                         tabPanel(title = "Lipid data",
+                                  fluidPage(
+                                    fluidRow(column = 12,
+                                             tableOutput(outputId = "lipid_data_table"))
+                                  )
+                         ), # end tabPanel Data
+                         # tabpanel QC
+                         tabPanel(title = "QC",
+                                  fluidPage(
+                                    fluidRow(column = 12)
+                                  )
+                         ), # end tabpanel QC
                          # tabPanel About
                          navbarMenu(title = "Help",
                                     tabPanel(title = "Lipids",
