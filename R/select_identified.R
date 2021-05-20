@@ -7,6 +7,7 @@
 #' @return Returns a tibble
 #'
 #' @importFrom dplyr filter
+#' @importFrom magrittr %>%
 #' @importFrom rlang .data
 #'
 #' @author Rico Derks

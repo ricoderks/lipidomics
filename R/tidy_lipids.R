@@ -13,6 +13,7 @@
 #' @importFrom tidyselect matches
 #' @importFrom rlang .data
 #' @importFrom stringr str_extract str_replace
+#' @importFrom magrittr %>%
 #'
 #' @author Rico Derks
 #'
