@@ -32,7 +32,9 @@ shinyAppServer <- function(input, output, session) {
                               meta_datapath = NULL)
 
   all_data <- reactiveValues(lipid_data = NULL,
-                             lipid_data_long = NULL)
+                             lipid_data_long = NULL,
+                             qc_results = NULL,
+                             class_ion = NULL)
 
   #### Read the files ####
   # watch the positive mode file
@@ -74,31 +76,90 @@ shinyAppServer <- function(input, output, session) {
       head(20)
   })
 
-  # make the lipid data in long format
+  # make the lipid data in long format and calculate the RSD values
   observe({
     req(all_data$lipid_data)
 
+    # make the data long
     all_data$lipid_data_long <- tidy_lipids(df = all_data$lipid_data)
+
+    # calculate the RSD values
+    all_data$qc_results <- calc_rsd(df = all_data$lipid_data_long)
   })
 
   #### Select lipid classes ####
   # get the lipid classes
-  output$lipid_classes <- renderText({
+  output$select_lipid_classes <- renderUI({
     req(all_data$lipid_data_long)
 
-    all_data$lipid_data_long %>%
-      pull(.data$LipidClass)
+    # get all lipid classes with their respective ion
+    all_data$class_ion <- all_data$lipid_data_long %>%
+      pull(.data$class_ion) %>%
+      unique()
+
+    tagList(
+      checkboxGroupInput(inputId = "select_lipidclass_ion",
+                         label = "Select lipid class:",
+                         choices = all_data$class_ion,
+                         # selected = c("PC - [M+H]+", "PE - [M+H]+"))
+                         selected = all_data$class_ion)
+    )
+  })
+
+  output$lipid_classes <- renderText({
+    req(input$select_lipidclass_ion)
+
+    input$select_lipidclass_ion
   })
 
   #### Calculate the RSD values of the QCpool ####
+  # show the histogram of all lipids
   output$rsd_all <- renderPlot({
     req(all_data$lipid_data_long)
 
-    # calculate the RSD values
-    qc_results <- calc_rsd(df = all_data$lipid_data_long)
+    # show histogram
+    show_rsd_histogram(df = all_data$qc_results)
+  })
+
+  # show histogram of all lipids per lipid class
+  output$rsd_lipid_classes <- renderPlot({
+    req(all_data$qc_results,
+        input$select_lipidclass_ion)
+
+    class_ion <- input$select_lipidclass_ion
 
     # show histogram
-    show_rsd_histogram(df = qc_results)
+    show_rsd_lipidclass_histogram(df = all_data$qc_results,
+                                  lipidclass_ion = class_ion)
+  })
+
+  output$rsd_lipidclass_ui <- renderUI({
+    req(all_data$qc_results,
+        input$select_lipidclass_ion)
+
+    class_ion <- input$select_lipidclass_ion
+    # how many classes are selected
+    lipid_class <- unique(sapply(class_ion, function(x) {
+      unlist(strsplit(x = x,
+               split = " - "))[1]
+    }))
+
+    # calculate the new height for the faceting plot
+    new_height <- ceiling(length(lipid_class) / 4) * 300
+
+    tagList(
+      plotOutput(outputId = "rsd_lipid_classes",
+                 width = "75%",
+                 height = paste0(new_height, "px"))
+    )
+  })
+
+  output$show_qc_table <- renderTable({
+    req(all_data$qc_results,
+        input$select_lipidclass_ion)
+
+    all_data$qc_results %>%
+      filter(.data$class_ion %in% input$select_lipidclass_ion)
   })
 
   #### About / Help  section ####

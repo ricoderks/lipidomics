@@ -45,7 +45,9 @@ tidy_lipids <- function(df) {
       carbon_db = str_extract(string = .data$ShortLipidName,
                               pattern = "[0-9]{2}:[0-9]{1,2}"),
       sample_type = factor(tolower(str_extract(string = .data$sample_name,
-                                               pattern = "([bB]lank|[qQ][cC]pool|[sS]ample)"))))
+                                               pattern = "([bB]lank|[qQ][cC]pool|[sS]ample)"))),
+      class_ion = paste(.data$LipidClass, .data$ion,
+                        sep = " - "))
 
-  return(df_long)
+    return(df_long)
 }

@@ -21,7 +21,8 @@ calc_rsd <- function(df) {
     summarise(rsd_area = sd(.data$area, na.rm = TRUE) / mean(.data$area, na.rm = TRUE),
               LipidClass = .data$LipidClass[1],
               ShortLipidName = .data$ShortLipidName[1],
-              LongLipidName = .data$LongLipidName[1]) %>%
+              LongLipidName = .data$LongLipidName[1],
+              class_ion = .data$class_ion[1]) %>%
     ungroup()
 
   return(qc_df)
