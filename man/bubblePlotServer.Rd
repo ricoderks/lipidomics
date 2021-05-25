@@ -4,14 +4,10 @@
 \alias{bubblePlotServer}
 \title{Create bubble plot server part}
 \usage{
-bubblePlotServer(input, output, session, data, pattern)
+bubblePlotServer(id, data, pattern)
 }
 \arguments{
-\item{input}{input id}
-
-\item{output}{output id}
-
-\item{session}{session}
+\item{id}{input id}
 
 \item{data}{data which is used to make the plot.}
 
