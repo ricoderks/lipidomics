@@ -5,10 +5,11 @@
 #' @param id input id
 #' @param data data which is used to make the plot.
 #' @param pattern regular expression pattern to select the correct lipid classes.
+#' @param lipid_data the wide data frame.
 #'
 #' @return a part of the server
 #'
-#' @importFrom shiny moduleServer renderPlot reactive observe observeEvent
+#' @importFrom shiny moduleServer renderPlot reactive observe observeEvent nearPoints
 #' @importFrom magrittr %>%
 #' @importFrom dplyr filter
 #' @importFrom rlang .data
@@ -16,13 +17,14 @@
 #'
 #' @author Rico Derks
 #'
-bubblePlotServer <- function(id, data, pattern) {
+bubblePlotServer <- function(id, data, pattern, lipid_data) {
   moduleServer(
     id = id,
     module = function(input, output, session) {
       ranges <- reactiveValues(x = NULL,
                                y = NULL)
 
+      # zoom out
       observeEvent(input$bubble_dbl, {
         brush <- input$bubble_brush
 
@@ -35,18 +37,17 @@ bubblePlotServer <- function(id, data, pattern) {
         }
       })
 
+      # check for zooming
       observe({
         brush <- input$bubble_brush
 
         if(!is.null(brush)) {
           ranges$x <- c(brush$xmin, brush$xmax)
           ranges$y <- c(brush$ymin, brush$ymax)
-          # } else {
-          #   ranges$x <- NULL
-          #   ranges$y <- NULL
         }
       })
 
+      # bubble plot
       output$bubble <- renderPlot({
         data() %>%
           filter(grepl(x = .data$sample_name,
@@ -72,6 +73,15 @@ bubblePlotServer <- function(id, data, pattern) {
                  size = FALSE) +
           coord_cartesian(xlim = ranges$x,
                           ylim = ranges$y)
+      })
+
+      # show the row clicked
+      output$info <- renderTable({
+        nearPoints(df = lipid_data(),
+                   coordinfo = input$bubble_clk,
+                   xvar = "AverageRT",
+                   yvar = "AverageMZ",
+                   threshold = 10)
       })
     }
   )

@@ -186,9 +186,22 @@ shinyAppServer <- function(input, output, session) {
   })
 
   # phospholipids
+  GL_plot <- bubblePlotServer(id = "GL",
+                              data = reactive(all_data$lipid_data_filter),
+                              pattern = "^[MDT]G$",
+                              lipid_data = reactive(all_data$lipid_data))
+
+  output$GL_UI <- renderUI({
+    bubblePlotUI(id = "GL",
+                 data = all_data$lipid_data_filter,
+                 pattern = "^[MDT]G$")
+  })
+
+  # phospholipids
   PL_plot <- bubblePlotServer(id = "PL",
                               data = reactive(all_data$lipid_data_filter),
-                              pattern = "^P[ACEGIS]$")
+                              pattern = "^P[ACEGIS]$",
+                              lipid_data = reactive(all_data$lipid_data))
 
   output$PL_UI <- renderUI({
     bubblePlotUI(id = "PL",
@@ -199,7 +212,8 @@ shinyAppServer <- function(input, output, session) {
   # # Lysophospholipids
   LPL_plot <- bubblePlotServer(id = "LPL",
                               data = reactive(all_data$lipid_data_filter),
-                              pattern = "^LP[ACEGIS]$")
+                              pattern = "^LP[ACEGIS]$",
+                              lipid_data = reactive(all_data$lipid_data))
 
   output$LPL_UI <- renderUI({
     bubblePlotUI(id = "LPL",

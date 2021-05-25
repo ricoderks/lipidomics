@@ -36,11 +36,15 @@ bubblePlotUI <- function(id, data, pattern) {
                      height = paste0(new_height, "px"),
                      brush = brushOpts(
                        id = ns("bubble_brush"),
+                       delayType = "debounce",
                        resetOnNew = TRUE
                      ),
-                     dblclick = ns("bubble_dbl")
+                     dblclick = ns("bubble_dbl"),
+                     click = ns("bubble_clk")
           )
-    )
+    ),
+    column(width = 4,
+           tableOutput(outputId = ns("info")))
   )
 
 }

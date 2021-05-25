@@ -75,6 +75,11 @@ shinyAppUI <- navbarPage(title = "CPM - Lipidomics",
                          ), # end navbarMenu QC
                          # navbarMenu identification
                          navbarMenu(title = "Identification",
+                                    tabPanel(title = "Glycerophospholipids",
+                                             fluidPage(
+                                               uiOutput(outputId = "GL_UI")
+                                             )
+                                    ),
                                     tabPanel(title = "Lysophospholipids",
                                              fluidPage(
                                                uiOutput(outputId = "LPL_UI")
