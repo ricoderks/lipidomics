@@ -33,6 +33,7 @@ shinyAppServer <- function(input, output, session) {
 
   all_data <- reactiveValues(lipid_data = NULL,
                              lipid_data_long = NULL,
+                             lipid_data_long = NULL,
                              qc_results = NULL,
                              class_ion = NULL)
 
@@ -142,7 +143,7 @@ shinyAppServer <- function(input, output, session) {
     # how many classes are selected
     lipid_class <- unique(sapply(class_ion, function(x) {
       unlist(strsplit(x = x,
-               split = " - "))[1]
+                      split = " - "))[1]
     }))
 
     # calculate the new height for the violin plot
@@ -178,22 +179,32 @@ shinyAppServer <- function(input, output, session) {
   })
 
   #### identification part ####
-  # phospholipids
-  PL_plot <- bubblePlotServer(id = "PL",
-                              data = all_data$lipid_data_long,
-                              pattern = "^P[ACEGIS]$")
-
-  output$PL <- renderPlot({
-    PL_plot()
+  # filter the identification data
+  observeEvent(input$select_lipidclass_ion, {
+    all_data$lipid_data_filter <- all_data$lipid_data_long %>%
+      filter(.data$class_ion %in% input$select_lipidclass_ion)
   })
 
-  # Lysophospholipids
-  LPL_plot <- bubblePlotServer(id = "LPL",
-                              data = all_data$lipid_data_long,
-                              pattern = "^LP[ACEGIS]$")
+  # phospholipids
+  PL_plot <- bubblePlotServer(id = "PL",
+                              data = reactive(all_data$lipid_data_filter),
+                              pattern = "^P[ACEGIS]$")
 
-  output$LPL <- renderPlot({
-    LPL_plot()
+  output$PL_UI <- renderUI({
+    bubblePlotUI(id = "PL",
+                 data = all_data$lipid_data_filter,
+                 pattern = "^P[ACEGIS]$")
+  })
+
+  # # Lysophospholipids
+  LPL_plot <- bubblePlotServer(id = "LPL",
+                              data = reactive(all_data$lipid_data_filter),
+                              pattern = "^P[ACEGIS]$")
+
+  output$PL_UI <- renderUI({
+    bubblePlotUI(id = "LPL",
+                 data = all_data$lipid_data_filter,
+                 pattern = "^LP[ACEGIS]$")
   })
 
   #### About / Help  section ####

@@ -4,10 +4,14 @@
 \alias{bubblePlotUI}
 \title{Create bubble plot UI}
 \usage{
-bubblePlotUI(id)
+bubblePlotUI(id, data, pattern)
 }
 \arguments{
-\item{id}{id of the UI}
+\item{id}{id of the UI.}
+
+\item{data}{data which is used to make the plot.}
+
+\item{pattern}{regular expression pattern to select the correct lipid classes.}
 }
 \value{
 a part of the UI

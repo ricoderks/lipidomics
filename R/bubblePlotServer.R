@@ -2,12 +2,13 @@
 #'
 #' @description Create the server part for the bubble plot
 #'
-#' @param id id of the server part
-#' @param data the data for the server part
+#' @param id input id
+#' @param data data which is used to make the plot.
+#' @param pattern regular expression pattern to select the correct lipid classes.
 #'
 #' @return a part of the server
 #'
-#' @importFrom shiny moduleServer renderPlot
+#' @importFrom shiny moduleServer renderPlot reactive
 #' @importFrom magrittr %>%
 #' @importFrom dplyr filter
 #' @importFrom rlang .data
@@ -19,19 +20,16 @@ bubblePlotServer <- function(id, data, pattern) {
   moduleServer(
     id = id,
     module = function(input, output, session) {
-
       output$bubble <- renderPlot({
-
-        data %>%
+        data() %>%
           filter(grepl(x = .data$sample_name,
                        pattern = "[qQ][cC]pool_004"),
                  grepl(x = .data$LipidClass,
-                       pattern = pattern))%>%
+                       pattern = pattern)) %>%
           ggplot(aes(x = .data$AverageRT,
                      y = .data$AverageMZ,
-                     color = .data$carbons,
-                     group = .data$carbon_db)) +
-          ## assuming this name stays the same
+                     color = .data$carbons)) +
+                     # group = .data$carbon_db)) +
           geom_point(aes(size = .data$DotProduct),
                      alpha = 0.4) +
           scale_size(range = c(1, 10)) +
@@ -43,7 +41,8 @@ bubblePlotServer <- function(id, data, pattern) {
                      scales = "free") +
           labs(x = "Retention time [minutes]",
                y = expression(italic("m/z"))) +
-          guides(color = FALSE, size = FALSE)
+          guides(color = FALSE,
+                 size = FALSE)
       })
     }
   )

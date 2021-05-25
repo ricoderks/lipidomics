@@ -77,16 +77,12 @@ shinyAppUI <- navbarPage(title = "CPM - Lipidomics",
                          navbarMenu(title = "Identification",
                                     tabPanel(title = "Lysophospholipids",
                                              fluidPage(
-                                               fluidRow(column = 12,
-                                                        bubblePlotUI(id = "LPL")
-                                               )
+                                               uiOutput(outputId = "LPL_UI")
                                              )
                                     ),
                                     tabPanel(title = "Phospholipids",
                                              fluidPage(
-                                               fluidRow(column = 12,
-                                                        bubblePlotUI(id = "PL")
-                                               )
+                                               uiOutput(outputId = "PL_UI")
                                              )
                                     )
                          ), # end navbarMenu identification
