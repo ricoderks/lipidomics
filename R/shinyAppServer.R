@@ -103,19 +103,60 @@ shinyAppServer <- function(input, output, session) {
     all_data$class_ion_selected <- all_data$class_ion
 
     tagList(
-      checkboxGroupInput(inputId = "select_lipidclass_ion",
-                         label = "Select lipid class:",
-                         choices = all_data$class_ion,
-                         # selected = c("PC - [M+H]+", "PE - [M+H]+"))
-                         selected = all_data$class_ion)
+      # this shows one huge checkboxGroupInput
+      column(width = 2,
+             checkboxGroupInput(inputId = "select_lipidclass_ion",
+                                label = "Select lipid class:",
+                                choices = all_data$class_ion,
+                                selected = all_data$class_ion),
+             style = "background-color: #E8E8E8"
+      ),
+      column(width = 2,
+             checkboxGroupInput(inputId = "select_PL_class",
+                                label = "Phospholipids:",
+                                choices = all_data$class_ion[grepl(x = all_data$class_ion, pattern = "^(Ether)?(L)?P[ACEGIS]")],
+                                selected = all_data$class_ion[grepl(x = all_data$class_ion, pattern = "^(Ether)?(L)?P[ACEGIS]")]),
+             checkboxGroupInput(inputId = "select_GL_class",
+                                label = "Glcyerolipids:",
+                                choices = all_data$class_ion[grepl(x = all_data$class_ion, pattern = "^(Ox)?(Ether)?(L)?[DMT]G")],
+                                selected = all_data$class_ion[grepl(x = all_data$class_ion, pattern = "^(Ox)?(Ether)?(L)?[DMT]G")]),
+             style = "background-color: #E8E8E8"
+      ),
+      column(width = 2,
+             checkboxGroupInput(inputId = "select_Cer_class",
+                                label = "Ceramides:",
+                                choices = all_data$class_ion[grepl(x = all_data$class_ion, pattern = "^Cer_")],
+                                selected = all_data$class_ion[grepl(x = all_data$class_ion, pattern = "^Cer_")]),
+             checkboxGroupInput(inputId = "select_HexCer_class",
+                                label = "Neutral glycosphingolipids:",
+                                choices = all_data$class_ion[grepl(x = all_data$class_ion, pattern = "^A?HexCer")],
+                                selected = all_data$class_ion[grepl(x = all_data$class_ion, pattern = "^A?HexCer")]),
+             style = "background-color: #E8E8E8"
+      ),
+      column(width = 2,
+             checkboxGroupInput(inputId = "select_FA_class",
+                                label = "Fatty acyls:",
+                                choices = all_data$class_ion[grepl(x = all_data$class_ion, pattern = "^(FA|FAHFA|NAGly|NAGlySer|NAOrn|NAE|CAR)")],
+                                selected = all_data$class_ion[grepl(x = all_data$class_ion, pattern = "^(FA|FAHFA|NAGly|NAGlySer|NAOrn|NAE|CAR)")]),
+             checkboxGroupInput(inputId = "select_PSL_class",
+                                label = "Phosphosphingolipids:",
+                                choices = all_data$class_ion[grepl(x = all_data$class_ion, pattern = "^(ASM|PE-Cer|PE-Cer\\+O|PI-Cer\\+O|SM|SM\\+O)")],
+                                selected = all_data$class_ion[grepl(x = all_data$class_ion, pattern = "^(ASM|PE-Cer|PE-Cer\\+O|PI-Cer\\+O|SM|SM\\+O)")]),
+             checkboxGroupInput(inputId = "select_SB_class",
+                                label = "Sphingoid bases:",
+                                choices = all_data$class_ion[grepl(x = all_data$class_ion, pattern = "^(PhytoSph|SL|SL\\+O|DHSph|Sph)")],
+                                selected = all_data$class_ion[grepl(x = all_data$class_ion, pattern = "^(PhytoSph|SL|SL\\+O|DHSph|Sph)")]),
+             style = "background-color: #E8E8E8"
+      )
     )
   })
 
-  output$lipid_classes <- renderText({
-    req(input$select_lipidclass_ion)
-
-    input$select_lipidclass_ion
-  })
+  # for debugging: check which lipid classes / ions are selected
+  # output$lipid_classes <- renderText({
+  #   req(input$select_lipidclass_ion)
+  #
+  #   input$select_lipidclass_ion
+  # })
 
   #### Calculate the RSD values of the QCpool ####
   # show the histogram of all lipids
@@ -135,7 +176,7 @@ shinyAppServer <- function(input, output, session) {
 
     # show histogram
     show_rsd_lipidclass_violin(df = all_data$qc_results,
-                                  lipidclass_ion = all_data$class_ion_selected)
+                               lipidclass_ion = all_data$class_ion_selected)
   })
 
   # create the output UI
@@ -204,7 +245,7 @@ shinyAppServer <- function(input, output, session) {
       filter(.data$class_ion %in% all_data$class_ion_selected)
   })
 
-  # phospholipids
+  # glycerolipids
   GL_plot <- bubblePlotServer(id = "GL",
                               data = reactive(all_data$lipid_data_filter),
                               pattern = "^[MDT]G$",
@@ -230,9 +271,9 @@ shinyAppServer <- function(input, output, session) {
 
   # # Lysophospholipids
   LPL_plot <- bubblePlotServer(id = "LPL",
-                              data = reactive(all_data$lipid_data_filter),
-                              pattern = "^LP[ACEGIS]$",
-                              lipid_data = reactive(all_data$lipid_data))
+                               data = reactive(all_data$lipid_data_filter),
+                               pattern = "^LP[ACEGIS]$",
+                               lipid_data = reactive(all_data$lipid_data))
 
   output$LPL_UI <- renderUI({
     bubblePlotUI(id = "LPL",
