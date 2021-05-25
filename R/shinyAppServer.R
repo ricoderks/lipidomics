@@ -121,7 +121,7 @@ shinyAppServer <- function(input, output, session) {
     show_rsd_histogram(df = all_data$qc_results)
   })
 
-  # show histogram of all lipids per lipid class
+  # create histogram of all lipids per lipid class
   output$rsd_lipid_classes <- renderPlot({
     req(all_data$qc_results,
         input$select_lipidclass_ion)
@@ -133,6 +133,7 @@ shinyAppServer <- function(input, output, session) {
                                   lipidclass_ion = class_ion)
   })
 
+  # create the output UI
   output$rsd_lipidclass_ui <- renderUI({
     req(all_data$qc_results,
         input$select_lipidclass_ion)
@@ -144,13 +145,27 @@ shinyAppServer <- function(input, output, session) {
                split = " - "))[1]
     }))
 
-    # calculate the new height for the faceting plot
-    new_height <- ceiling(length(lipid_class) / 4) * 300
+    # calculate the new height for the violin plot
+    new_height <- ceiling(length(lipid_class) * 25)
 
     tagList(
       plotOutput(outputId = "rsd_lipid_classes",
-                 width = "75%",
+                 width = "50%",
                  height = paste0(new_height, "px"))
+    )
+  })
+
+  output$create_corplot <- renderPlot({
+    req(all_data$lipid_data)
+
+    cor_heatmap(df = all_data$lipid_data)
+  })
+
+  # create UI for correlation plot
+  output$corplot <- renderUI({
+    tagList(
+      plotOutput(outputId = "create_corplot",
+                 width = "50%")
     )
   })
 

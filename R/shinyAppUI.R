@@ -63,8 +63,22 @@ shinyAppUI <- navbarPage(title = "CPM - Lipidomics",
                                                         uiOutput(outputId = "rsd_lipidclass_ui")
                                                         )
                                              )
-                                    ) # end tabpanel QC lipid class
+                                    ), # end tabpanel QC lipid class
+                                    #tabpanel correlation plot
+                                    tabPanel(title = "QC - Correlation",
+                                             fluidPage(
+                                               fluidRow(column = 12,
+                                                        uiOutput(outputId = "corplot")
+                                               )
+                                             )
+                                    ) # end tabpanel correlation plot
                          ), # end navbarMenu QC
+                         # tabPanel identification
+                         tabPanel(title = "Identification",
+                                  fluidPage(
+                                    fluidRow(column = 12)
+                                  )
+                         ), # end tabPanel identification
                          # tabPanel About
                          navbarMenu(title = "Help",
                                     tabPanel(title = "Lipids",
