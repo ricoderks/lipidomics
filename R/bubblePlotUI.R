@@ -33,7 +33,13 @@ bubblePlotUI <- function(id, data, pattern) {
     column(width = 8,
           plotOutput(outputId = ns("bubble"),
                      width = "100%",
-                     height = paste0(new_height, "px"))
+                     height = paste0(new_height, "px"),
+                     brush = brushOpts(
+                       id = ns("bubble_brush"),
+                       resetOnNew = TRUE
+                     ),
+                     dblclick = ns("bubble_dbl")
+          )
     )
   )
 

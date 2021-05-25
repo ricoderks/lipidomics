@@ -199,9 +199,9 @@ shinyAppServer <- function(input, output, session) {
   # # Lysophospholipids
   LPL_plot <- bubblePlotServer(id = "LPL",
                               data = reactive(all_data$lipid_data_filter),
-                              pattern = "^P[ACEGIS]$")
+                              pattern = "^LP[ACEGIS]$")
 
-  output$PL_UI <- renderUI({
+  output$LPL_UI <- renderUI({
     bubblePlotUI(id = "LPL",
                  data = all_data$lipid_data_filter,
                  pattern = "^LP[ACEGIS]$")

@@ -8,11 +8,11 @@
 #'
 #' @return a part of the server
 #'
-#' @importFrom shiny moduleServer renderPlot reactive
+#' @importFrom shiny moduleServer renderPlot reactive observe observeEvent
 #' @importFrom magrittr %>%
 #' @importFrom dplyr filter
 #' @importFrom rlang .data
-#' @importFrom ggplot2 ggplot aes geom_point scale_size geom_line geom_text facet_grid labs guides
+#' @importFrom ggplot2 ggplot aes geom_point scale_size geom_line geom_text facet_grid labs guides coord_cartesian
 #'
 #' @author Rico Derks
 #'
@@ -20,6 +20,33 @@ bubblePlotServer <- function(id, data, pattern) {
   moduleServer(
     id = id,
     module = function(input, output, session) {
+      ranges <- reactiveValues(x = NULL,
+                               y = NULL)
+
+      observeEvent(input$bubble_dbl, {
+        brush <- input$bubble_brush
+
+        if(!is.null(brush)) {
+          ranges$x <- c(brush$xmin, brush$xmax)
+          ranges$y <- c(brush$ymin, brush$ymax)
+        } else {
+          ranges$x <- NULL
+          ranges$y <- NULL
+        }
+      })
+
+      observe({
+        brush <- input$bubble_brush
+
+        if(!is.null(brush)) {
+          ranges$x <- c(brush$xmin, brush$xmax)
+          ranges$y <- c(brush$ymin, brush$ymax)
+          # } else {
+          #   ranges$x <- NULL
+          #   ranges$y <- NULL
+        }
+      })
+
       output$bubble <- renderPlot({
         data() %>%
           filter(grepl(x = .data$sample_name,
@@ -29,7 +56,7 @@ bubblePlotServer <- function(id, data, pattern) {
           ggplot(aes(x = .data$AverageRT,
                      y = .data$AverageMZ,
                      color = .data$carbons)) +
-                     # group = .data$carbon_db)) +
+          # group = .data$carbon_db)) +
           geom_point(aes(size = .data$DotProduct),
                      alpha = 0.4) +
           scale_size(range = c(1, 10)) +
@@ -42,7 +69,9 @@ bubblePlotServer <- function(id, data, pattern) {
           labs(x = "Retention time [minutes]",
                y = expression(italic("m/z"))) +
           guides(color = FALSE,
-                 size = FALSE)
+                 size = FALSE) +
+          coord_cartesian(xlim = ranges$x,
+                          ylim = ranges$y)
       })
     }
   )
