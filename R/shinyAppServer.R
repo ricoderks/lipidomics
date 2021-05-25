@@ -104,13 +104,13 @@ shinyAppServer <- function(input, output, session) {
 
     tagList(
       # this shows one huge checkboxGroupInput
-      column(width = 2,
-             checkboxGroupInput(inputId = "select_lipidclass_ion",
-                                label = "Select lipid class:",
-                                choices = all_data$class_ion,
-                                selected = all_data$class_ion),
-             style = "background-color: #E8E8E8"
-      ),
+      # column(width = 2,
+      #        checkboxGroupInput(inputId = "select_lipidclass_ion",
+      #                           label = "Select lipid class:",
+      #                           choices = all_data$class_ion,
+      #                           selected = all_data$class_ion),
+      #        style = "background-color: #E8E8E8"
+      # ),
       column(width = 2,
              checkboxGroupInput(inputId = "select_PL_class",
                                 label = "Phospholipids:",
@@ -169,10 +169,15 @@ shinyAppServer <- function(input, output, session) {
 
   # create histogram of all lipids per lipid class
   output$rsd_lipid_classes <- renderPlot({
-    req(all_data$qc_results,
-        input$select_lipidclass_ion)
+    req(all_data$qc_results)
 
-    all_data$class_ion_selected <- input$select_lipidclass_ion
+    all_data$class_ion_selected <- c(input$select_PL_class,
+                                     input$select_GL_class,
+                                     input$select_Cer_class,
+                                     input$select_HexCer_class,
+                                     input$select_FA_class,
+                                     input$select_PSL_class,
+                                     input$select_SB_class)
 
     # show histogram
     show_rsd_lipidclass_violin(df = all_data$qc_results,
@@ -223,18 +228,32 @@ shinyAppServer <- function(input, output, session) {
 
   output$show_qc_table <- renderTable({
     req(all_data$qc_results,
-        input$select_lipidclass_ion)
+        all_data$class_ion_selected)
 
     all_data$qc_results %>%
-      filter(.data$class_ion %in% input$select_lipidclass_ion)
+      filter(.data$class_ion %in% all_data$class_ion_selected)
   })
 
   #### identification part ####
   # filter the identification data
-  observeEvent(input$select_lipidclass_ion, {
+  observeEvent({
+    input$select_PL_class
+    input$select_GL_class
+    input$select_Cer_class
+    input$select_HexCer_class
+    input$select_FA_class
+    input$select_PSL_class
+    input$select_SB_class
+  }, {
     # get all the selected classes
-    all_data$class_ion_selected <- input$select_lipidclass_ion
-    # how many classes are selected
+    all_data$class_ion_selected <- c(input$select_PL_class,
+                                     input$select_GL_class,
+                                     input$select_Cer_class,
+                                     input$select_HexCer_class,
+                                     input$select_FA_class,
+                                     input$select_PSL_class,
+                                     input$select_SB_class)
+    # how many lipid classes are selected
     all_data$num_lipid_classes <- length(unique(sapply(all_data$class_ion_selected, function(x) {
       unlist(strsplit(x = x,
                       split = " - "))[1]
