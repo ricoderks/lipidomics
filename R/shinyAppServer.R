@@ -177,6 +177,25 @@ shinyAppServer <- function(input, output, session) {
       filter(.data$class_ion %in% input$select_lipidclass_ion)
   })
 
+  #### identification part ####
+  # phospholipids
+  PL_plot <- bubblePlotServer(id = "PL",
+                              data = all_data$lipid_data_long,
+                              pattern = "^P[ACEGIS]$")
+
+  output$PL <- renderPlot({
+    PL_plot()
+  })
+
+  # Lysophospholipids
+  LPL_plot <- bubblePlotServer(id = "LPL",
+                              data = all_data$lipid_data_long,
+                              pattern = "^LP[ACEGIS]$")
+
+  output$LPL <- renderPlot({
+    LPL_plot()
+  })
+
   #### About / Help  section ####
   output$about_session <- renderPrint({
     session_info()

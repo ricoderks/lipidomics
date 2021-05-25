@@ -61,7 +61,7 @@ shinyAppUI <- navbarPage(title = "CPM - Lipidomics",
                                              fluidPage(
                                                fluidRow(column = 12,
                                                         uiOutput(outputId = "rsd_lipidclass_ui")
-                                                        )
+                                               )
                                              )
                                     ), # end tabpanel QC lipid class
                                     #tabpanel correlation plot
@@ -73,12 +73,23 @@ shinyAppUI <- navbarPage(title = "CPM - Lipidomics",
                                              )
                                     ) # end tabpanel correlation plot
                          ), # end navbarMenu QC
-                         # tabPanel identification
-                         tabPanel(title = "Identification",
-                                  fluidPage(
-                                    fluidRow(column = 12)
-                                  )
-                         ), # end tabPanel identification
+                         # navbarMenu identification
+                         navbarMenu(title = "Identification",
+                                    tabPanel(title = "Lysophospholipids",
+                                             fluidPage(
+                                               fluidRow(column = 12,
+                                                        bubblePlotUI(id = "LPL")
+                                               )
+                                             )
+                                    ),
+                                    tabPanel(title = "Phospholipids",
+                                             fluidPage(
+                                               fluidRow(column = 12,
+                                                        bubblePlotUI(id = "PL")
+                                               )
+                                             )
+                                    )
+                         ), # end navbarMenu identification
                          # tabPanel About
                          navbarMenu(title = "Help",
                                     tabPanel(title = "Lipids",
