@@ -35,7 +35,9 @@ shinyAppServer <- function(input, output, session) {
                              lipid_data_long = NULL,
                              lipid_data_long = NULL,
                              qc_results = NULL,
-                             class_ion = NULL)
+                             class_ion = NULL,
+                             class_ion_selected = NULL,
+                             num_lipid_classes = NULL)
 
   #### Read the files ####
   # watch the positive mode file
@@ -98,6 +100,8 @@ shinyAppServer <- function(input, output, session) {
       pull(.data$class_ion) %>%
       unique()
 
+    all_data$class_ion_selected <- all_data$class_ion
+
     tagList(
       checkboxGroupInput(inputId = "select_lipidclass_ion",
                          label = "Select lipid class:",
@@ -127,11 +131,11 @@ shinyAppServer <- function(input, output, session) {
     req(all_data$qc_results,
         input$select_lipidclass_ion)
 
-    class_ion <- input$select_lipidclass_ion
+    all_data$class_ion_selected <- input$select_lipidclass_ion
 
     # show histogram
-    show_rsd_lipidclass_histogram(df = all_data$qc_results,
-                                  lipidclass_ion = class_ion)
+    show_rsd_lipidclass_violin(df = all_data$qc_results,
+                                  lipidclass_ion = all_data$class_ion_selected)
   })
 
   # create the output UI
@@ -139,15 +143,8 @@ shinyAppServer <- function(input, output, session) {
     req(all_data$qc_results,
         input$select_lipidclass_ion)
 
-    class_ion <- input$select_lipidclass_ion
-    # how many classes are selected
-    lipid_class <- unique(sapply(class_ion, function(x) {
-      unlist(strsplit(x = x,
-                      split = " - "))[1]
-    }))
-
     # calculate the new height for the violin plot
-    new_height <- ceiling(length(lipid_class) * 25)
+    new_height <- ceiling(all_data$num_lipid_classes * 25)
 
     tagList(
       plotOutput(outputId = "rsd_lipid_classes",
@@ -164,9 +161,22 @@ shinyAppServer <- function(input, output, session) {
 
   # create UI for correlation plot
   output$corplot <- renderUI({
+    req(all_data$lipid_data_long,
+        all_data$num_lipid_classes)
+
+    # get the number of samples
+    num_samples <- all_data$lipid_data_long %>%
+      pull(.data$sample_name) %>%
+      unique() %>%
+      length()
+
+    # calculate the new height for the correlation plot
+    new_height <- ceiling(num_samples * 15 + 25)
+
     tagList(
       plotOutput(outputId = "create_corplot",
-                 width = "50%")
+                 width = "50%",
+                 height = paste0(new_height, "px"))
     )
   })
 
@@ -181,8 +191,17 @@ shinyAppServer <- function(input, output, session) {
   #### identification part ####
   # filter the identification data
   observeEvent(input$select_lipidclass_ion, {
+    # get all the selected classes
+    all_data$class_ion_selected <- input$select_lipidclass_ion
+    # how many classes are selected
+    all_data$num_lipid_classes <- length(unique(sapply(all_data$class_ion_selected, function(x) {
+      unlist(strsplit(x = x,
+                      split = " - "))[1]
+    })))
+
+    # filter the data
     all_data$lipid_data_filter <- all_data$lipid_data_long %>%
-      filter(.data$class_ion %in% input$select_lipidclass_ion)
+      filter(.data$class_ion %in% all_data$class_ion_selected)
   })
 
   # phospholipids
