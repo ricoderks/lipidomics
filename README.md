@@ -1,6 +1,7 @@
 # Introduction
 
-The goal is to make a shiny app which contains my workflow for lipidomics profiling. 
+The goal is to make a shiny app which contains my workflow for lipidomics profiling. The app 
+can read exported results from MS-DIAL v4.60 and higher.
 It should contain having a look at the QC and an easier way to check the identification 
 of the lipids. I also hope to add some simple analysis.
 
@@ -29,3 +30,7 @@ The file `app.R` should only contain:
 
     lipidomics::launchApp()
 
+# Example data
+
+I added 2 files (positive and negative mode) as example data. After installing the package 
+you can find them in the folder `extdata`. In the repository you can find them in `inst/extdata`.
