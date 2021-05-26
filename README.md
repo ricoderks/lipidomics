@@ -21,3 +21,11 @@ You can use it locally from RStudio by:
     library(lipidomics)
     launchApp()
 
+## Shiny server
+
+To run it from a shiny server you have to make sure the package is installed and then 
+you only have to create a file called `app.R` in the folder where you want to run it from.
+The file `app.R` should only contain:
+
+    lipidomics::launchApp()
+
