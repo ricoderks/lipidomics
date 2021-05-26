@@ -1,7 +1,7 @@
 # Introduction
 
 The goal is to make a shiny app which contains my workflow for lipidomics profiling. The app 
-can read exported results from MS-DIAL v4.60 and higher.
+can read exported results from [MS-DIAL](http://prime.psc.riken.jp/compms/msdial/main.html) v4.60 and higher.
 It should contain having a look at the QC and an easier way to check the identification 
 of the lipids. I also hope to add some simple analysis.
 
