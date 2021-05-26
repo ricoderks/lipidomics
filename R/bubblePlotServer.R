@@ -13,7 +13,7 @@
 #' @importFrom magrittr %>%
 #' @importFrom dplyr filter
 #' @importFrom rlang .data
-#' @importFrom ggplot2 ggplot aes geom_point scale_size geom_line geom_text facet_grid labs guides coord_cartesian
+#' @importFrom ggplot2 ggplot aes geom_point scale_size geom_line geom_text facet_grid labs guides coord_cartesian theme_minimal
 #'
 #' @author Rico Derks
 #'
@@ -72,7 +72,8 @@ bubblePlotServer <- function(id, data, pattern, lipid_data) {
           guides(color = FALSE,
                  size = FALSE) +
           coord_cartesian(xlim = ranges$x,
-                          ylim = ranges$y)
+                          ylim = ranges$y) +
+          theme_minimal()
       })
 
       # show the row clicked
