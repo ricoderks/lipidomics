@@ -6,6 +6,8 @@ of the lipids. I also hope to add some simple analysis.
 
 In the end it should be possible do download a report and lipid list (e.g. as Excel file).
 
+**This is still a lot of work in progress!!**
+
 # Installation
 
 This shiny app is build inside an R package and can be installed with `devtools::install_github("ricoderks/lipidomics")`.
@@ -17,5 +19,5 @@ This shiny app is build inside an R package and can be installed with `devtools:
 You can use it locally from RStudio by:
 
     library(lipidomics)
-    launchapp()
+    launchApp()
 
