@@ -120,7 +120,6 @@ shinyAppServer <- function(input, output, session) {
                                 label = "Glcyerolipids:",
                                 choices = all_data$class_ion[grepl(x = all_data$class_ion, pattern = "^(Ox)?(Ether)?(L)?[DMT]G")],
                                 selected = all_data$class_ion[grepl(x = all_data$class_ion, pattern = "^(Ox)?(Ether)?(L)?[DMT]G")]),
-             style = "background-color: #E8E8E8"
       ),
       column(width = 2,
              checkboxGroupInput(inputId = "select_Cer_class",
@@ -131,7 +130,6 @@ shinyAppServer <- function(input, output, session) {
                                 label = "Neutral glycosphingolipids:",
                                 choices = all_data$class_ion[grepl(x = all_data$class_ion, pattern = "^A?HexCer")],
                                 selected = all_data$class_ion[grepl(x = all_data$class_ion, pattern = "^A?HexCer")]),
-             style = "background-color: #E8E8E8"
       ),
       column(width = 2,
              checkboxGroupInput(inputId = "select_FA_class",
@@ -146,16 +144,15 @@ shinyAppServer <- function(input, output, session) {
                                 label = "Sphingoid bases:",
                                 choices = all_data$class_ion[grepl(x = all_data$class_ion, pattern = "^(PhytoSph|SL|SL\\+O|DHSph|Sph)")],
                                 selected = all_data$class_ion[grepl(x = all_data$class_ion, pattern = "^(PhytoSph|SL|SL\\+O|DHSph|Sph)")]),
-             style = "background-color: #E8E8E8"
       )
     )
   })
 
   # for debugging: check which lipid classes / ions are selected
   # output$lipid_classes <- renderText({
-  #   req(input$select_lipidclass_ion)
+  #   req(all_data$class_ion_selected)
   #
-  #   input$select_lipidclass_ion
+  #   all_data$class_ion_selected
   # })
 
   #### Calculate the RSD values of the QCpool ####
@@ -169,15 +166,8 @@ shinyAppServer <- function(input, output, session) {
 
   # create histogram of all lipids per lipid class
   output$rsd_lipid_classes <- renderPlot({
-    req(all_data$qc_results)
-
-    all_data$class_ion_selected <- c(input$select_PL_class,
-                                     input$select_GL_class,
-                                     input$select_Cer_class,
-                                     input$select_HexCer_class,
-                                     input$select_FA_class,
-                                     input$select_PSL_class,
-                                     input$select_SB_class)
+    req(all_data$qc_results,
+        all_data$class_ion_selected)
 
     # show histogram
     show_rsd_lipidclass_violin(df = all_data$qc_results,
@@ -187,7 +177,7 @@ shinyAppServer <- function(input, output, session) {
   # create the output UI
   output$rsd_lipidclass_ui <- renderUI({
     req(all_data$qc_results,
-        input$select_lipidclass_ion)
+        all_data$num_lipid_classes)
 
     # calculate the new height for the violin plot
     new_height <- ceiling(all_data$num_lipid_classes * 25)
