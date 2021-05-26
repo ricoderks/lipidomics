@@ -273,6 +273,7 @@ shinyAppServer <- function(input, output, session) {
     input$select_SA_class
     input$select_STL_class
   }, {
+    req(all_data$lipid_data_long)
     # get all the selected classes
     all_data$class_ion_selected <- c(input$select_PL_class,
                                      input$select_GL_class,
@@ -296,73 +297,91 @@ shinyAppServer <- function(input, output, session) {
       filter(.data$class_ion %in% all_data$class_ion_selected)
   })
 
-  # Etherphospholipids
-  EPL_plot <- bubblePlotServer(id = "EPL",
-                              data = reactive(all_data$lipid_data_filter),
-                              pattern = "^EtherL?P[ACEGIS]$",
-                              lipid_data = reactive(all_data$lipid_data))
-
+  # Ether phospholipids
   output$EPL_UI <- renderUI({
+    req(all_data$lipid_data_filter,
+        all_data$lipid_data)
+
+    bubblePlotServer(id = "EPL",
+                     data = reactive(all_data$lipid_data_filter),
+                     pattern = "^EtherL?P[ACEGIS]$",
+                     lipid_data = reactive(all_data$lipid_data))
+
     bubblePlotUI(id = "EPL",
                  data = all_data$lipid_data_filter,
                  pattern = "^EtherL?P[ACEGIS]$")
   })
 
   # Ether glycerolipids
-  EGL_plot <- bubblePlotServer(id = "EGL",
-                              data = reactive(all_data$lipid_data_filter),
-                              pattern = "^Ether[MDT]G$",
-                              lipid_data = reactive(all_data$lipid_data))
-
   output$EGL_UI <- renderUI({
-    bubblePlotUI(id = "EGL",
+    req(all_data$lipid_data_filter,
+        all_data$lipid_data)
+
+    bubblePlotServer(id = "EGL",
+                     data = reactive(all_data$lipid_data_filter),
+                     pattern = "^Ether[MDT]G$",
+                     lipid_data = reactive(all_data$lipid_data))
+
+      bubblePlotUI(id = "EGL",
                  data = all_data$lipid_data_filter,
                  pattern = "^Ether[MDT]G$")
   })
 
   # glycerolipids
-  GL_plot <- bubblePlotServer(id = "GL",
-                              data = reactive(all_data$lipid_data_filter),
-                              pattern = "^[MDT]G$",
-                              lipid_data = reactive(all_data$lipid_data))
-
   output$GL_UI <- renderUI({
+    req(all_data$lipid_data_filter,
+        all_data$lipid_data)
+
+    bubblePlotServer(id = "GL",
+                     data = reactive(all_data$lipid_data_filter),
+                     pattern = "^[MDT]G$",
+                     lipid_data = reactive(all_data$lipid_data))
+
     bubblePlotUI(id = "GL",
                  data = all_data$lipid_data_filter,
                  pattern = "^[MDT]G$")
   })
 
   # Lysophospholipids
-  LPL_plot <- bubblePlotServer(id = "LPL",
-                               data = reactive(all_data$lipid_data_filter),
-                               pattern = "^LP[ACEGIS]$",
-                               lipid_data = reactive(all_data$lipid_data))
-
   output$LPL_UI <- renderUI({
+    req(all_data$lipid_data_filter,
+        all_data$lipid_data)
+
+    bubblePlotServer(id = "LPL",
+                     data = reactive(all_data$lipid_data_filter),
+                     pattern = "^LP[ACEGIS]$",
+                     lipid_data = reactive(all_data$lipid_data))
+
     bubblePlotUI(id = "LPL",
                  data = all_data$lipid_data_filter,
                  pattern = "^LP[ACEGIS]$")
   })
 
   # oxidized phospholipids
-  OPL_plot <- bubblePlotServer(id = "OPL",
-                              data = reactive(all_data$lipid_data_filter),
-                              pattern = "^OxP[ACEGIS]$",
-                              lipid_data = reactive(all_data$lipid_data))
-
   output$OPL_UI <- renderUI({
+    req(all_data$lipid_data_filter,
+        all_data$lipid_data)
+
+    bubblePlotServer(id = "OPL",
+                     data = reactive(all_data$lipid_data_filter),
+                     pattern = "^OxP[ACEGIS]$",
+                     lipid_data = reactive(all_data$lipid_data))
+
     bubblePlotUI(id = "OPL",
                  data = all_data$lipid_data_filter,
                  pattern = "^OxP[ACEGIS]$")
   })
 
   # phospholipids
-  PL_plot <- bubblePlotServer(id = "PL",
-                              data = reactive(all_data$lipid_data_filter),
-                              pattern = "^P[ACEGIS]$",
-                              lipid_data = reactive(all_data$lipid_data))
-
   output$PL_UI <- renderUI({
+    req(all_data$lipid_data_filter,
+        all_data$lipid_data)
+
+    bubblePlotServer(id = "PL",
+                     data = reactive(all_data$lipid_data_filter),
+                     pattern = "^P[ACEGIS]$",
+                     lipid_data = reactive(all_data$lipid_data))
+
     bubblePlotUI(id = "PL",
                  data = all_data$lipid_data_filter,
                  pattern = "^P[ACEGIS]$")

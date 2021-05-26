@@ -49,6 +49,7 @@ bubblePlotServer <- function(id, data, pattern, lipid_data) {
       })
 
       # bubble plot
+
       output$bubble <- renderPlot({
         data() %>%
           filter(grepl(x = .data$sample_name,
