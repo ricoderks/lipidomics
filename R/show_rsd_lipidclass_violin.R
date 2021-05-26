@@ -26,7 +26,8 @@ show_rsd_lipidclass_violin <- function(df, lipidclass_ion) {
                y = .data$rsd_area)) +
     geom_violin(binwidth = 0.01,
                 position = "identity") +
-    geom_jitter(aes(colour = .data$polarity)) +
+    geom_jitter(aes(colour = .data$polarity),
+                alpha = 0.5) +
     geom_hline(aes(yintercept = 0.3),
                colour = "red",
                linetype = 2) +
