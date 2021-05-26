@@ -73,14 +73,33 @@ shinyAppUI <- navbarPage(title = "CPM - Lipidomics",
                          ), # end navbarMenu QC
                          # navbarMenu identification
                          navbarMenu(title = "Identification",
-                                    tabPanel(title = "Glycerophospholipids",
+                                    "Glyceroplipids",
+                                    tabPanel(title = "Ether glycerolipids",
+                                               fluidPage(
+                                                 uiOutput(outputId = "EGL_UI")
+                                               )
+                                    ),
+                                    tabPanel(title = "Glycerolipids",
                                              fluidPage(
                                                uiOutput(outputId = "GL_UI")
                                              )
                                     ),
+                                    "----",
+                                    "Phospholipids",
+                                    tabPanel(title = "Etherphospholipids",
+                                             fluidPage(
+                                               uiOutput(outputId = "EPL_UI")
+                                             )
+                                    ),
+
                                     tabPanel(title = "Lysophospholipids",
                                              fluidPage(
                                                uiOutput(outputId = "LPL_UI")
+                                             )
+                                    ),
+                                    tabPanel(title = "Oxidized phospholipids",
+                                             fluidPage(
+                                               uiOutput(outputId = "OPL_UI")
                                              )
                                     ),
                                     tabPanel(title = "Phospholipids",
