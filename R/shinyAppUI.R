@@ -75,37 +75,25 @@ shinyAppUI <- navbarPage(title = "CPM - Lipidomics",
                          navbarMenu(title = "Identification",
                                     "Glyceroplipids",
                                     tabPanel(title = "Ether glycerolipids",
-                                               fluidPage(
-                                                 uiOutput(outputId = "EGL_UI")
-                                               )
+                                             uiOutput(outputId = "EGL_UI")
                                     ),
                                     tabPanel(title = "Glycerolipids",
-                                             fluidPage(
-                                               uiOutput(outputId = "GL_UI")
-                                             )
+                                             uiOutput(outputId = "GL_UI")
                                     ),
                                     "----",
                                     "Phospholipids",
                                     tabPanel(title = "Etherphospholipids",
-                                             fluidPage(
-                                               uiOutput(outputId = "EPL_UI")
-                                             )
+                                             uiOutput(outputId = "EPL_UI")
                                     ),
 
                                     tabPanel(title = "Lysophospholipids",
-                                             fluidPage(
-                                               uiOutput(outputId = "LPL_UI")
-                                             )
+                                             uiOutput(outputId = "LPL_UI")
                                     ),
                                     tabPanel(title = "Oxidized phospholipids",
-                                             fluidPage(
-                                               uiOutput(outputId = "OPL_UI")
-                                             )
+                                             uiOutput(outputId = "OPL_UI")
                                     ),
                                     tabPanel(title = "Phospholipids",
-                                             fluidPage(
-                                               uiOutput(outputId = "PL_UI")
-                                             )
+                                             uiOutput(outputId = "PL_UI")
                                     )
                          ), # end navbarMenu identification
                          # tabPanel About

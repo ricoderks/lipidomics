@@ -29,22 +29,27 @@ bubblePlotUI <- function(id, data, pattern) {
 
   # calculate new height for the plot
   new_height <- num_lipid_class * 150 + 25
-  fluidRow(
-    column(width = 8,
-          plotOutput(outputId = ns("bubble"),
-                     width = "100%",
-                     height = paste0(new_height, "px"),
-                     brush = brushOpts(
-                       id = ns("bubble_brush"),
-                       delayType = "debounce",
-                       resetOnNew = TRUE
-                     ),
-                     dblclick = ns("bubble_dbl"),
-                     click = ns("bubble_clk")
-          )
+  fluidPage(
+    # show the selected point
+    fluidRow(
+      column(width = 12,
+             tableOutput(outputId = ns("info")))
     ),
-    column(width = 4,
-           tableOutput(outputId = ns("info")))
+    # show the bubble plot
+    fluidRow(
+      column(width = 8,
+             plotOutput(outputId = ns("bubble"),
+                        width = "100%",
+                        height = paste0(new_height, "px"),
+                        brush = brushOpts(
+                          id = ns("bubble_brush"),
+                          delayType = "debounce",
+                          resetOnNew = TRUE
+                        ),
+                        dblclick = ns("bubble_dbl"),
+                        click = ns("bubble_clk"))
+      )
+    )
   )
 
 }
