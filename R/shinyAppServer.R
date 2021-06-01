@@ -170,17 +170,17 @@ shinyAppServer <- function(input, output, session) {
              checkboxGroupInput(inputId = "select_CL_class",
                                 label = "Cardiolipins:",
                                 choices = all_data$class_ion[grepl(x = all_data$class_ion, pattern = pattern_CL)],
-                                selected = all_data$class_ion[grepl(x = all_data$class_ion, pattern = pattern_CL)]),
-             checkboxGroupInput(inputId = "select_ACPIM_class",
-                                label = "Glycerophosphoinositolglycans:",
-                                choices = all_data$class_ion[grepl(x = all_data$class_ion, pattern = pattern_ACPIM)],
-                                selected = all_data$class_ion[grepl(x = all_data$class_ion, pattern = pattern_ACPIM)])
+                                selected = all_data$class_ion[grepl(x = all_data$class_ion, pattern = pattern_CL)])
       ),
       column(width = my_col_width,
              checkboxGroupInput(inputId = "select_STL_class",
                                 label = "Sterol lipids:",
                                 choices = all_data$class_ion[grepl(x = all_data$class_ion, pattern = pattern_STL)],
-                                selected = all_data$class_ion[grepl(x = all_data$class_ion, pattern = pattern_STL)])
+                                selected = all_data$class_ion[grepl(x = all_data$class_ion, pattern = pattern_STL)]),
+             checkboxGroupInput(inputId = "select_ACPIM_class",
+                                label = "Glycerophosphoinositolglycans:",
+                                choices = all_data$class_ion[grepl(x = all_data$class_ion, pattern = pattern_ACPIM)],
+                                selected = all_data$class_ion[grepl(x = all_data$class_ion, pattern = pattern_ACPIM)])
       )
     )
   })
