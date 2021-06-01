@@ -11,9 +11,13 @@
 #'
 #' @importFrom shiny moduleServer renderPlot reactive observe observeEvent nearPoints
 #' @importFrom magrittr %>%
-#' @importFrom dplyr filter select
+#' @importFrom dplyr filter select transmute if_else
+#' @importFrom tidyr unnest separate
+#' @importFrom stringr str_split
 #' @importFrom rlang .data
-#' @importFrom ggplot2 ggplot aes geom_point scale_size geom_line geom_text facet_grid labs guides coord_cartesian
+#' @importFrom ggplot2 ggplot aes geom_point scale_size geom_line geom_text facet_grid labs guides coord_cartesian geom_linerange scale_y_continuous theme_minimal
+#' @importFrom ggrepel geom_text_repel
+#' @importFrom scales scientific
 #' @importFrom ggCPM theme_cpm
 #'
 #' @author Rico Derks
@@ -24,6 +28,8 @@ bubblePlotServer <- function(id, data, pattern, lipid_data) {
     module = function(input, output, session) {
       ranges <- reactiveValues(x = NULL,
                                y = NULL)
+
+      data <- reactiveValues(selected_data = NULL)
 
       # zoom out
       observeEvent(input$bubble_dbl, {
@@ -80,15 +86,61 @@ bubblePlotServer <- function(id, data, pattern, lipid_data) {
 
       # show the row clicked
       output$info <- renderTable({
-        nearPoints(df = lipid_data() %>%
-                     select(.data$my_id:.data$polarity),
+        data$selected_data <- nearPoints(df = lipid_data(),
                    coordinfo = input$bubble_clk,
                    xvar = "AverageRT",
                    yvar = "AverageMZ",
                    threshold = 10)
+
+        data$selected_data %>%
+          select(.data$my_id:.data$polarity, -.data$scale_DotProduct, -.data$scale_RevDotProduct)
+      })
+
+      output$msms_cutoff_ui <- renderUI({
+        tagList(
+          sliderInput(inputId = session$ns("msms_cutoff"),
+                      label = "Annotation cutoff [%]:",
+                      value = 20,
+                      min = 0,
+                      max = 100)
+        )
       })
 
       output$msms_clicked <- renderPlot({
+        req(data$selected_data,
+            input$msms_cutoff)
+
+        if(nrow(data$selected_data) == 1) {
+          msms_data <- data$selected_data %>%
+            select(.data$MSMSspectrum) %>%
+            transmute(data_pair = str_split(string = .data$MSMSspectrum,
+                                            pattern = " ")) %>%
+            unnest(.data$data_pair) %>%
+            separate(.data$data_pair,
+                     into = c("mz", "int"),
+                     sep = ":",
+                     convert = TRUE)
+
+          msms_data %>%
+            mutate(rel_int = (.data$int / max(.data$int)) * 100,
+                   show_mz = if_else(.data$rel_int > input$msms_cutoff,
+                                     as.character(.data$mz),
+                                     NA_character_)) %>%
+            ggplot() +
+            geom_linerange(aes(x = .data$mz,
+                               ymin = 0,
+                               ymax = .data$rel_int)) +
+            geom_text_repel(aes(x = .data$mz,
+                                y = .data$rel_int,
+                                label = .data$show_mz)) +
+            # scale_y_continuous(labels = scales::scientific) +
+            labs(x = expression(italic("m/z")),
+                 y = "Relative ntensity [%]",
+                 title = "MSMS sepctrum acquired") +
+            theme_minimal()
+        } else {
+          return(NULL)
+        }
 
       })
     }

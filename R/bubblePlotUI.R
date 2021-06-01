@@ -48,7 +48,10 @@ bubblePlotUI <- function(id, data, pattern) {
                         ),
                         dblclick = ns("bubble_dbl"),
                         click = ns("bubble_clk"))
-      )
+      ),
+      column(width = 4,
+             plotOutput(outputId = ns("msms_clicked")),
+             uiOutput(outputId = ns("msms_cutoff_ui")))
     )
   )
 
