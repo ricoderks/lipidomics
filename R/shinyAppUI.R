@@ -127,6 +127,23 @@ shinyAppUI <- navbarPage(title = "CPM - Lipidomics",
                                     ),
                                     tabPanel(title = "Neutral glycosphingolipids ",
                                              uiOutput(outputId = "NPSL_UI")
+                                    ),
+                                    "----",
+                                    "Sterol lipids",
+                                    tabPanel(title = "Bile acids and derivatives",
+                                             uiOutput(outputId = "BA_UI")
+                                    ),
+                                    tabPanel(title = "Secosteroids ",
+                                             uiOutput(outputId = "SC_UI")
+                                    ),
+                                    tabPanel(title = "Steroid conjugates",
+                                             uiOutput(outputId = "STC_UI")
+                                    ),
+                                    tabPanel(title = "Sterols",
+                                             uiOutput(outputId = "ST_UI")
+                                    ),
+                                    tabPanel(title = "Other sterol lipids",
+                                             uiOutput(outputId = "OST_UI")
                                     )
                          ), # end navbarMenu identification
                          # tabPanel About

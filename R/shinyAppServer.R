@@ -540,6 +540,81 @@ shinyAppServer <- function(input, output, session) {
                  pattern = "^A?HexCer")
   })
 
+  # Bile acids and conjugates
+  output$BA_UI <- renderUI({
+    req(all_data$lipid_data_filter,
+        all_data$lipid_data)
+
+    bubblePlotServer(id = "BA",
+                     data = reactive(all_data$lipid_data_filter),
+                     pattern = "^(BASulfate|BileAcid|DCAE)$",
+                     lipid_data = reactive(all_data$lipid_data))
+
+    bubblePlotUI(id = "BA",
+                 data = all_data$lipid_data_filter,
+                 pattern = "^(BASulfate|BileAcid|DCAE)$")
+  })
+
+  # Secosteroids
+  output$SC_UI <- renderUI({
+    req(all_data$lipid_data_filter,
+        all_data$lipid_data)
+
+    bubblePlotServer(id = "SC",
+                     data = reactive(all_data$lipid_data_filter),
+                     pattern = "^VitaminD$",
+                     lipid_data = reactive(all_data$lipid_data))
+
+    bubblePlotUI(id = "SC",
+                 data = all_data$lipid_data_filter,
+                 pattern = "^VitaminD$")
+  })
+
+  # Steroid conjugates
+  output$STC_UI <- renderUI({
+    req(all_data$lipid_data_filter,
+        all_data$lipid_data)
+
+    bubblePlotServer(id = "STC",
+                     data = reactive(all_data$lipid_data_filter),
+                     pattern = "^SSulfate$",
+                     lipid_data = reactive(all_data$lipid_data))
+
+    bubblePlotUI(id = "STC",
+                 data = all_data$lipid_data_filter,
+                 pattern = "^SSulfate$")
+  })
+
+  # Sterols
+  output$ST_UI <- renderUI({
+    req(all_data$lipid_data_filter,
+        all_data$lipid_data)
+
+    bubblePlotServer(id = "ST",
+                     data = reactive(all_data$lipid_data_filter),
+                     pattern = "^((BR|CA|SI|ST)?[CS]E|Cholesterol|SHex)$",
+                     lipid_data = reactive(all_data$lipid_data))
+
+    bubblePlotUI(id = "ST",
+                 data = all_data$lipid_data_filter,
+                 pattern = "^((BR|CA|SI|ST)?[CS]E|Cholesterol|SHex)$")
+  })
+
+  # Other sterol lipids
+  output$OST_UI <- renderUI({
+    req(all_data$lipid_data_filter,
+        all_data$lipid_data)
+
+    bubblePlotServer(id = "OST",
+                     data = reactive(all_data$lipid_data_filter),
+                     pattern = "^AHex(CAS|CS|SIS|BRS|STS)$",
+                     lipid_data = reactive(all_data$lipid_data))
+
+    bubblePlotUI(id = "OST",
+                 data = all_data$lipid_data_filter,
+                 pattern = "^AHex(CAS|CS|SIS|BRS|STS)$")
+  })
+
   #### About / Help  section ####
   output$about_session <- renderPrint({
     session_info()
