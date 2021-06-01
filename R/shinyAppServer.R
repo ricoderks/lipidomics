@@ -106,7 +106,6 @@ shinyAppServer <- function(input, output, session) {
 
     # regular expression patterns
     pattern_PL <- "^((Ox)?(Ether)?(L)?(LNA)?(MM)?P[ACEGISM]|HBMP|BMP)"
-    # pattern_GL <- "^(Ox)?(Ether)?(L)?(SQ)?(A)?[DMT]G"
     pattern_GL <- "^(Ox|Ether|SQ|EtherS|L)?[DMT]G"
     pattern_Cer <- "^Cer_"
     pattern_HexCer <- "^A?HexCer"
@@ -117,6 +116,7 @@ shinyAppServer <- function(input, output, session) {
     pattern_CL <- "^([DM]L)?CL"
     pattern_ACPIM <- "^Ac[2-4]PIM[12]"
     pattern_STL <- "^((BA|S)Sulfate|BileAcid|AHex[BCS][AIRTS][S]?|(BRS|CAS|C|SIS|STS|DCA|TDCA)E|SHex|Cholesterol|VitaminD)"
+    pattern_PRL <- "^(VAE|CoQ|VitaminE)"
 
     my_col_width <- 3
 
@@ -180,7 +180,11 @@ shinyAppServer <- function(input, output, session) {
              checkboxGroupInput(inputId = "select_ACPIM_class",
                                 label = "Glycerophosphoinositolglycans:",
                                 choices = all_data$class_ion[grepl(x = all_data$class_ion, pattern = pattern_ACPIM)],
-                                selected = all_data$class_ion[grepl(x = all_data$class_ion, pattern = pattern_ACPIM)])
+                                selected = all_data$class_ion[grepl(x = all_data$class_ion, pattern = pattern_ACPIM)]),
+             checkboxGroupInput(inputId = "select_PRL_class",
+                                label = "Prenol lipids:",
+                                choices = all_data$class_ion[grepl(x = all_data$class_ion, pattern = pattern_PRL)],
+                                selected = all_data$class_ion[grepl(x = all_data$class_ion, pattern = pattern_PRL)])
       )
     )
   })
@@ -273,6 +277,7 @@ shinyAppServer <- function(input, output, session) {
     input$select_SB_class
     input$select_CL_class
     input$select_ACPIM_class
+    input$select_PRL_class
     input$select_SA_class
     input$select_STL_class
   }, {
@@ -287,8 +292,10 @@ shinyAppServer <- function(input, output, session) {
                                      input$select_SB_class,
                                      input$select_CL_class,
                                      input$select_ACPIM_class,
+                                     input$select_PRL_class,
                                      input$select_SA_class,
-                                     input$select_STL_class)
+                                     input$select_STL_class
+                                     )
     # how many lipid classes are selected
     all_data$num_lipid_classes <- length(unique(sapply(all_data$class_ion_selected, function(x) {
       unlist(strsplit(x = x,
@@ -493,6 +500,21 @@ shinyAppServer <- function(input, output, session) {
     bubblePlotUI(id = "PL",
                  data = all_data$lipid_data_filter,
                  pattern = "^P[ACEGIS]$")
+  })
+
+  # Prenol lipids
+  output$PRL_UI <- renderUI({
+    req(all_data$lipid_data_filter,
+        all_data$lipid_data)
+
+    bubblePlotServer(id = "PRL",
+                     data = reactive(all_data$lipid_data_filter),
+                     pattern = "^(VAE|CoQ|VitaminE)$",
+                     lipid_data = reactive(all_data$lipid_data))
+
+    bubblePlotUI(id = "PRL",
+                 data = all_data$lipid_data_filter,
+                 pattern = "^(VAE|CoQ|VitaminE)$")
   })
 
   # Ceramides

@@ -118,6 +118,10 @@ shinyAppUI <- navbarPage(title = "CPM - Lipidomics",
                                              uiOutput(outputId = "PL_UI")
                                     ),
                                     "----",
+                                    tabPanel(title = "Prenol lipids",
+                                             uiOutput(outputId = "PRL_UI")
+                                    ),
+                                    "----",
                                     "Sphingolipids",
                                     tabPanel(title = "Ceramides ",
                                              uiOutput(outputId = "Cer_UI")
