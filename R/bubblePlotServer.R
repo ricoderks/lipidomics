@@ -142,8 +142,8 @@ bubblePlotServer <- function(id, data, pattern, lipid_data) {
                                 label = .data$show_mz)) +
             # scale_y_continuous(labels = scales::scientific) +
             labs(x = expression(italic("m/z")),
-                 y = "Relative ntensity [%]",
-                 title = "MSMS sepctrum acquired") +
+                 y = "Relative intensity [%]",
+                 title = "MSMS spectrum acquired") +
             theme_minimal()
         } else {
           return(NULL)
