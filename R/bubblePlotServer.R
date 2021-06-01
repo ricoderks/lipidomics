@@ -87,22 +87,29 @@ bubblePlotServer <- function(id, data, pattern, lipid_data) {
       # show the row clicked
       output$info <- renderTable({
         data$selected_data <- nearPoints(df = lipid_data(),
-                   coordinfo = input$bubble_clk,
-                   xvar = "AverageRT",
-                   yvar = "AverageMZ",
-                   threshold = 10)
+                                         coordinfo = input$bubble_clk,
+                                         xvar = "AverageRT",
+                                         yvar = "AverageMZ",
+                                         threshold = 10)
 
         data$selected_data %>%
           select(.data$my_id:.data$polarity, -.data$scale_DotProduct, -.data$scale_RevDotProduct)
       })
 
       output$msms_cutoff_ui <- renderUI({
+        req(data$selected_data)
+
         tagList(
-          sliderInput(inputId = session$ns("msms_cutoff"),
-                      label = "Annotation cutoff [%]:",
-                      value = 20,
-                      min = 0,
-                      max = 100)
+          if(nrow(data$selected_data) == 1) {
+            sliderInput(inputId = session$ns("msms_cutoff"),
+                        label = "Annotation cutoff [%]:",
+                        value = 5,
+                        min = 0,
+                        max = 100,
+                        width = "100%")
+          } else {
+            NULL
+          }
         )
       })
 
