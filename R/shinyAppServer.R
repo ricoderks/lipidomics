@@ -76,7 +76,8 @@ shinyAppServer <- function(input, output, session) {
     req(all_data$lipid_data)
 
     all_data$lipid_data %>%
-      select(-.data$MSMSspectrum) %>%
+      # remove a few columns
+      select(-.data$MSMSspectrum, -.data$scale_DotProduct, -.data$scale_RevDotProduct) %>%
       head(20)
   })
 
@@ -105,7 +106,8 @@ shinyAppServer <- function(input, output, session) {
 
     # regular expression patterns
     pattern_PL <- "^((Ox)?(Ether)?(L)?(LNA)?(MM)?P[ACEGISM]|HBMP|BMP)"
-    pattern_GL <- "^(Ox)?(Ether)?(L)?(SQ)?(A)?[DMT]G"
+    # pattern_GL <- "^(Ox)?(Ether)?(L)?(SQ)?(A)?[DMT]G"
+    pattern_GL <- "^(Ox|Ether|SQ|EtherS|L)?[DMT]G"
     pattern_Cer <- "^Cer_"
     pattern_HexCer <- "^A?HexCer"
     pattern_FA <- "^(FA|FAHFA|NAGly|NAGlySer|NAOrn|NAE|CAR)"
@@ -365,12 +367,12 @@ shinyAppServer <- function(input, output, session) {
 
     bubblePlotServer(id = "EGL",
                      data = reactive(all_data$lipid_data_filter),
-                     pattern = "^Ether[MDT]G$",
+                     pattern = "^(Ether|Ox)[MDT]G$",
                      lipid_data = reactive(all_data$lipid_data))
 
       bubblePlotUI(id = "EGL",
                  data = all_data$lipid_data_filter,
-                 pattern = "^Ether[MDT]G$")
+                 pattern = "^(Ether|Ox)[MDT]G$")
   })
 
   # glycerolipids
@@ -386,6 +388,36 @@ shinyAppServer <- function(input, output, session) {
     bubblePlotUI(id = "GL",
                  data = all_data$lipid_data_filter,
                  pattern = "^[MDT]G$")
+  })
+
+  # Glycosyldiradylglycerols
+  output$GLDG_UI <- renderUI({
+    req(all_data$lipid_data_filter,
+        all_data$lipid_data)
+
+    bubblePlotServer(id = "GLDG",
+                     data = reactive(all_data$lipid_data_filter),
+                     pattern = "^(Ether|EtherS)?[DMS][GQ]DG$",
+                     lipid_data = reactive(all_data$lipid_data))
+
+    bubblePlotUI(id = "GLDG",
+                 data = all_data$lipid_data_filter,
+                 pattern = "^(Ether|EtherS)?[DMS][GQ]DG$")
+  })
+
+  # Other glycerolipids
+  output$OGL_UI <- renderUI({
+    req(all_data$lipid_data_filter,
+        all_data$lipid_data)
+
+    bubblePlotServer(id = "OGL",
+                     data = reactive(all_data$lipid_data_filter),
+                     pattern = "^([AL]?DG(GA|CC|TS/A)|TG_EST)$",
+                     lipid_data = reactive(all_data$lipid_data))
+
+    bubblePlotUI(id = "OGL",
+                 data = all_data$lipid_data_filter,
+                 pattern = "^([AL]?DG(GA|CC|TS/A)|TG_EST)$")
   })
 
   # Lysophospholipids

@@ -85,11 +85,17 @@ shinyAppUI <- navbarPage(title = "CPM - Lipidomics",
                                     ),
                                     "----",
                                     "Glyceroplipids",
-                                    tabPanel(title = "Ether glycerolipids",
+                                    tabPanel(title = "Ether/Oxidized glycerolipids",
                                              uiOutput(outputId = "EGL_UI")
                                     ),
                                     tabPanel(title = "Glycerolipids",
                                              uiOutput(outputId = "GL_UI")
+                                    ),
+                                    tabPanel(title = "Glycosyldiradylglycerols ",
+                                             uiOutput(outputId = "GLDG_UI")
+                                    ),
+                                    tabPanel(title = "Other glycerolipids ",
+                                             uiOutput(outputId = "OGL_UI")
                                     ),
                                     "----",
                                     "Phospholipids",
