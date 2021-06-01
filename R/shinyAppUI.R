@@ -123,14 +123,20 @@ shinyAppUI <- navbarPage(title = "CPM - Lipidomics",
                                     ),
                                     "----",
                                     "Sphingolipids",
+                                    tabPanel(title = "Acidic glycosphingolipids",
+                                             uiOutput(outputId = "AcGL_UI")
+                                    ),
                                     tabPanel(title = "Ceramides ",
                                              uiOutput(outputId = "Cer_UI")
                                     ),
                                     tabPanel(title = "Phosphosphingolipids ",
                                              uiOutput(outputId = "PSL_UI")
                                     ),
-                                    tabPanel(title = "Neutral glycosphingolipids ",
+                                    tabPanel(title = "Neutral glycosphingolipids",
                                              uiOutput(outputId = "NPSL_UI")
+                                    ),
+                                    tabPanel(title = "Sphingoid bases",
+                                             uiOutput(outputId = "SB_UI")
                                     ),
                                     "----",
                                     "Sterol lipids",

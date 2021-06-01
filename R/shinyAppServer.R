@@ -517,6 +517,21 @@ shinyAppServer <- function(input, output, session) {
                  pattern = "^(VAE|CoQ|VitaminE)$")
   })
 
+  # Acidic glycosphingolipids
+  output$AcGL_UI <- renderUI({
+    req(all_data$lipid_data_filter,
+        all_data$lipid_data)
+
+    bubblePlotServer(id = "AcGL",
+                     data = reactive(all_data$lipid_data_filter),
+                     pattern = "^(GM3|SHexCer(\\+O)?)$",
+                     lipid_data = reactive(all_data$lipid_data))
+
+    bubblePlotUI(id = "AcGL",
+                 data = all_data$lipid_data_filter,
+                 pattern = "^(GM3|SHexCer(\\+O)?)$")
+  })
+
   # Ceramides
   output$Cer_UI <- renderUI({
     req(all_data$lipid_data_filter,
@@ -560,6 +575,21 @@ shinyAppServer <- function(input, output, session) {
     bubblePlotUI(id = "NPSL",
                  data = all_data$lipid_data_filter,
                  pattern = "^A?HexCer")
+  })
+
+  # Sphingoid bases
+  output$SB_UI <- renderUI({
+    req(all_data$lipid_data_filter,
+        all_data$lipid_data)
+
+    bubblePlotServer(id = "SB",
+                     data = reactive(all_data$lipid_data_filter),
+                     pattern = "^((Phyto|DH)?Sph|SL(\\+O)?)$",
+                     lipid_data = reactive(all_data$lipid_data))
+
+    bubblePlotUI(id = "SB",
+                 data = all_data$lipid_data_filter,
+                 pattern = "^((Phyto|DH)?Sph|SL(\\+O)?)$")
   })
 
   # Bile acids and conjugates
