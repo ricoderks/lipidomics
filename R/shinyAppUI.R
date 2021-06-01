@@ -108,11 +108,11 @@ shinyAppUI <- navbarPage(title = "CPM - Lipidomics",
                                     tabPanel(title = "N-(mono/di)methylphosphatidylethanolamine",
                                              uiOutput(outputId = "MPLE_UI")
                                     ),
+                                    tabPanel(title = "Other Glycerophospholipids",
+                                             uiOutput(outputId = "OGPL_UI")
+                                    ),
                                     tabPanel(title = "Oxidized phospholipids",
                                              uiOutput(outputId = "OPL_UI")
-                                    ),
-                                    tabPanel(title = "Phosphatidyl(M)ethanol",
-                                             uiOutput(outputId = "PLME_UI")
                                     ),
                                     tabPanel(title = "Phospholipids",
                                              uiOutput(outputId = "PL_UI")

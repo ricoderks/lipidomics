@@ -472,17 +472,17 @@ shinyAppServer <- function(input, output, session) {
                  pattern = "^OxP[ACEGIS]$")
   })
 
-  # Phosphatidyl(M)ethanol
-  output$PLME_UI <- renderUI({
+  # Other Glycerophospholipids
+  output$OGPL_UI <- renderUI({
     req(all_data$lipid_data_filter,
         all_data$lipid_data)
 
-    bubblePlotServer(id = "PLME",
+    bubblePlotServer(id = "OGPL",
                      data = reactive(all_data$lipid_data_filter),
                      pattern = "^P(Et|Me)OH$",
                      lipid_data = reactive(all_data$lipid_data))
 
-    bubblePlotUI(id = "PLME",
+    bubblePlotUI(id = "OGPL",
                  data = all_data$lipid_data_filter,
                  pattern = "^P(Et|Me)OH$")
   })
