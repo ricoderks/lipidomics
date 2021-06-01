@@ -11,7 +11,7 @@
 #'
 #' @importFrom shiny moduleServer renderPlot reactive observe observeEvent nearPoints
 #' @importFrom magrittr %>%
-#' @importFrom dplyr filter
+#' @importFrom dplyr filter select
 #' @importFrom rlang .data
 #' @importFrom ggplot2 ggplot aes geom_point scale_size geom_line geom_text facet_grid labs guides coord_cartesian
 #' @importFrom ggCPM theme_cpm
@@ -65,7 +65,7 @@ bubblePlotServer <- function(id, data, pattern, lipid_data) {
           scale_size(range = c(1, 10)) +
           geom_line() +
           geom_text(aes(label = .data$carbon_db),
-                    size = 2.5,
+                    size = 3.0,
                     color = "black") +
           facet_grid(.data$LipidClass ~ .data$ion,
                      scales = "free") +
@@ -80,11 +80,16 @@ bubblePlotServer <- function(id, data, pattern, lipid_data) {
 
       # show the row clicked
       output$info <- renderTable({
-        nearPoints(df = lipid_data(),
+        nearPoints(df = lipid_data() %>%
+                     select(.data$my_id:.data$polarity),
                    coordinfo = input$bubble_clk,
                    xvar = "AverageRT",
                    yvar = "AverageMZ",
                    threshold = 10)
+      })
+
+      output$msms_clicked <- renderPlot({
+
       })
     }
   )

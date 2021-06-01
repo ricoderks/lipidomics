@@ -73,6 +73,17 @@ shinyAppUI <- navbarPage(title = "CPM - Lipidomics",
                          ), # end navbarMenu QC
                          # navbarMenu identification
                          navbarMenu(title = "Identification",
+                                    "Fatty acyls",
+                                    tabPanel(title = "Fatty acids",
+                                             uiOutput(outputId = "FA_UI")
+                                    ),
+                                    tabPanel(title = "Fatty amides",
+                                             uiOutput(outputId = "FAM_UI")
+                                    ),
+                                    tabPanel(title = "Fatty esters",
+                                             uiOutput(outputId = "FE_UI")
+                                    ),
+                                    "----",
                                     "Glyceroplipids",
                                     tabPanel(title = "Ether glycerolipids",
                                              uiOutput(outputId = "EGL_UI")
@@ -85,15 +96,31 @@ shinyAppUI <- navbarPage(title = "CPM - Lipidomics",
                                     tabPanel(title = "Etherphospholipids",
                                              uiOutput(outputId = "EPL_UI")
                                     ),
-
                                     tabPanel(title = "Lysophospholipids",
                                              uiOutput(outputId = "LPL_UI")
+                                    ),
+                                    tabPanel(title = "N-(mono/di)methylphosphatidylethanolamine",
+                                             uiOutput(outputId = "MPLE_UI")
                                     ),
                                     tabPanel(title = "Oxidized phospholipids",
                                              uiOutput(outputId = "OPL_UI")
                                     ),
+                                    tabPanel(title = "Phosphatidyl(M)ethanol",
+                                             uiOutput(outputId = "PLME_UI")
+                                    ),
                                     tabPanel(title = "Phospholipids",
                                              uiOutput(outputId = "PL_UI")
+                                    ),
+                                    "----",
+                                    "Sphingolipids",
+                                    tabPanel(title = "Ceramides ",
+                                             uiOutput(outputId = "Cer_UI")
+                                    ),
+                                    tabPanel(title = "Phosphosphingolipids ",
+                                             uiOutput(outputId = "PSL_UI")
+                                    ),
+                                    tabPanel(title = "Neutral glycosphingolipids ",
+                                             uiOutput(outputId = "NPSL_UI")
                                     )
                          ), # end navbarMenu identification
                          # tabPanel About

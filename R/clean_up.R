@@ -33,7 +33,7 @@ clean_up <- function(df) {
            my_id = paste(.data$polarity, "_", .data$AlignmentID, sep = "")) %>%
     select(.data$my_id, .data$AlignmentID, .data$AverageRT, .data$AverageMZ, .data$ion, .data$LipidName, .data$LipidClass,
            .data$DotProduct, .data$scale_DotProduct, .data$RevDotProduct, .data$scale_RevDotProduct,
-           .data$FragPresence, .data$TotalScore, .data$polarity,
+           .data$FragPresence, .data$TotalScore, .data$polarity, .data$MSMSspectrum,
            matches("^([qQ][cC]pool|[sS]ample|[bB]lank)_.*[0-9]{3}$"))
 
   return(df)

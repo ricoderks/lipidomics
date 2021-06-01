@@ -28,7 +28,7 @@ bubblePlotUI <- function(id, data, pattern) {
     length()
 
   # calculate new height for the plot
-  new_height <- num_lipid_class * 150 + 25
+  new_height <- num_lipid_class * 175 + 25
   fluidPage(
     # show the selected point
     fluidRow(

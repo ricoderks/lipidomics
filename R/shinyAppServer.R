@@ -76,6 +76,7 @@ shinyAppServer <- function(input, output, session) {
     req(all_data$lipid_data)
 
     all_data$lipid_data %>%
+      select(-.data$MSMSspectrum) %>%
       head(20)
   })
 
@@ -108,7 +109,7 @@ shinyAppServer <- function(input, output, session) {
     pattern_Cer <- "^Cer_"
     pattern_HexCer <- "^A?HexCer"
     pattern_FA <- "^(FA|FAHFA|NAGly|NAGlySer|NAOrn|NAE|CAR)"
-    pattern_PSL <- "^(ASM|PE-Cer|PE-Cer\\+O|PI-Cer\\+O|SM|SM\\+O)"
+    pattern_PSL <- "^(ASM|PE_Cer(\\+O)?|PI_Cer(\\+O)?|SM|SM\\+O)"
     pattern_SB <- "^(PhytoSph|SL|SL\\+O|DHSph|Sph)"
     pattern_SA <- "^(GM3|SHexCer|SHexCer\\+O)"
     pattern_CL <- "^([DM]L)?CL"
@@ -297,6 +298,51 @@ shinyAppServer <- function(input, output, session) {
       filter(.data$class_ion %in% all_data$class_ion_selected)
   })
 
+  # Fatty acids and conjugates
+  output$FA_UI <- renderUI({
+    req(all_data$lipid_data_filter,
+        all_data$lipid_data)
+
+    bubblePlotServer(id = "FA",
+                     data = reactive(all_data$lipid_data_filter),
+                     pattern = "^(Ox)?FA$",
+                     lipid_data = reactive(all_data$lipid_data))
+
+    bubblePlotUI(id = "FA",
+                 data = all_data$lipid_data_filter,
+                 pattern = "^(Ox)?FA$")
+  })
+
+  # Fatty amides
+  output$FAM_UI <- renderUI({
+    req(all_data$lipid_data_filter,
+        all_data$lipid_data)
+
+    bubblePlotServer(id = "FAM",
+                     data = reactive(all_data$lipid_data_filter),
+                     pattern = "^(NAGly|NAGlySer|NAOrn|NAE)",
+                     lipid_data = reactive(all_data$lipid_data))
+
+    bubblePlotUI(id = "FAM",
+                 data = all_data$lipid_data_filter,
+                 pattern = "^(NAGly|NAGlySer|NAOrn|NAE)")
+  })
+
+  # Fatty esters
+  output$FE_UI <- renderUI({
+    req(all_data$lipid_data_filter,
+        all_data$lipid_data)
+
+    bubblePlotServer(id = "FE",
+                     data = reactive(all_data$lipid_data_filter),
+                     pattern = "^(CAR|FAHFA)",
+                     lipid_data = reactive(all_data$lipid_data))
+
+    bubblePlotUI(id = "FE",
+                 data = all_data$lipid_data_filter,
+                 pattern = "^(CAR|FAHFA)")
+  })
+
   # Ether phospholipids
   output$EPL_UI <- renderUI({
     req(all_data$lipid_data_filter,
@@ -357,6 +403,21 @@ shinyAppServer <- function(input, output, session) {
                  pattern = "^LP[ACEGIS]$")
   })
 
+  # N-(mono/di)methylphosphatidylethanolamine
+  output$MPLE_UI <- renderUI({
+    req(all_data$lipid_data_filter,
+        all_data$lipid_data)
+
+    bubblePlotServer(id = "MPLE",
+                     data = reactive(all_data$lipid_data_filter),
+                     pattern = "^[DM]MPE$",
+                     lipid_data = reactive(all_data$lipid_data))
+
+    bubblePlotUI(id = "MPLE",
+                 data = all_data$lipid_data_filter,
+                 pattern = "^[DM]MPE$")
+  })
+
   # oxidized phospholipids
   output$OPL_UI <- renderUI({
     req(all_data$lipid_data_filter,
@@ -372,6 +433,21 @@ shinyAppServer <- function(input, output, session) {
                  pattern = "^OxP[ACEGIS]$")
   })
 
+  # Phosphatidyl(M)ethanol
+  output$PLME_UI <- renderUI({
+    req(all_data$lipid_data_filter,
+        all_data$lipid_data)
+
+    bubblePlotServer(id = "PLME",
+                     data = reactive(all_data$lipid_data_filter),
+                     pattern = "^P(Et|Me)OH$",
+                     lipid_data = reactive(all_data$lipid_data))
+
+    bubblePlotUI(id = "PLME",
+                 data = all_data$lipid_data_filter,
+                 pattern = "^P(Et|Me)OH$")
+  })
+
   # phospholipids
   output$PL_UI <- renderUI({
     req(all_data$lipid_data_filter,
@@ -385,6 +461,51 @@ shinyAppServer <- function(input, output, session) {
     bubblePlotUI(id = "PL",
                  data = all_data$lipid_data_filter,
                  pattern = "^P[ACEGIS]$")
+  })
+
+  # Ceramides
+  output$Cer_UI <- renderUI({
+    req(all_data$lipid_data_filter,
+        all_data$lipid_data)
+
+    bubblePlotServer(id = "Cer",
+                     data = reactive(all_data$lipid_data_filter),
+                     pattern = "^Cer_",
+                     lipid_data = reactive(all_data$lipid_data))
+
+    bubblePlotUI(id = "Cer",
+                 data = all_data$lipid_data_filter,
+                 pattern = "^Cer_")
+  })
+
+  # phosphosphingolipids
+  output$PSL_UI <- renderUI({
+    req(all_data$lipid_data_filter,
+        all_data$lipid_data)
+
+    bubblePlotServer(id = "PSL",
+                     data = reactive(all_data$lipid_data_filter),
+                     pattern = "^(ASM|PE_Cer(\\+O)?|PI_Cer(\\+O)?|SM|SM\\+O)",
+                     lipid_data = reactive(all_data$lipid_data))
+
+    bubblePlotUI(id = "PSL",
+                 data = all_data$lipid_data_filter,
+                 pattern = "^(ASM|PE_Cer(\\+O)?|PI_Cer(\\+O)?|SM|SM\\+O)")
+  })
+
+  # Neutral glycosphingolipids
+  output$NPSL_UI <- renderUI({
+    req(all_data$lipid_data_filter,
+        all_data$lipid_data)
+
+    bubblePlotServer(id = "NPSL",
+                     data = reactive(all_data$lipid_data_filter),
+                     pattern = "^A?HexCer",
+                     lipid_data = reactive(all_data$lipid_data))
+
+    bubblePlotUI(id = "NPSL",
+                 data = all_data$lipid_data_filter,
+                 pattern = "^A?HexCer")
   })
 
   #### About / Help  section ####
