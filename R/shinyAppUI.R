@@ -98,24 +98,36 @@ shinyAppUI <- navbarPage(title = "CPM - Lipidomics",
                                              uiOutput(outputId = "OGL_UI")
                                     ),
                                     "----",
-                                    "Phospholipids",
-                                    tabPanel(title = "Etherphospholipids",
-                                             uiOutput(outputId = "EPL_UI")
+                                    "Glycerophospholipids",
+                                    tabPanel(title = "Glycerophosphates (PA)",
+                                             uiOutput(outputId = "PA_UI")
                                     ),
-                                    tabPanel(title = "Lysophospholipids",
-                                             uiOutput(outputId = "LPL_UI")
+                                    tabPanel(title = "Glycerophosphocholines (PC)",
+                                             uiOutput(outputId = "PC_UI")
                                     ),
-                                    tabPanel(title = "N-(mono/di)methylphosphatidylethanolamine",
-                                             uiOutput(outputId = "MPLE_UI")
+                                    tabPanel(title = "Glycerophosphoethanolamines (PE)",
+                                             uiOutput(outputId = "PE_UI")
                                     ),
-                                    tabPanel(title = "Other Glycerophospholipids",
+                                    tabPanel(title = "Glycerophosphoglycerols (PG)",
+                                             uiOutput(outputId = "PG_UI")
+                                    ),
+                                    tabPanel(title = "Glycerophosphoglycerophosphoglycerols (CL)",
+                                             uiOutput(outputId = "CL_UI")
+                                    ),
+                                    tabPanel(title = "Glycerophosphoinositolglycans",
+                                             uiOutput(outputId = "AcPIM_UI")
+                                    ),
+                                    tabPanel(title = "Glycerophosphoinositols (PI)",
+                                             uiOutput(outputId = "PI_UI")
+                                    ),
+                                    tabPanel(title = "Glycerophosphoserines (PS)",
+                                             uiOutput(outputId = "PS_UI")
+                                    ),
+                                    tabPanel(title = "Other glycerophospholipids",
                                              uiOutput(outputId = "OGPL_UI")
                                     ),
-                                    tabPanel(title = "Oxidized phospholipids",
+                                    tabPanel(title = "Oxidized glycerophospholipids",
                                              uiOutput(outputId = "OPL_UI")
-                                    ),
-                                    tabPanel(title = "Phospholipids",
-                                             uiOutput(outputId = "PL_UI")
                                     ),
                                     "----",
                                     tabPanel(title = "Prenol lipids",

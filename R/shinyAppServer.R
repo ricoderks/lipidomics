@@ -132,7 +132,7 @@ shinyAppServer <- function(input, output, session) {
       p("Select the lipid classes you want to keep."),
       column(width = my_col_width,
              checkboxGroupInput(inputId = "select_PL_class",
-                                label = "Phospholipids:",
+                                label = "Glycerophospholipids:",
                                 choices = all_data$class_ion[grepl(x = all_data$class_ion, pattern = pattern_PL)],
                                 selected = all_data$class_ion[grepl(x = all_data$class_ion, pattern = pattern_PL)])
       ),
@@ -427,37 +427,127 @@ shinyAppServer <- function(input, output, session) {
                  pattern = "^([AL]?DG(GA|CC|TS/A)|TG_EST)$")
   })
 
-  # Lysophospholipids
-  output$LPL_UI <- renderUI({
+  # Glycerophosphates
+  output$PA_UI <- renderUI({
     req(all_data$lipid_data_filter,
         all_data$lipid_data)
 
-    bubblePlotServer(id = "LPL",
+    bubblePlotServer(id = "PA",
                      data = reactive(all_data$lipid_data_filter),
-                     pattern = "^LP[ACEGIS]$",
+                     pattern = "^L?PA$",
                      lipid_data = reactive(all_data$lipid_data))
 
-    bubblePlotUI(id = "LPL",
+    bubblePlotUI(id = "PA",
                  data = all_data$lipid_data_filter,
-                 pattern = "^LP[ACEGIS]$")
+                 pattern = "^L?PA$")
   })
 
-  # N-(mono/di)methylphosphatidylethanolamine
-  output$MPLE_UI <- renderUI({
+  # Glycerophosphocholines
+  output$PC_UI <- renderUI({
     req(all_data$lipid_data_filter,
         all_data$lipid_data)
 
-    bubblePlotServer(id = "MPLE",
+    bubblePlotServer(id = "PC",
                      data = reactive(all_data$lipid_data_filter),
-                     pattern = "^[DM]MPE$",
+                     pattern = "^(Ether)?L?PC$",
                      lipid_data = reactive(all_data$lipid_data))
 
-    bubblePlotUI(id = "MPLE",
+    bubblePlotUI(id = "PC",
                  data = all_data$lipid_data_filter,
-                 pattern = "^[DM]MPE$")
+                 pattern = "^(Ether)?L?PC$")
   })
 
-  # oxidized phospholipids
+  # Glycerophosphocholines
+  output$PE_UI <- renderUI({
+    req(all_data$lipid_data_filter,
+        all_data$lipid_data)
+
+    bubblePlotServer(id = "PE",
+                     data = reactive(all_data$lipid_data_filter),
+                     pattern = "^(LNA)?(Ether)?L?PE(\\(P\\))?$",
+                     lipid_data = reactive(all_data$lipid_data))
+
+    bubblePlotUI(id = "PE",
+                 data = all_data$lipid_data_filter,
+                 pattern = "^(LNA)?(Ether)?L?PE(\\(P\\))?$")
+  })
+
+  # Glycerophosphoglycerols
+  output$PG_UI <- renderUI({
+    req(all_data$lipid_data_filter,
+        all_data$lipid_data)
+
+    bubblePlotServer(id = "PG",
+                     data = reactive(all_data$lipid_data_filter),
+                     pattern = "^(H?BMP|(Ether)?L?PG)$",
+                     lipid_data = reactive(all_data$lipid_data))
+
+    bubblePlotUI(id = "PG",
+                 data = all_data$lipid_data_filter,
+                 pattern = "^(H?BMP|(Ether)?L?PG)$")
+  })
+
+  # Glycerophosphoglycerophosphoglycerols (CL)
+  output$CL_UI <- renderUI({
+    req(all_data$lipid_data_filter,
+        all_data$lipid_data)
+
+    bubblePlotServer(id = "CL",
+                     data = reactive(all_data$lipid_data_filter),
+                     pattern = "^([DM]L)?CL$",
+                     lipid_data = reactive(all_data$lipid_data))
+
+    bubblePlotUI(id = "CL",
+                 data = all_data$lipid_data_filter,
+                 pattern = "^([DM]L)?CL$")
+  })
+
+  # Glycerophosphoinositolglycans
+  output$AcPIM_UI <- renderUI({
+    req(all_data$lipid_data_filter,
+        all_data$lipid_data)
+
+    bubblePlotServer(id = "AcPIM",
+                     data = reactive(all_data$lipid_data_filter),
+                     pattern = "^Ac[2-4]PIM[12]$",
+                     lipid_data = reactive(all_data$lipid_data))
+
+    bubblePlotUI(id = "AcPIM",
+                 data = all_data$lipid_data_filter,
+                 pattern = "^Ac[2-4]PIM[12]$")
+  })
+
+  # Glycerophosphoglycerols
+  output$PI_UI <- renderUI({
+    req(all_data$lipid_data_filter,
+        all_data$lipid_data)
+
+    bubblePlotServer(id = "PI",
+                     data = reactive(all_data$lipid_data_filter),
+                     pattern = "^(Ether)?L?PI$",
+                     lipid_data = reactive(all_data$lipid_data))
+
+    bubblePlotUI(id = "PI",
+                 data = all_data$lipid_data_filter,
+                 pattern = "^(Ether)?L?PI$")
+  })
+
+  # Glycerophosphoserines
+  output$PS_UI <- renderUI({
+    req(all_data$lipid_data_filter,
+        all_data$lipid_data)
+
+    bubblePlotServer(id = "PS",
+                     data = reactive(all_data$lipid_data_filter),
+                     pattern = "^(LNA)?(Ether)?L?PS$",
+                     lipid_data = reactive(all_data$lipid_data))
+
+    bubblePlotUI(id = "PS",
+                 data = all_data$lipid_data_filter,
+                 pattern = "^(LNA)?(Ether)?L?PS$")
+  })
+
+  # oxidized glycerophospholipids
   output$OPL_UI <- renderUI({
     req(all_data$lipid_data_filter,
         all_data$lipid_data)
@@ -485,21 +575,6 @@ shinyAppServer <- function(input, output, session) {
     bubblePlotUI(id = "OGPL",
                  data = all_data$lipid_data_filter,
                  pattern = "^P(Et|Me)OH$")
-  })
-
-  # phospholipids
-  output$PL_UI <- renderUI({
-    req(all_data$lipid_data_filter,
-        all_data$lipid_data)
-
-    bubblePlotServer(id = "PL",
-                     data = reactive(all_data$lipid_data_filter),
-                     pattern = "^P[ACEGIS]$",
-                     lipid_data = reactive(all_data$lipid_data))
-
-    bubblePlotUI(id = "PL",
-                 data = all_data$lipid_data_filter,
-                 pattern = "^P[ACEGIS]$")
   })
 
   # Prenol lipids
