@@ -33,7 +33,6 @@ shinyAppServer <- function(input, output, session) {
 
   all_data <- reactiveValues(lipid_data = NULL,
                              lipid_data_long = NULL,
-                             lipid_data_long = NULL,
                              qc_results = NULL,
                              class_ion = NULL,
                              class_ion_selected = NULL,
