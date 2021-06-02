@@ -109,7 +109,7 @@ shinyAppServer <- function(input, output, session) {
     pattern_GL <- "^(Ox|Ether|SQ|EtherS|L)?[DMT]G"
     pattern_Cer <- "^Cer_"
     pattern_HexCer <- "^A?HexCer"
-    pattern_FA <- "^(FA|FAHFA|NAGly|NAGlySer|NAOrn|NAE|CAR)"
+    pattern_FA <- "^((Ox)?FA|FAHFA|NAGly|NAGlySer|NAOrn|NAE|CAR)"
     pattern_PSL <- "^(ASM|PE_Cer(\\+O)?|PI_Cer(\\+O)?|SM|SM\\+O)"
     pattern_SB <- "^(PhytoSph|SL|SL\\+O|DHSph|Sph)"
     pattern_SA <- "^(GM3|SHexCer|SHexCer\\+O)"
