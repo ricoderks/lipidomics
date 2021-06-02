@@ -315,7 +315,8 @@ shinyAppServer <- function(input, output, session) {
     bubblePlotServer(id = "FA",
                      data = reactive(all_data$lipid_data_filter),
                      pattern = "^(Ox)?FA$",
-                     lipid_data = reactive(all_data$lipid_data))
+                     lipid_data = reactive(all_data$lipid_data),
+                     title = input$navbar_selection)
 
     bubblePlotUI(id = "FA",
                  data = all_data$lipid_data_filter,
@@ -330,7 +331,8 @@ shinyAppServer <- function(input, output, session) {
     bubblePlotServer(id = "FAM",
                      data = reactive(all_data$lipid_data_filter),
                      pattern = "^(NAGly|NAGlySer|NAOrn|NAE)",
-                     lipid_data = reactive(all_data$lipid_data))
+                     lipid_data = reactive(all_data$lipid_data),
+                     title = input$navbar_selection)
 
     bubblePlotUI(id = "FAM",
                  data = all_data$lipid_data_filter,
@@ -345,7 +347,8 @@ shinyAppServer <- function(input, output, session) {
     bubblePlotServer(id = "FE",
                      data = reactive(all_data$lipid_data_filter),
                      pattern = "^(CAR|FAHFA)",
-                     lipid_data = reactive(all_data$lipid_data))
+                     lipid_data = reactive(all_data$lipid_data),
+                     title = input$navbar_selection)
 
     bubblePlotUI(id = "FE",
                  data = all_data$lipid_data_filter,
@@ -360,7 +363,8 @@ shinyAppServer <- function(input, output, session) {
     bubblePlotServer(id = "EPL",
                      data = reactive(all_data$lipid_data_filter),
                      pattern = "^EtherL?P[ACEGIS]$",
-                     lipid_data = reactive(all_data$lipid_data))
+                     lipid_data = reactive(all_data$lipid_data),
+                     title = input$navbar_selection)
 
     bubblePlotUI(id = "EPL",
                  data = all_data$lipid_data_filter,
@@ -375,7 +379,8 @@ shinyAppServer <- function(input, output, session) {
     bubblePlotServer(id = "EGL",
                      data = reactive(all_data$lipid_data_filter),
                      pattern = "^(Ether|Ox)[MDT]G$",
-                     lipid_data = reactive(all_data$lipid_data))
+                     lipid_data = reactive(all_data$lipid_data),
+                     title = input$navbar_selection)
 
       bubblePlotUI(id = "EGL",
                  data = all_data$lipid_data_filter,
@@ -390,7 +395,8 @@ shinyAppServer <- function(input, output, session) {
     bubblePlotServer(id = "GL",
                      data = reactive(all_data$lipid_data_filter),
                      pattern = "^[MDT]G$",
-                     lipid_data = reactive(all_data$lipid_data))
+                     lipid_data = reactive(all_data$lipid_data),
+                     title = input$navbar_selection)
 
     bubblePlotUI(id = "GL",
                  data = all_data$lipid_data_filter,
@@ -405,7 +411,8 @@ shinyAppServer <- function(input, output, session) {
     bubblePlotServer(id = "GLDG",
                      data = reactive(all_data$lipid_data_filter),
                      pattern = "^(Ether|EtherS)?[DMS][GQ]DG$",
-                     lipid_data = reactive(all_data$lipid_data))
+                     lipid_data = reactive(all_data$lipid_data),
+                     title = input$navbar_selection)
 
     bubblePlotUI(id = "GLDG",
                  data = all_data$lipid_data_filter,
@@ -420,7 +427,8 @@ shinyAppServer <- function(input, output, session) {
     bubblePlotServer(id = "OGL",
                      data = reactive(all_data$lipid_data_filter),
                      pattern = "^([AL]?DG(GA|CC|TS/A)|TG_EST)$",
-                     lipid_data = reactive(all_data$lipid_data))
+                     lipid_data = reactive(all_data$lipid_data),
+                     title = input$navbar_selection)
 
     bubblePlotUI(id = "OGL",
                  data = all_data$lipid_data_filter,
@@ -435,7 +443,8 @@ shinyAppServer <- function(input, output, session) {
     bubblePlotServer(id = "PA",
                      data = reactive(all_data$lipid_data_filter),
                      pattern = "^L?PA$",
-                     lipid_data = reactive(all_data$lipid_data))
+                     lipid_data = reactive(all_data$lipid_data),
+                     title = input$navbar_selection)
 
     bubblePlotUI(id = "PA",
                  data = all_data$lipid_data_filter,
@@ -450,7 +459,8 @@ shinyAppServer <- function(input, output, session) {
     bubblePlotServer(id = "PC",
                      data = reactive(all_data$lipid_data_filter),
                      pattern = "^(Ether)?L?PC$",
-                     lipid_data = reactive(all_data$lipid_data))
+                     lipid_data = reactive(all_data$lipid_data),
+                     title = input$navbar_selection)
 
     bubblePlotUI(id = "PC",
                  data = all_data$lipid_data_filter,
@@ -465,7 +475,8 @@ shinyAppServer <- function(input, output, session) {
     bubblePlotServer(id = "PE",
                      data = reactive(all_data$lipid_data_filter),
                      pattern = "^(LNA)?(Ether)?L?PE(\\(P\\))?$",
-                     lipid_data = reactive(all_data$lipid_data))
+                     lipid_data = reactive(all_data$lipid_data),
+                     title = input$navbar_selection)
 
     bubblePlotUI(id = "PE",
                  data = all_data$lipid_data_filter,
@@ -480,7 +491,8 @@ shinyAppServer <- function(input, output, session) {
     bubblePlotServer(id = "PG",
                      data = reactive(all_data$lipid_data_filter),
                      pattern = "^(H?BMP|(Ether)?L?PG)$",
-                     lipid_data = reactive(all_data$lipid_data))
+                     lipid_data = reactive(all_data$lipid_data),
+                     title = input$navbar_selection)
 
     bubblePlotUI(id = "PG",
                  data = all_data$lipid_data_filter,
@@ -495,7 +507,8 @@ shinyAppServer <- function(input, output, session) {
     bubblePlotServer(id = "CL",
                      data = reactive(all_data$lipid_data_filter),
                      pattern = "^([DM]L)?CL$",
-                     lipid_data = reactive(all_data$lipid_data))
+                     lipid_data = reactive(all_data$lipid_data),
+                     title = input$navbar_selection)
 
     bubblePlotUI(id = "CL",
                  data = all_data$lipid_data_filter,
@@ -510,7 +523,8 @@ shinyAppServer <- function(input, output, session) {
     bubblePlotServer(id = "AcPIM",
                      data = reactive(all_data$lipid_data_filter),
                      pattern = "^Ac[2-4]PIM[12]$",
-                     lipid_data = reactive(all_data$lipid_data))
+                     lipid_data = reactive(all_data$lipid_data),
+                     title = input$navbar_selection)
 
     bubblePlotUI(id = "AcPIM",
                  data = all_data$lipid_data_filter,
@@ -525,7 +539,8 @@ shinyAppServer <- function(input, output, session) {
     bubblePlotServer(id = "PI",
                      data = reactive(all_data$lipid_data_filter),
                      pattern = "^(Ether)?L?PI$",
-                     lipid_data = reactive(all_data$lipid_data))
+                     lipid_data = reactive(all_data$lipid_data),
+                     title = input$navbar_selection)
 
     bubblePlotUI(id = "PI",
                  data = all_data$lipid_data_filter,
@@ -540,7 +555,8 @@ shinyAppServer <- function(input, output, session) {
     bubblePlotServer(id = "PS",
                      data = reactive(all_data$lipid_data_filter),
                      pattern = "^(LNA)?(Ether)?L?PS$",
-                     lipid_data = reactive(all_data$lipid_data))
+                     lipid_data = reactive(all_data$lipid_data),
+                     title = input$navbar_selection)
 
     bubblePlotUI(id = "PS",
                  data = all_data$lipid_data_filter,
@@ -555,7 +571,8 @@ shinyAppServer <- function(input, output, session) {
     bubblePlotServer(id = "OPL",
                      data = reactive(all_data$lipid_data_filter),
                      pattern = "^OxP[ACEGIS]$",
-                     lipid_data = reactive(all_data$lipid_data))
+                     lipid_data = reactive(all_data$lipid_data),
+                     title = input$navbar_selection)
 
     bubblePlotUI(id = "OPL",
                  data = all_data$lipid_data_filter,
@@ -570,7 +587,8 @@ shinyAppServer <- function(input, output, session) {
     bubblePlotServer(id = "OGPL",
                      data = reactive(all_data$lipid_data_filter),
                      pattern = "^P(Et|Me)OH$",
-                     lipid_data = reactive(all_data$lipid_data))
+                     lipid_data = reactive(all_data$lipid_data),
+                     title = input$navbar_selection)
 
     bubblePlotUI(id = "OGPL",
                  data = all_data$lipid_data_filter,
@@ -585,7 +603,8 @@ shinyAppServer <- function(input, output, session) {
     bubblePlotServer(id = "PRL",
                      data = reactive(all_data$lipid_data_filter),
                      pattern = "^(VAE|CoQ|VitaminE)$",
-                     lipid_data = reactive(all_data$lipid_data))
+                     lipid_data = reactive(all_data$lipid_data),
+                     title = input$navbar_selection)
 
     bubblePlotUI(id = "PRL",
                  data = all_data$lipid_data_filter,
@@ -600,7 +619,8 @@ shinyAppServer <- function(input, output, session) {
     bubblePlotServer(id = "AcGL",
                      data = reactive(all_data$lipid_data_filter),
                      pattern = "^(GM3|SHexCer(\\+O)?)$",
-                     lipid_data = reactive(all_data$lipid_data))
+                     lipid_data = reactive(all_data$lipid_data),
+                     title = input$navbar_selection)
 
     bubblePlotUI(id = "AcGL",
                  data = all_data$lipid_data_filter,
@@ -615,7 +635,8 @@ shinyAppServer <- function(input, output, session) {
     bubblePlotServer(id = "Cer",
                      data = reactive(all_data$lipid_data_filter),
                      pattern = "^Cer_",
-                     lipid_data = reactive(all_data$lipid_data))
+                     lipid_data = reactive(all_data$lipid_data),
+                     title = input$navbar_selection)
 
     bubblePlotUI(id = "Cer",
                  data = all_data$lipid_data_filter,
@@ -630,7 +651,8 @@ shinyAppServer <- function(input, output, session) {
     bubblePlotServer(id = "PSL",
                      data = reactive(all_data$lipid_data_filter),
                      pattern = "^(ASM|PE_Cer(\\+O)?|PI_Cer(\\+O)?|SM|SM\\+O)",
-                     lipid_data = reactive(all_data$lipid_data))
+                     lipid_data = reactive(all_data$lipid_data),
+                     title = input$navbar_selection)
 
     bubblePlotUI(id = "PSL",
                  data = all_data$lipid_data_filter,
@@ -645,7 +667,8 @@ shinyAppServer <- function(input, output, session) {
     bubblePlotServer(id = "NPSL",
                      data = reactive(all_data$lipid_data_filter),
                      pattern = "^A?HexCer",
-                     lipid_data = reactive(all_data$lipid_data))
+                     lipid_data = reactive(all_data$lipid_data),
+                     title = input$navbar_selection)
 
     bubblePlotUI(id = "NPSL",
                  data = all_data$lipid_data_filter,
@@ -660,7 +683,8 @@ shinyAppServer <- function(input, output, session) {
     bubblePlotServer(id = "SB",
                      data = reactive(all_data$lipid_data_filter),
                      pattern = "^((Phyto|DH)?Sph|SL(\\+O)?)$",
-                     lipid_data = reactive(all_data$lipid_data))
+                     lipid_data = reactive(all_data$lipid_data),
+                     title = input$navbar_selection)
 
     bubblePlotUI(id = "SB",
                  data = all_data$lipid_data_filter,
@@ -675,7 +699,8 @@ shinyAppServer <- function(input, output, session) {
     bubblePlotServer(id = "BA",
                      data = reactive(all_data$lipid_data_filter),
                      pattern = "^(BASulfate|BileAcid|DCAE)$",
-                     lipid_data = reactive(all_data$lipid_data))
+                     lipid_data = reactive(all_data$lipid_data),
+                     title = input$navbar_selection)
 
     bubblePlotUI(id = "BA",
                  data = all_data$lipid_data_filter,
@@ -690,7 +715,8 @@ shinyAppServer <- function(input, output, session) {
     bubblePlotServer(id = "SC",
                      data = reactive(all_data$lipid_data_filter),
                      pattern = "^VitaminD$",
-                     lipid_data = reactive(all_data$lipid_data))
+                     lipid_data = reactive(all_data$lipid_data),
+                     title = input$navbar_selection)
 
     bubblePlotUI(id = "SC",
                  data = all_data$lipid_data_filter,
@@ -705,7 +731,8 @@ shinyAppServer <- function(input, output, session) {
     bubblePlotServer(id = "STC",
                      data = reactive(all_data$lipid_data_filter),
                      pattern = "^SSulfate$",
-                     lipid_data = reactive(all_data$lipid_data))
+                     lipid_data = reactive(all_data$lipid_data),
+                     title = input$navbar_selection)
 
     bubblePlotUI(id = "STC",
                  data = all_data$lipid_data_filter,
@@ -720,7 +747,8 @@ shinyAppServer <- function(input, output, session) {
     bubblePlotServer(id = "ST",
                      data = reactive(all_data$lipid_data_filter),
                      pattern = "^((BR|CA|SI|ST)?[CS]E|Cholesterol|SHex)$",
-                     lipid_data = reactive(all_data$lipid_data))
+                     lipid_data = reactive(all_data$lipid_data),
+                     title = input$navbar_selection)
 
     bubblePlotUI(id = "ST",
                  data = all_data$lipid_data_filter,
@@ -735,7 +763,8 @@ shinyAppServer <- function(input, output, session) {
     bubblePlotServer(id = "OST",
                      data = reactive(all_data$lipid_data_filter),
                      pattern = "^AHex(CAS|CS|SIS|BRS|STS)$",
-                     lipid_data = reactive(all_data$lipid_data))
+                     lipid_data = reactive(all_data$lipid_data),
+                     title = input$navbar_selection)
 
     bubblePlotUI(id = "OST",
                  data = all_data$lipid_data_filter,

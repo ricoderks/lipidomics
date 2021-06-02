@@ -6,6 +6,7 @@
 
 # create the shiny application user interface
 shinyAppUI <- navbarPage(title = "CPM - Lipidomics",
+                         id = "navbar_selection",
                          # tabPanel Files
                          tabPanel(title = "Files",
                                   fluidPage(
@@ -74,7 +75,7 @@ shinyAppUI <- navbarPage(title = "CPM - Lipidomics",
                          # navbarMenu identification
                          navbarMenu(title = "Identification",
                                     "Fatty acyls",
-                                    tabPanel(title = "Fatty acids",
+                                    tabPanel(title = "Fatty acids and conjugates",
                                              uiOutput(outputId = "FA_UI")
                                     ),
                                     tabPanel(title = "Fatty amides",

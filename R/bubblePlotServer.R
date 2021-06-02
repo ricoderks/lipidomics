@@ -6,23 +6,24 @@
 #' @param data data which is used to make the plot.
 #' @param pattern regular expression pattern to select the correct lipid classes.
 #' @param lipid_data the wide data frame.
+#' @param title is the title use on top of the indentication page
 #'
 #' @return a part of the server
 #'
-#' @importFrom shiny moduleServer renderPlot reactive observe observeEvent nearPoints
+#' @import shiny
 #' @importFrom magrittr %>%
 #' @importFrom dplyr filter select transmute if_else
 #' @importFrom tidyr unnest separate
 #' @importFrom stringr str_split
 #' @importFrom rlang .data
-#' @importFrom ggplot2 ggplot aes geom_point scale_size geom_line geom_text facet_grid labs guides coord_cartesian geom_linerange scale_y_continuous theme_minimal
+#' @importFrom ggplot2 ggplot aes geom_point scale_size geom_line geom_text facet_grid labs guides coord_cartesian geom_linerange scale_y_continuous theme_minimal theme element_text
 #' @importFrom ggrepel geom_text_repel
 #' @importFrom scales scientific
 #' @importFrom ggCPM theme_cpm
 #'
 #' @author Rico Derks
 #'
-bubblePlotServer <- function(id, data, pattern, lipid_data) {
+bubblePlotServer <- function(id, data, pattern, lipid_data, title) {
   moduleServer(
     id = id,
     module = function(input, output, session) {
@@ -30,6 +31,13 @@ bubblePlotServer <- function(id, data, pattern, lipid_data) {
                                y = NULL)
 
       data <- reactiveValues(selected_data = NULL)
+
+      # show which identification tab is selected
+      output$show_tab_id_ui <- renderUI({
+        tagList(
+          h3(title)
+        )
+      })
 
       # zoom out
       observeEvent(input$bubble_dbl, {
@@ -81,7 +89,8 @@ bubblePlotServer <- function(id, data, pattern, lipid_data) {
                  size = FALSE) +
           coord_cartesian(xlim = ranges$x,
                           ylim = ranges$y) +
-          theme_cpm()
+          theme_cpm() +
+          theme(strip.text = element_text(size = 10))
       })
 
       # show the row clicked
@@ -92,8 +101,12 @@ bubblePlotServer <- function(id, data, pattern, lipid_data) {
                                          yvar = "AverageMZ",
                                          threshold = 10)
 
-        data$selected_data %>%
-          select(.data$my_id:.data$polarity, -.data$scale_DotProduct, -.data$scale_RevDotProduct)
+        if(nrow(data$selected_data) > 0) {
+          data$selected_data %>%
+            select(.data$my_id:.data$polarity, -.data$scale_DotProduct, -.data$scale_RevDotProduct)
+        } else {
+          return(NULL)
+        }
       })
 
       output$msms_cutoff_ui <- renderUI({

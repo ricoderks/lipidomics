@@ -33,7 +33,9 @@ bubblePlotUI <- function(id, data, pattern) {
     # show the selected point
     fluidRow(
       column(width = 12,
+             uiOutput(outputId = ns("show_tab_id_ui")),
              tableOutput(outputId = ns("info")))
+             # div(style = "height:250px"))
     ),
     # show the bubble plot
     fluidRow(

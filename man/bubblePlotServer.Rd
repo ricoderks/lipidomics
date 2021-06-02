@@ -4,7 +4,7 @@
 \alias{bubblePlotServer}
 \title{Create bubble plot server part}
 \usage{
-bubblePlotServer(id, data, pattern, lipid_data)
+bubblePlotServer(id, data, pattern, lipid_data, title)
 }
 \arguments{
 \item{id}{input id}
@@ -14,6 +14,8 @@ bubblePlotServer(id, data, pattern, lipid_data)
 \item{pattern}{regular expression pattern to select the correct lipid classes.}
 
 \item{lipid_data}{the wide data frame.}
+
+\item{title}{is the title use on top of the indentication page}
 }
 \value{
 a part of the server
