@@ -30,7 +30,18 @@ bubblePlotServer <- function(id, data, pattern, lipid_data, title) {
       ranges <- reactiveValues(x = NULL,
                                y = NULL)
 
-      data <- reactiveValues(selected_data = NULL)
+      data <- reactiveValues(selected_data = NULL,
+                             filter_data = NULL)
+
+      # store all lipid data in filter_data
+      data$filter_data <- tibble(my_id = lipid_data()$my_id,
+                                 keep = TRUE,
+                                 comment = NA_character_)
+
+      # this just for debugging -> can be removed
+      output$my_debug <- renderTable({
+        data$filter_data
+      })
 
       # show which identification tab is selected
       output$show_tab_id_ui <- renderUI({
@@ -63,7 +74,6 @@ bubblePlotServer <- function(id, data, pattern, lipid_data, title) {
       })
 
       # bubble plot
-
       output$bubble <- renderPlot({
         data() %>%
           filter(grepl(x = .data$sample_name,
@@ -91,6 +101,36 @@ bubblePlotServer <- function(id, data, pattern, lipid_data, title) {
                           ylim = ranges$y) +
           theme_cpm() +
           theme(strip.text = element_text(size = 10))
+      })
+
+      # show which datapoint is clicked
+      output$info_ui <- renderUI({
+
+
+        tagList(
+            column(width = 8,
+                   tableOutput(outputId = session$ns("info")))
+          )
+      })
+
+      # show the selection for the reasons
+      output$reason_ui <- renderUI({
+        req(data$selected_data)
+
+        tagList(
+          column(width = 4,
+                 if(nrow(data$selected_data) == 1) {
+                   selectInput(inputId = session$ns("select_reason"),
+                               label = "Keep:",
+                               choices = c("Keep" = "keep",
+                                           "No convincing match" = "no_match",
+                                           "Incorrect ret. time" = "wrong_rt"),
+                               selected = "keep")
+                 } else {
+                   NULL
+                 }
+          )
+        )
       })
 
       # show the row clicked

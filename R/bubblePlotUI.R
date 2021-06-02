@@ -33,9 +33,16 @@ bubblePlotUI <- function(id, data, pattern) {
     # show the selected point
     fluidRow(
       column(width = 12,
-             uiOutput(outputId = ns("show_tab_id_ui")),
-             tableOutput(outputId = ns("info")))
+             uiOutput(outputId = ns("show_tab_id_ui")))
+             # tableOutput(outputId = ns("info")))
              # div(style = "height:250px"))
+    ),
+    # show table with info about point clicked
+    fluidRow(
+      # table
+      uiOutput(outputId = ns("info_ui")),
+      # reason selection
+      uiOutput(outputId = ns("reason_ui"))
     ),
     # show the bubble plot
     fluidRow(
@@ -49,7 +56,8 @@ bubblePlotUI <- function(id, data, pattern) {
                           resetOnNew = TRUE
                         ),
                         dblclick = ns("bubble_dbl"),
-                        click = ns("bubble_clk"))
+                        click = ns("bubble_clk")),
+             tableOutput(outputId = ns("my_debug"))
       ),
       column(width = 4,
              plotOutput(outputId = ns("msms_clicked")),
