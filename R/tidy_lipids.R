@@ -30,7 +30,7 @@ tidy_lipids <- function(df) {
                           labels = sort(unique(.data$LipidClass))),
       # get the short lipid name
       ShortLipidName = str_extract(string = .data$LipidName,
-                                   pattern = "[A-Za-z- 0-9:;/]+"),
+                                   pattern = "[A-Za-z- 0-9:;/\\(\\)]+"),
       # get the long lipid name
       LongLipidName = str_replace(string = .data$LipidName,
                                   pattern = "([A-Za-z-_ 0-9:;/]*)([|])([A-Za-z-_ 0-9:;]*)",
