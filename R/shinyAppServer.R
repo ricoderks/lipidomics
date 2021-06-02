@@ -38,6 +38,15 @@ shinyAppServer <- function(input, output, session) {
                              class_ion_selected = NULL,
                              num_lipid_classes = NULL)
 
+  filter_data <- reactive({
+    req(all_data$lipid_data)
+
+    tibble(my_id = all_data$lipid_data %>%
+             select(my_id),
+           keep = TRUE,
+           comment = NA_character_)
+  })
+
   #### Read the files ####
   # watch the positive mode file
   observe({
@@ -667,7 +676,8 @@ shinyAppServer <- function(input, output, session) {
                      data = reactive(all_data$lipid_data_filter),
                      pattern = "^A?Hex[23]?Cer",
                      lipid_data = reactive(all_data$lipid_data),
-                     title = input$navbar_selection)
+                     title = input$navbar_selection,
+                     filter_data = filter_data())
 
     bubblePlotUI(id = "NPSL",
                  data = all_data$lipid_data_filter,
