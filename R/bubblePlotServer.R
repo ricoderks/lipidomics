@@ -32,6 +32,10 @@ bubblePlotServer <- function(id, data, pattern, lipid_data, title) {
 
       data <- reactiveValues(selected_data = NULL)
 
+      toReturn <- reactiveValues(filter_data = tibble(my_id = character(),
+                                                      keep = logical(),
+                                                      comment = character()))
+
       # show which identification tab is selected
       output$show_tab_id_ui <- renderUI({
         tagList(
@@ -121,6 +125,14 @@ bubblePlotServer <- function(id, data, pattern, lipid_data, title) {
         )
       })
 
+      observeEvent(input$select_reason, {
+        req(data$selected_data)
+
+        toReturn$filter_data <- lipid_data() %>%
+          filter(.data$my_id == data$selected_data$my_id) %>%
+          select(.data$my_id, .data$keep, .data$comment)
+      })
+
       # show the row clicked
       output$info <- renderTable({
         data$selected_data <- nearPoints(df = lipid_data(),
@@ -191,6 +203,8 @@ bubblePlotServer <- function(id, data, pattern, lipid_data, title) {
         }
 
       })
+
+      return(reactive({toReturn}))
     }
   )
 }

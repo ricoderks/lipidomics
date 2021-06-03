@@ -67,7 +67,9 @@ shinyAppServer <- function(input, output, session) {
     results <- select_identified(results) %>%
       arrange(.data$LipidClass, .data$LipidName, .data$polarity)
 
-    all_data$lipid_data <- results
+    all_data$lipid_data <- results %>%
+      mutate(keep = TRUE,
+             comment = NA_character_)
   })
 
   # show the raw data
@@ -195,6 +197,11 @@ shinyAppServer <- function(input, output, session) {
   #   all_data$class_ion_selected
   # })
 
+  output$debug <- renderTable({
+    req(filter_result)
+    filter_result()$filter_data
+  })
+
   #### Calculate the RSD values of the QCpool ####
   # show the histogram of all lipids
   output$rsd_all <- renderPlot({
@@ -306,16 +313,16 @@ shinyAppServer <- function(input, output, session) {
       filter(.data$class_ion %in% all_data$class_ion_selected)
   })
 
+  filter_result <- bubblePlotServer(id = "FA",
+                                    data = reactive(all_data$lipid_data_filter),
+                                    pattern = "^(Ox)?FA$",
+                                    lipid_data = reactive(all_data$lipid_data),
+                                    title = input$navbar_selection)
+
   # Fatty acids and conjugates
   output$FA_UI <- renderUI({
     req(all_data$lipid_data_filter,
         all_data$lipid_data)
-
-    bubblePlotServer(id = "FA",
-                     data = reactive(all_data$lipid_data_filter),
-                     pattern = "^(Ox)?FA$",
-                     lipid_data = reactive(all_data$lipid_data),
-                     title = input$navbar_selection)
 
     bubblePlotUI(id = "FA",
                  data = all_data$lipid_data_filter,
