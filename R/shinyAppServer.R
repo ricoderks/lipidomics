@@ -105,7 +105,7 @@ shinyAppServer <- function(input, output, session) {
 
     # regular expression patterns
     pattern_PL <- "^((Ox)?(Ether)?(L)?(LNA)?(MM)?P[ACEGISM]|HBMP|BMP)"
-    pattern_GL <- "^(Ox|Ether|SQ|EtherS|L)?[DMT]G"
+    pattern_GL <- "^(Ox|Ether|SQ|EtherS|L|A)?[DMT]G"
     pattern_Cer <- "^Cer_"
     pattern_HexCer <- "^A?Hex[23]?Cer"
     pattern_FA <- "^((Ox)?FA|FAHFA|NAGly|NAGlySer|NAOrn|NAE|CAR)"
