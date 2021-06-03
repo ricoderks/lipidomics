@@ -56,8 +56,7 @@ bubblePlotUI <- function(id, data, pattern) {
                           resetOnNew = TRUE
                         ),
                         dblclick = ns("bubble_dbl"),
-                        click = ns("bubble_clk")),
-             tableOutput(outputId = ns("my_debug"))
+                        click = ns("bubble_clk"))
       ),
       column(width = 4,
              plotOutput(outputId = ns("msms_clicked")),

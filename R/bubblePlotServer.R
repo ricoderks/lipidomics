@@ -7,7 +7,6 @@
 #' @param pattern regular expression pattern to select the correct lipid classes.
 #' @param lipid_data the wide data frame.
 #' @param title is the title use on top of the indentication page
-#' @param filter_data data frame which will contain the information about which lipid needs to be removed and why
 #'
 #' @return a part of the server
 #'
@@ -24,7 +23,7 @@
 #'
 #' @author Rico Derks
 #'
-bubblePlotServer <- function(id, data, pattern, lipid_data, title, filter_data) {
+bubblePlotServer <- function(id, data, pattern, lipid_data, title) {
   moduleServer(
     id = id,
     module = function(input, output, session) {
@@ -32,19 +31,6 @@ bubblePlotServer <- function(id, data, pattern, lipid_data, title, filter_data) 
                                y = NULL)
 
       data <- reactiveValues(selected_data = NULL)
-
-      my_filter <- reactiveValues(filter_data = filter_data)
-
-      # # store all lipid data in filter_data
-      # data$filter_data <- tibble(my_id = lipid_data()$my_id,
-      #                            keep = TRUE,
-      #                            comment = NA_character_)
-
-      # this just for debugging -> can be removed
-      output$my_debug <- renderTable({
-
-        my_filter$filter_data
-      })
 
       # show which identification tab is selected
       output$show_tab_id_ui <- renderUI({
@@ -110,7 +96,7 @@ bubblePlotServer <- function(id, data, pattern, lipid_data, title, filter_data) 
       output$info_ui <- renderUI({
 
         tagList(
-          column(width = 8,
+          column(width = 9,
                  tableOutput(outputId = session$ns("info")))
         )
       })
@@ -120,7 +106,7 @@ bubblePlotServer <- function(id, data, pattern, lipid_data, title, filter_data) 
         req(data$selected_data)
 
         tagList(
-          column(width = 4,
+          column(width = 3,
                  if(nrow(data$selected_data) == 1) {
                    selectInput(inputId = session$ns("select_reason"),
                                label = "Keep:",
@@ -133,15 +119,6 @@ bubblePlotServer <- function(id, data, pattern, lipid_data, title, filter_data) 
                  }
           )
         )
-      })
-
-      observeEvent(input$select_reason, {
-        req(data$selected_data)
-
-        my_filter$filter_data <- my_filter$filter_data %>%
-          mutate(comment = if_else(.data$my_id == data$selected_data$my_id,
-                                   input$select_reason,
-                                   .data$comment))
       })
 
       # show the row clicked
