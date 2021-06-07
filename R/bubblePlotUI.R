@@ -34,8 +34,8 @@ bubblePlotUI <- function(id, data, pattern) {
     fluidRow(
       column(width = 12,
              uiOutput(outputId = ns("show_tab_id_ui")))
-             # tableOutput(outputId = ns("info")))
-             # div(style = "height:250px"))
+      # tableOutput(outputId = ns("info")))
+      # div(style = "height:250px"))
     ),
     # show table with info about point clicked
     fluidRow(

@@ -32,6 +32,10 @@ bubblePlotServer <- function(id, data, pattern, lipid_data, title) {
 
       data <- reactiveValues(selected_data = NULL)
 
+      toReturn <- reactiveValues(filter_data = tibble(my_id = character(),
+                                                      keep = logical(),
+                                                      comment = character()))
+
       # show which identification tab is selected
       output$show_tab_id_ui <- renderUI({
         tagList(
@@ -105,6 +109,18 @@ bubblePlotServer <- function(id, data, pattern, lipid_data, title) {
       output$reason_ui <- renderUI({
         req(data$selected_data)
 
+        if(nrow(data$selected_data) == 1) {
+          # get the current lipid status
+          lipid_status <- lipid_data() %>%
+            filter(.data$my_id == data$selected_data$my_id) %>%
+            pull(comment)
+
+          # keep doesn't showup in the comments this is NA_character_
+          if(is.na(lipid_status)) {
+            lipid_status <- "keep"
+          }
+        }
+
         tagList(
           column(width = 3,
                  if(nrow(data$selected_data) == 1) {
@@ -113,13 +129,28 @@ bubblePlotServer <- function(id, data, pattern, lipid_data, title) {
                                choices = c("Keep" = "keep",
                                            "No convincing match" = "no_match",
                                            "Incorrect ret. time" = "wrong_rt"),
-                               selected = "keep")
+                               selected = lipid_status)
                  } else {
                    NULL
                  }
           )
         )
       })
+
+      observeEvent(input$select_reason, {
+        req(data$selected_data)
+
+        toReturn$filter_data <- lipid_data() %>%
+          filter(.data$my_id == data$selected_data$my_id) %>%
+          select(.data$my_id, .data$keep, .data$comment) %>%
+          mutate(keep = if_else(input$select_reason == "keep",
+                                TRUE,
+                                FALSE),
+                 comment = if_else(input$select_reason == "keep",
+                                   NA_character_,
+                                   input$select_reason))
+      },
+      ignoreInit = TRUE) # doesn't seem to work
 
       # show the row clicked
       output$info <- renderTable({
@@ -191,6 +222,8 @@ bubblePlotServer <- function(id, data, pattern, lipid_data, title) {
         }
 
       })
+
+      return(reactive({toReturn}))
     }
   )
 }
