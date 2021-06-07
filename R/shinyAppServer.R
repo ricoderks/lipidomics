@@ -63,10 +63,11 @@ shinyAppServer <- function(input, output, session) {
     # cleanup some column names
     results <- clean_up(df = results)
 
-    # keep only the identified lipids and sort by lipidclass, lipid
+    # keep only the identified lipids and sort by lipid class, lipid
     results <- select_identified(results) %>%
       arrange(.data$LipidClass, .data$LipidName, .data$polarity)
 
+    # add some extra columns for lipid selection
     all_data$lipid_data <- results %>%
       mutate(keep = TRUE,
              comment = NA_character_)

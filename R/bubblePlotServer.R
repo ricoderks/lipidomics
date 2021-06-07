@@ -109,6 +109,18 @@ bubblePlotServer <- function(id, data, pattern, lipid_data, title) {
       output$reason_ui <- renderUI({
         req(data$selected_data)
 
+        if(nrow(data$selected_data) == 1) {
+          # get the current lipid status
+          lipid_status <- lipid_data() %>%
+            filter(.data$my_id == data$selected_data$my_id) %>%
+            pull(comment)
+
+          # keep doesn't showup in the comments this is NA_character_
+          if(is.na(lipid_status)) {
+            lipid_status <- "keep"
+          }
+        }
+
         tagList(
           column(width = 3,
                  if(nrow(data$selected_data) == 1) {
@@ -117,7 +129,7 @@ bubblePlotServer <- function(id, data, pattern, lipid_data, title) {
                                choices = c("Keep" = "keep",
                                            "No convincing match" = "no_match",
                                            "Incorrect ret. time" = "wrong_rt"),
-                               selected = "keep")
+                               selected = lipid_status)
                  } else {
                    NULL
                  }
