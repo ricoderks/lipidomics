@@ -142,8 +142,15 @@ bubblePlotServer <- function(id, data, pattern, lipid_data, title) {
 
         toReturn$filter_data <- lipid_data() %>%
           filter(.data$my_id == data$selected_data$my_id) %>%
-          select(.data$my_id, .data$keep, .data$comment)
-      })
+          select(.data$my_id, .data$keep, .data$comment) %>%
+          mutate(keep = if_else(input$select_reason == "keep",
+                                TRUE,
+                                FALSE),
+                 comment = if_else(input$select_reason == "keep",
+                                   NA_character_,
+                                   input$select_reason))
+      },
+      ignoreInit = TRUE) # doesn't seem to work
 
       # show the row clicked
       output$info <- renderTable({
