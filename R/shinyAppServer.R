@@ -191,18 +191,6 @@ shinyAppServer <- function(input, output, session) {
     )
   })
 
-  # for debugging: check which lipid classes / ions are selected
-  # output$lipid_classes <- renderText({
-  #   req(all_data$class_ion_selected)
-  #
-  #   all_data$class_ion_selected
-  # })
-
-  output$debug <- renderTable({
-    req(filter_result)
-    filter_result()$filter_data
-  })
-
   #### Calculate the RSD values of the QCpool ####
   # show the histogram of all lipids
   output$rsd_all <- renderPlot({
@@ -781,5 +769,17 @@ shinyAppServer <- function(input, output, session) {
   #### About / Help  section ####
   output$about_session <- renderPrint({
     session_info()
+  })
+
+  # for debugging: check which lipid classes / ions are selected
+  # output$lipid_classes <- renderText({
+  #   req(all_data$class_ion_selected)
+  #
+  #   all_data$class_ion_selected
+  # })
+
+  output$debug <- renderTable({
+    req(filter_result)
+    filter_result()$filter_data
   })
 }
