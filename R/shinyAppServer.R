@@ -374,30 +374,6 @@ shinyAppServer <- function(input, output, session) {
   })
   ###
 
-  ### Ether phospholipids
-  # filter_EPL <- bubblePlotServer(id = "EPL",
-  #                                data = reactive(all_data$lipid_data_filter),
-  #                                pattern = "^EtherL?P[ACEGIS]$",
-  #                                lipid_data = reactive(all_data$lipid_data),
-  #                                title = input$navbar_selection)
-  #
-  # output$EPL_UI <- renderUI({
-  #   req(all_data$lipid_data_filter,
-  #       all_data$lipid_data)
-  #
-  #   bubblePlotUI(id = "EPL",
-  #                data = all_data$lipid_data_filter,
-  #                pattern = "^EtherL?P[ACEGIS]$")
-  # })
-  #
-  # observe({
-  #   req(filter_EPL)
-  #
-  #   all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_EPL()$filter_data$my_id] <- filter_EPL()$filter_data$keep
-  #   all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_EPL()$filter_data$my_id] <- filter_EPL()$filter_data$comment
-  # })
-  ###
-
   ### Ether glycerolipids
   filter_EGL <- bubblePlotServer(id = "EGL",
                                  data = reactive(all_data$lipid_data_filter),
@@ -494,165 +470,245 @@ shinyAppServer <- function(input, output, session) {
   })
   ###
 
-  # Glycerophosphates
+  ### Glycerophosphates
+  filter_PA <- bubblePlotServer(id = "PA",
+                                data = reactive(all_data$lipid_data_filter),
+                                pattern = "^L?PA$",
+                                lipid_data = reactive(all_data$lipid_data),
+                                title = input$navbar_selection)
+
   output$PA_UI <- renderUI({
     req(all_data$lipid_data_filter,
         all_data$lipid_data)
-
-    bubblePlotServer(id = "PA",
-                     data = reactive(all_data$lipid_data_filter),
-                     pattern = "^L?PA$",
-                     lipid_data = reactive(all_data$lipid_data),
-                     title = input$navbar_selection)
 
     bubblePlotUI(id = "PA",
                  data = all_data$lipid_data_filter,
                  pattern = "^L?PA$")
   })
 
-  # Glycerophosphocholines
+  observe({
+    req(filter_PA)
+
+    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_PA()$filter_data$my_id] <- filter_PA()$filter_data$keep
+    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_PA()$filter_data$my_id] <- filter_PA()$filter_data$comment
+  })
+  ###
+
+  ### Glycerophosphocholines
+  filter_PC <- bubblePlotServer(id = "PC",
+                                data = reactive(all_data$lipid_data_filter),
+                                pattern = "^(Ether)?L?PC$",
+                                lipid_data = reactive(all_data$lipid_data),
+                                title = input$navbar_selection)
+
   output$PC_UI <- renderUI({
     req(all_data$lipid_data_filter,
         all_data$lipid_data)
-
-    bubblePlotServer(id = "PC",
-                     data = reactive(all_data$lipid_data_filter),
-                     pattern = "^(Ether)?L?PC$",
-                     lipid_data = reactive(all_data$lipid_data),
-                     title = input$navbar_selection)
 
     bubblePlotUI(id = "PC",
                  data = all_data$lipid_data_filter,
                  pattern = "^(Ether)?L?PC$")
   })
 
-  # Glycerophosphocholines
+  observe({
+    req(filter_PC)
+
+    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_PC()$filter_data$my_id] <- filter_PC()$filter_data$keep
+    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_PC()$filter_data$my_id] <- filter_PC()$filter_data$comment
+  })
+  ###
+
+  ### Glycerophosphocholines
+  filter_PE <- bubblePlotServer(id = "PE",
+                                data = reactive(all_data$lipid_data_filter),
+                                pattern = "^(LNA)?(Ether)?L?PE(\\(P\\))?$",
+                                lipid_data = reactive(all_data$lipid_data),
+                                title = input$navbar_selection)
+
   output$PE_UI <- renderUI({
     req(all_data$lipid_data_filter,
         all_data$lipid_data)
-
-    bubblePlotServer(id = "PE",
-                     data = reactive(all_data$lipid_data_filter),
-                     pattern = "^(LNA)?(Ether)?L?PE(\\(P\\))?$",
-                     lipid_data = reactive(all_data$lipid_data),
-                     title = input$navbar_selection)
 
     bubblePlotUI(id = "PE",
                  data = all_data$lipid_data_filter,
                  pattern = "^(LNA)?(Ether)?L?PE(\\(P\\))?$")
   })
 
-  # Glycerophosphoglycerols
+  observe({
+    req(filter_PE)
+
+    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_PE()$filter_data$my_id] <- filter_PE()$filter_data$keep
+    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_PE()$filter_data$my_id] <- filter_PE()$filter_data$comment
+  })
+  ###
+
+  ### Glycerophosphoglycerols
+  filter_PG <- bubblePlotServer(id = "PG",
+                                data = reactive(all_data$lipid_data_filter),
+                                pattern = "^(H?BMP|(Ether)?L?PG)$",
+                                lipid_data = reactive(all_data$lipid_data),
+                                title = input$navbar_selection)
+
   output$PG_UI <- renderUI({
     req(all_data$lipid_data_filter,
         all_data$lipid_data)
-
-    bubblePlotServer(id = "PG",
-                     data = reactive(all_data$lipid_data_filter),
-                     pattern = "^(H?BMP|(Ether)?L?PG)$",
-                     lipid_data = reactive(all_data$lipid_data),
-                     title = input$navbar_selection)
 
     bubblePlotUI(id = "PG",
                  data = all_data$lipid_data_filter,
                  pattern = "^(H?BMP|(Ether)?L?PG)$")
   })
 
-  # Glycerophosphoglycerophosphoglycerols (CL)
+  observe({
+    req(filter_PG)
+
+    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_PG()$filter_data$my_id] <- filter_PG()$filter_data$keep
+    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_PG()$filter_data$my_id] <- filter_PG()$filter_data$comment
+  })
+  ###
+
+  ### Glycerophosphoglycerophosphoglycerols (CL)
+  filter_CL <- bubblePlotServer(id = "CL",
+                                data = reactive(all_data$lipid_data_filter),
+                                pattern = "^([DM]L)?CL$",
+                                lipid_data = reactive(all_data$lipid_data),
+                                title = input$navbar_selection)
+
   output$CL_UI <- renderUI({
     req(all_data$lipid_data_filter,
         all_data$lipid_data)
-
-    bubblePlotServer(id = "CL",
-                     data = reactive(all_data$lipid_data_filter),
-                     pattern = "^([DM]L)?CL$",
-                     lipid_data = reactive(all_data$lipid_data),
-                     title = input$navbar_selection)
 
     bubblePlotUI(id = "CL",
                  data = all_data$lipid_data_filter,
                  pattern = "^([DM]L)?CL$")
   })
 
-  # Glycerophosphoinositolglycans
+  observe({
+    req(filter_CL)
+
+    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_CL()$filter_data$my_id] <- filter_CL()$filter_data$keep
+    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_CL()$filter_data$my_id] <- filter_CL()$filter_data$comment
+  })
+  ###
+
+  ### Glycerophosphoinositolglycans
+  filter_AcPIM <- bubblePlotServer(id = "AcPIM",
+                                   data = reactive(all_data$lipid_data_filter),
+                                   pattern = "^Ac[2-4]PIM[12]$",
+                                   lipid_data = reactive(all_data$lipid_data),
+                                   title = input$navbar_selection)
+
   output$AcPIM_UI <- renderUI({
     req(all_data$lipid_data_filter,
         all_data$lipid_data)
-
-    bubblePlotServer(id = "AcPIM",
-                     data = reactive(all_data$lipid_data_filter),
-                     pattern = "^Ac[2-4]PIM[12]$",
-                     lipid_data = reactive(all_data$lipid_data),
-                     title = input$navbar_selection)
 
     bubblePlotUI(id = "AcPIM",
                  data = all_data$lipid_data_filter,
                  pattern = "^Ac[2-4]PIM[12]$")
   })
 
-  # Glycerophosphoglycerols
+  observe({
+    req(filter_AcPIM)
+
+    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_AcPIM()$filter_data$my_id] <- filter_AcPIM()$filter_data$keep
+    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_AcPIM()$filter_data$my_id] <- filter_AcPIM()$filter_data$comment
+  })
+  ###
+
+  ### Glycerophosphoglycerols
+  filter_PI <- bubblePlotServer(id = "PI",
+                                data = reactive(all_data$lipid_data_filter),
+                                pattern = "^(Ether)?L?PI$",
+                                lipid_data = reactive(all_data$lipid_data),
+                                title = input$navbar_selection)
+
   output$PI_UI <- renderUI({
     req(all_data$lipid_data_filter,
         all_data$lipid_data)
-
-    bubblePlotServer(id = "PI",
-                     data = reactive(all_data$lipid_data_filter),
-                     pattern = "^(Ether)?L?PI$",
-                     lipid_data = reactive(all_data$lipid_data),
-                     title = input$navbar_selection)
 
     bubblePlotUI(id = "PI",
                  data = all_data$lipid_data_filter,
                  pattern = "^(Ether)?L?PI$")
   })
 
-  # Glycerophosphoserines
+  observe({
+    req(filter_PI)
+
+    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_PI()$filter_data$my_id] <- filter_PI()$filter_data$keep
+    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_PI()$filter_data$my_id] <- filter_PI()$filter_data$comment
+  })
+  ###
+
+  ### Glycerophosphoserines
+  filter_PS <- bubblePlotServer(id = "PS",
+                                data = reactive(all_data$lipid_data_filter),
+                                pattern = "^(LNA)?(Ether)?L?PS$",
+                                lipid_data = reactive(all_data$lipid_data),
+                                title = input$navbar_selection)
+
   output$PS_UI <- renderUI({
     req(all_data$lipid_data_filter,
         all_data$lipid_data)
-
-    bubblePlotServer(id = "PS",
-                     data = reactive(all_data$lipid_data_filter),
-                     pattern = "^(LNA)?(Ether)?L?PS$",
-                     lipid_data = reactive(all_data$lipid_data),
-                     title = input$navbar_selection)
 
     bubblePlotUI(id = "PS",
                  data = all_data$lipid_data_filter,
                  pattern = "^(LNA)?(Ether)?L?PS$")
   })
 
-  # oxidized glycerophospholipids
+  observe({
+    req(filter_PS)
+
+    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_PS()$filter_data$my_id] <- filter_PS()$filter_data$keep
+    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_PS()$filter_data$my_id] <- filter_PS()$filter_data$comment
+  })
+  ###
+
+  ### oxidized glycerophospholipids
+  filter_OPL <- bubblePlotServer(id = "OPL",
+                                 data = reactive(all_data$lipid_data_filter),
+                                 pattern = "^OxP[ACEGIS]$",
+                                 lipid_data = reactive(all_data$lipid_data),
+                                 title = input$navbar_selection)
+
   output$OPL_UI <- renderUI({
     req(all_data$lipid_data_filter,
         all_data$lipid_data)
-
-    bubblePlotServer(id = "OPL",
-                     data = reactive(all_data$lipid_data_filter),
-                     pattern = "^OxP[ACEGIS]$",
-                     lipid_data = reactive(all_data$lipid_data),
-                     title = input$navbar_selection)
 
     bubblePlotUI(id = "OPL",
                  data = all_data$lipid_data_filter,
                  pattern = "^OxP[ACEGIS]$")
   })
 
-  # Other Glycerophospholipids
+  observe({
+    req(filter_OPL)
+
+    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_OPL()$filter_data$my_id] <- filter_OPL()$filter_data$keep
+    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_OPL()$filter_data$my_id] <- filter_OPL()$filter_data$comment
+  })
+  ###
+
+  ### Other Glycerophospholipids
+  filter_OGPL <- bubblePlotServer(id = "OGPL",
+                                  data = reactive(all_data$lipid_data_filter),
+                                  pattern = "^P(Et|Me)OH$",
+                                  lipid_data = reactive(all_data$lipid_data),
+                                  title = input$navbar_selection)
+
   output$OGPL_UI <- renderUI({
     req(all_data$lipid_data_filter,
         all_data$lipid_data)
-
-    bubblePlotServer(id = "OGPL",
-                     data = reactive(all_data$lipid_data_filter),
-                     pattern = "^P(Et|Me)OH$",
-                     lipid_data = reactive(all_data$lipid_data),
-                     title = input$navbar_selection)
 
     bubblePlotUI(id = "OGPL",
                  data = all_data$lipid_data_filter,
                  pattern = "^P(Et|Me)OH$")
   })
+
+  observe({
+    req(filter_OGPL)
+
+    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_OGPL()$filter_data$my_id] <- filter_OGPL()$filter_data$keep
+    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_OGPL()$filter_data$my_id] <- filter_OGPL()$filter_data$comment
+  })
+  ###
 
   # Prenol lipids
   output$PRL_UI <- renderUI({
