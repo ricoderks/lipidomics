@@ -734,165 +734,245 @@ shinyAppServer <- function(input, output, session) {
   })
   ###
 
-  # Acidic glycosphingolipids
+  ### Acidic glycosphingolipids
+  filter_AcGL <- bubblePlotServer(id = "AcGL",
+                                  data = reactive(all_data$lipid_data_filter),
+                                  pattern = "^(GM3|SHexCer(\\+O)?)$",
+                                  lipid_data = reactive(all_data$lipid_data),
+                                  title = input$navbar_selection)
+
   output$AcGL_UI <- renderUI({
     req(all_data$lipid_data_filter,
         all_data$lipid_data)
-
-    bubblePlotServer(id = "AcGL",
-                     data = reactive(all_data$lipid_data_filter),
-                     pattern = "^(GM3|SHexCer(\\+O)?)$",
-                     lipid_data = reactive(all_data$lipid_data),
-                     title = input$navbar_selection)
 
     bubblePlotUI(id = "AcGL",
                  data = all_data$lipid_data_filter,
                  pattern = "^(GM3|SHexCer(\\+O)?)$")
   })
 
-  # Ceramides
+  observe({
+    req(filter_AcGL)
+
+    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_AcGL()$filter_data$my_id] <- filter_AcGL()$filter_data$keep
+    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_AcGL()$filter_data$my_id] <- filter_AcGL()$filter_data$comment
+  })
+  ###
+
+  ### Ceramides
+  filter_Cer <- bubblePlotServer(id = "Cer",
+                                 data = reactive(all_data$lipid_data_filter),
+                                 pattern = "^Cer_",
+                                 lipid_data = reactive(all_data$lipid_data),
+                                 title = input$navbar_selection)
+
   output$Cer_UI <- renderUI({
     req(all_data$lipid_data_filter,
         all_data$lipid_data)
-
-    bubblePlotServer(id = "Cer",
-                     data = reactive(all_data$lipid_data_filter),
-                     pattern = "^Cer_",
-                     lipid_data = reactive(all_data$lipid_data),
-                     title = input$navbar_selection)
 
     bubblePlotUI(id = "Cer",
                  data = all_data$lipid_data_filter,
                  pattern = "^Cer_")
   })
 
-  # phosphosphingolipids
+  observe({
+    req(filter_Cer)
+
+    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_Cer()$filter_data$my_id] <- filter_Cer()$filter_data$keep
+    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_Cer()$filter_data$my_id] <- filter_Cer()$filter_data$comment
+  })
+  ###
+
+  ### phosphosphingolipids
+  filter_PSL <- bubblePlotServer(id = "PSL",
+                                 data = reactive(all_data$lipid_data_filter),
+                                 pattern = "^(ASM|PE_Cer(\\+O)?|PI_Cer(\\+O)?|SM|SM\\+O)",
+                                 lipid_data = reactive(all_data$lipid_data),
+                                 title = input$navbar_selection)
+
   output$PSL_UI <- renderUI({
     req(all_data$lipid_data_filter,
         all_data$lipid_data)
-
-    bubblePlotServer(id = "PSL",
-                     data = reactive(all_data$lipid_data_filter),
-                     pattern = "^(ASM|PE_Cer(\\+O)?|PI_Cer(\\+O)?|SM|SM\\+O)",
-                     lipid_data = reactive(all_data$lipid_data),
-                     title = input$navbar_selection)
 
     bubblePlotUI(id = "PSL",
                  data = all_data$lipid_data_filter,
                  pattern = "^(ASM|PE_Cer(\\+O)?|PI_Cer(\\+O)?|SM|SM\\+O)")
   })
 
-  # Neutral glycosphingolipids
+  observe({
+    req(filter_PSL)
+
+    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_PSL()$filter_data$my_id] <- filter_PSL()$filter_data$keep
+    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_PSL()$filter_data$my_id] <- filter_PSL()$filter_data$comment
+  })
+  ###
+
+  ### Neutral glycosphingolipids
+  filter_NPSL <- bubblePlotServer(id = "NPSL",
+                                  data = reactive(all_data$lipid_data_filter),
+                                  pattern = "^A?Hex[23]?Cer",
+                                  lipid_data = reactive(all_data$lipid_data),
+                                  title = input$navbar_selection)
+
   output$NPSL_UI <- renderUI({
     req(all_data$lipid_data_filter,
         all_data$lipid_data)
-
-    bubblePlotServer(id = "NPSL",
-                     data = reactive(all_data$lipid_data_filter),
-                     pattern = "^A?Hex[23]?Cer",
-                     lipid_data = reactive(all_data$lipid_data),
-                     title = input$navbar_selection)
 
     bubblePlotUI(id = "NPSL",
                  data = all_data$lipid_data_filter,
                  pattern = "^A?Hex[23]?Cer")
   })
 
-  # Sphingoid bases
+  observe({
+    req(filter_NPSL)
+
+    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_NPSL()$filter_data$my_id] <- filter_NPSL()$filter_data$keep
+    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_NPSL()$filter_data$my_id] <- filter_NPSL()$filter_data$comment
+  })
+  ###
+
+  ### Sphingoid bases
+  filter_SB <- bubblePlotServer(id = "SB",
+                                data = reactive(all_data$lipid_data_filter),
+                                pattern = "^((Phyto|DH)?Sph|SL(\\+O)?)$",
+                                lipid_data = reactive(all_data$lipid_data),
+                                title = input$navbar_selection)
+
   output$SB_UI <- renderUI({
     req(all_data$lipid_data_filter,
         all_data$lipid_data)
-
-    bubblePlotServer(id = "SB",
-                     data = reactive(all_data$lipid_data_filter),
-                     pattern = "^((Phyto|DH)?Sph|SL(\\+O)?)$",
-                     lipid_data = reactive(all_data$lipid_data),
-                     title = input$navbar_selection)
 
     bubblePlotUI(id = "SB",
                  data = all_data$lipid_data_filter,
                  pattern = "^((Phyto|DH)?Sph|SL(\\+O)?)$")
   })
 
-  # Bile acids and conjugates
+  observe({
+    req(filter_SB)
+
+    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_SB()$filter_data$my_id] <- filter_SB()$filter_data$keep
+    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_SB()$filter_data$my_id] <- filter_SB()$filter_data$comment
+  })
+  ###
+
+  ### Bile acids and conjugates
+  filter_BA <- bubblePlotServer(id = "BA",
+                                data = reactive(all_data$lipid_data_filter),
+                                pattern = "^(BASulfate|BileAcid|DCAE)$",
+                                lipid_data = reactive(all_data$lipid_data),
+                                title = input$navbar_selection)
+
   output$BA_UI <- renderUI({
     req(all_data$lipid_data_filter,
         all_data$lipid_data)
-
-    bubblePlotServer(id = "BA",
-                     data = reactive(all_data$lipid_data_filter),
-                     pattern = "^(BASulfate|BileAcid|DCAE)$",
-                     lipid_data = reactive(all_data$lipid_data),
-                     title = input$navbar_selection)
 
     bubblePlotUI(id = "BA",
                  data = all_data$lipid_data_filter,
                  pattern = "^(BASulfate|BileAcid|DCAE)$")
   })
 
-  # Secosteroids
+  observe({
+    req(filter_BA)
+
+    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_BA()$filter_data$my_id] <- filter_BA()$filter_data$keep
+    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_BA()$filter_data$my_id] <- filter_BA()$filter_data$comment
+  })
+  ###
+
+  ### Secosteroids
+  filter_SC <- bubblePlotServer(id = "SC",
+                                data = reactive(all_data$lipid_data_filter),
+                                pattern = "^VitaminD$",
+                                lipid_data = reactive(all_data$lipid_data),
+                                title = input$navbar_selection)
+
   output$SC_UI <- renderUI({
     req(all_data$lipid_data_filter,
         all_data$lipid_data)
-
-    bubblePlotServer(id = "SC",
-                     data = reactive(all_data$lipid_data_filter),
-                     pattern = "^VitaminD$",
-                     lipid_data = reactive(all_data$lipid_data),
-                     title = input$navbar_selection)
 
     bubblePlotUI(id = "SC",
                  data = all_data$lipid_data_filter,
                  pattern = "^VitaminD$")
   })
 
-  # Steroid conjugates
+  observe({
+    req(filter_SC)
+
+    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_SC()$filter_data$my_id] <- filter_SC()$filter_data$keep
+    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_SC()$filter_data$my_id] <- filter_SC()$filter_data$comment
+  })
+  ###
+
+  ### Steroid conjugates
+  filter_STC <- bubblePlotServer(id = "STC",
+                                 data = reactive(all_data$lipid_data_filter),
+                                 pattern = "^SSulfate$",
+                                 lipid_data = reactive(all_data$lipid_data),
+                                 title = input$navbar_selection)
+
   output$STC_UI <- renderUI({
     req(all_data$lipid_data_filter,
         all_data$lipid_data)
-
-    bubblePlotServer(id = "STC",
-                     data = reactive(all_data$lipid_data_filter),
-                     pattern = "^SSulfate$",
-                     lipid_data = reactive(all_data$lipid_data),
-                     title = input$navbar_selection)
 
     bubblePlotUI(id = "STC",
                  data = all_data$lipid_data_filter,
                  pattern = "^SSulfate$")
   })
 
-  # Sterols
+  observe({
+    req(filter_STC)
+
+    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_STC()$filter_data$my_id] <- filter_STC()$filter_data$keep
+    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_STC()$filter_data$my_id] <- filter_STC()$filter_data$comment
+  })
+  ###
+
+  ### Sterols
+  filter_ST <- bubblePlotServer(id = "ST",
+                                data = reactive(all_data$lipid_data_filter),
+                                pattern = "^((BR|CA|SI|ST)?[CS]E|Cholesterol|SHex)$",
+                                lipid_data = reactive(all_data$lipid_data),
+                                title = input$navbar_selection)
+
   output$ST_UI <- renderUI({
     req(all_data$lipid_data_filter,
         all_data$lipid_data)
-
-    bubblePlotServer(id = "ST",
-                     data = reactive(all_data$lipid_data_filter),
-                     pattern = "^((BR|CA|SI|ST)?[CS]E|Cholesterol|SHex)$",
-                     lipid_data = reactive(all_data$lipid_data),
-                     title = input$navbar_selection)
 
     bubblePlotUI(id = "ST",
                  data = all_data$lipid_data_filter,
                  pattern = "^((BR|CA|SI|ST)?[CS]E|Cholesterol|SHex)$")
   })
 
-  # Other sterol lipids
+  observe({
+    req(filter_ST)
+
+    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_ST()$filter_data$my_id] <- filter_ST()$filter_data$keep
+    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_ST()$filter_data$my_id] <- filter_ST()$filter_data$comment
+  })
+  ###
+
+  ### Other sterol lipids
+  filter_OST <- bubblePlotServer(id = "OST",
+                                 data = reactive(all_data$lipid_data_filter),
+                                 pattern = "^AHex(CAS|CS|SIS|BRS|STS)$",
+                                 lipid_data = reactive(all_data$lipid_data),
+                                 title = input$navbar_selection)
+
   output$OST_UI <- renderUI({
     req(all_data$lipid_data_filter,
         all_data$lipid_data)
-
-    bubblePlotServer(id = "OST",
-                     data = reactive(all_data$lipid_data_filter),
-                     pattern = "^AHex(CAS|CS|SIS|BRS|STS)$",
-                     lipid_data = reactive(all_data$lipid_data),
-                     title = input$navbar_selection)
 
     bubblePlotUI(id = "OST",
                  data = all_data$lipid_data_filter,
                  pattern = "^AHex(CAS|CS|SIS|BRS|STS)$")
   })
+
+  observe({
+    req(filter_OST)
+
+    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_OST()$filter_data$my_id] <- filter_OST()$filter_data$keep
+    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_OST()$filter_data$my_id] <- filter_OST()$filter_data$comment
+  })
+  ###
 
   #### About / Help  section ####
   output$about_session <- renderPrint({
