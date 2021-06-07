@@ -710,21 +710,29 @@ shinyAppServer <- function(input, output, session) {
   })
   ###
 
-  # Prenol lipids
+  ### Prenol lipids
+  filter_PRL <- bubblePlotServer(id = "PRL",
+                                 data = reactive(all_data$lipid_data_filter),
+                                 pattern = "^(VAE|CoQ|VitaminE)$",
+                                 lipid_data = reactive(all_data$lipid_data),
+                                 title = input$navbar_selection)
+
   output$PRL_UI <- renderUI({
     req(all_data$lipid_data_filter,
         all_data$lipid_data)
-
-    bubblePlotServer(id = "PRL",
-                     data = reactive(all_data$lipid_data_filter),
-                     pattern = "^(VAE|CoQ|VitaminE)$",
-                     lipid_data = reactive(all_data$lipid_data),
-                     title = input$navbar_selection)
 
     bubblePlotUI(id = "PRL",
                  data = all_data$lipid_data_filter,
                  pattern = "^(VAE|CoQ|VitaminE)$")
   })
+
+  observe({
+    req(filter_PRL)
+
+    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_PRL()$filter_data$my_id] <- filter_PRL()$filter_data$keep
+    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_PRL()$filter_data$my_id] <- filter_PRL()$filter_data$comment
+  })
+  ###
 
   # Acidic glycosphingolipids
   output$AcGL_UI <- renderUI({
