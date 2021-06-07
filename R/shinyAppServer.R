@@ -302,13 +302,13 @@ shinyAppServer <- function(input, output, session) {
       filter(.data$class_ion %in% all_data$class_ion_selected)
   })
 
-  filter_result <- bubblePlotServer(id = "FA",
+  ### Fatty acids and conjugates
+  filter_FA <- bubblePlotServer(id = "FA",
                                     data = reactive(all_data$lipid_data_filter),
                                     pattern = "^(Ox)?FA$",
                                     lipid_data = reactive(all_data$lipid_data),
                                     title = input$navbar_selection)
 
-  # Fatty acids and conjugates
   output$FA_UI <- renderUI({
     req(all_data$lipid_data_filter,
         all_data$lipid_data)
@@ -317,6 +317,14 @@ shinyAppServer <- function(input, output, session) {
                  data = all_data$lipid_data_filter,
                  pattern = "^(Ox)?FA$")
   })
+
+  observe({
+    req(filter_FA)
+
+    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_FA()$filter_data$my_id] <- filter_FA()$filter_data$keep
+    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_FA()$filter_data$my_id] <- filter_FA()$filter_data$comment
+  })
+  ###
 
   # Fatty amides
   output$FAM_UI <- renderUI({
@@ -778,15 +786,8 @@ shinyAppServer <- function(input, output, session) {
   #   all_data$class_ion_selected
   # })
 
-  output$debug <- renderTable({
-    req(filter_result)
-    filter_result()$filter_data
-  })
-
-  observe({
-    req(filter_result)
-
-    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_result()$filter_data$my_id] <- filter_result()$filter_data$keep
-    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_result()$filter_data$my_id] <- filter_result()$filter_data$comment
-  })
+  # output$debug <- renderTable({
+  #   req(filter_result)
+  #   filter_result()$filter_data
+  # })
 }

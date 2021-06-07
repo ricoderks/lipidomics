@@ -162,7 +162,7 @@ bubblePlotServer <- function(id, data, pattern, lipid_data, title) {
 
         if(nrow(data$selected_data) > 0) {
           data$selected_data %>%
-            select(.data$my_id:.data$polarity, .data$keep, .data$comment, -.data$scale_DotProduct, -.data$scale_RevDotProduct)
+            select(.data$my_id:.data$polarity, -.data$scale_DotProduct, -.data$scale_RevDotProduct)
         } else {
           return(NULL)
         }

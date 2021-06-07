@@ -76,7 +76,7 @@ shinyAppUI <- navbarPage(title = "CPM - Lipidomics",
                          navbarMenu(title = "Identification",
                                     "Fatty acyls",
                                     tabPanel(title = "Fatty acids and conjugates",
-                                             tableOutput(outputId = "debug"),
+                                             # tableOutput(outputId = "debug"),
                                              uiOutput(outputId = "FA_UI")
                                     ),
                                     tabPanel(title = "Fatty amides",
