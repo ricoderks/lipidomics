@@ -974,6 +974,15 @@ shinyAppServer <- function(input, output, session) {
   })
   ###
 
+  ### Show the issues
+  output$tbl_issues <- renderTable({
+    req(all_data$lipid_data)
+
+    all_data$lipid_data %>%
+      filter(.data$keep == FALSE) %>%
+      select(.data$my_id:.data$polarity, -.data$scale_DotProduct, -.data$scale_RevDotProduct, .data$keep, .data$comment)
+  })
+
   #### About / Help  section ####
   output$about_session <- renderPrint({
     session_info()

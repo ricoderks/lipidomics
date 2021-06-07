@@ -170,6 +170,8 @@ shinyAppUI <- navbarPage(title = "CPM - Lipidomics",
                                              uiOutput(outputId = "OST_UI")
                                     )
                          ), # end navbarMenu identification
+                         tabPanel(title = "Issues",
+                                  tableOutput(outputId = "tbl_issues")),
                          # tabPanel About
                          navbarMenu(title = "Help",
                                     tabPanel(title = "Lipids",
