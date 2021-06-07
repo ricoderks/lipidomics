@@ -782,4 +782,11 @@ shinyAppServer <- function(input, output, session) {
     req(filter_result)
     filter_result()$filter_data
   })
+
+  observe({
+    req(filter_result)
+
+    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_result()$filter_data$my_id] <- filter_result()$filter_data$keep
+    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_result()$filter_data$my_id] <- filter_result()$filter_data$comment
+  })
 }
