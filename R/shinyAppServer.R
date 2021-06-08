@@ -73,6 +73,7 @@ shinyAppServer <- function(input, output, session) {
     all_data$lipid_data <- results %>%
       mutate(keep = TRUE,
              comment = NA_character_,
+             append_name = NA_character_,
              class_ion = paste(.data$LipidClass, .data$ion,
                                sep = " - "))
   })
@@ -83,7 +84,7 @@ shinyAppServer <- function(input, output, session) {
 
     all_data$lipid_data %>%
       # remove a few columns
-      select(-.data$MSMSspectrum, -.data$scale_DotProduct, -.data$scale_RevDotProduct, -.data$keep, -.data$comment) %>%
+      select(-.data$MSMSspectrum, -.data$scale_DotProduct, -.data$scale_RevDotProduct, -.data$keep, -.data$comment, -.data$append_name) %>%
       head(20)
   })
 
@@ -348,6 +349,7 @@ shinyAppServer <- function(input, output, session) {
 
     all_data$clean_data$keep[all_data$clean_data$my_id == filter_FA()$filter_data$my_id] <- filter_FA()$filter_data$keep
     all_data$clean_data$comment[all_data$clean_data$my_id == filter_FA()$filter_data$my_id] <- filter_FA()$filter_data$comment
+    all_data$clean_data$append_name[all_data$clean_data$my_id == filter_FA()$filter_data$my_id] <- filter_FA()$filter_data$append_name
   })
   ###
 
@@ -1005,7 +1007,7 @@ shinyAppServer <- function(input, output, session) {
 
     all_data$clean_data %>%
       filter(.data$keep == FALSE) %>%
-      select(.data$my_id:.data$polarity, -.data$scale_DotProduct, -.data$scale_RevDotProduct, .data$keep, .data$comment)
+      select(.data$my_id:.data$polarity, -.data$scale_DotProduct, -.data$scale_RevDotProduct, .data$keep, .data$comment, .data$append_name)
   })
 
   #### About / Help  section ####
