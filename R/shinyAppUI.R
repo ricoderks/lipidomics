@@ -171,7 +171,13 @@ shinyAppUI <- navbarPage(title = "CPM - Lipidomics",
                                     )
                          ), # end navbarMenu identification
                          tabPanel(title = "Issues",
-                                  tableOutput(outputId = "tbl_issues")),
+                                  fluidPage(
+                                    fluidRow(column = 12,
+                                             tableOutput(outputId = "tbl_issues_class")),
+                                    fluidRow(column = 12,
+                                             tableOutput(outputId = "tbl_issues"))
+                                  )
+                         ),
                          # tabPanel About
                          navbarMenu(title = "Help",
                                     tabPanel(title = "Lipids",

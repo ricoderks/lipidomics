@@ -10,7 +10,7 @@
 #' @importFrom sessioninfo session_info
 #'
 #' @importFrom tibble tibble
-#' @importFrom dplyr filter mutate select arrange pull
+#' @importFrom dplyr filter mutate select arrange pull distinct
 #' @importFrom rlang .data
 #' @importFrom purrr map
 #' @importFrom magrittr %>%
@@ -125,7 +125,7 @@ shinyAppServer <- function(input, output, session) {
     pattern_SA <- "^(GM3|SHexCer|SHexCer\\+O)"
     pattern_CL <- "^([DM]L)?CL"
     pattern_ACPIM <- "^Ac[2-4]PIM[12]"
-    pattern_STL <- "^((BA|S)Sulfate|BileAcid|AHex[BCS][AIRTS][S]?|(BRS|CAS|C|SIS|STS|DCA|TDCA)E|SHex|Cholesterol|VitaminD|ST)"
+    pattern_STL <- "^((BA|S)Sulfate|BileAcid|AHex[BCS][AIRTS][S]?|(BRS|CAS|C|SIS|STS|DCA|TDCA)E|SHex|Cholesterol|VitaminD|ST) "
     pattern_PRL <- "^(VAE|CoQ|VitaminE)"
 
     my_col_width <- 3
@@ -1006,8 +1006,20 @@ shinyAppServer <- function(input, output, session) {
     req(all_data$clean_data)
 
     all_data$clean_data %>%
-      filter(.data$keep == FALSE) %>%
+      filter(.data$keep == FALSE,
+             .data$comment != "remove_class") %>%
       select(.data$my_id:.data$polarity, -.data$scale_DotProduct, -.data$scale_RevDotProduct, .data$keep, .data$comment, .data$append_name)
+  })
+
+  output$tbl_issues_class <- renderTable({
+    req(all_data$clean_data)
+
+    all_data$clean_data %>%
+      filter(.data$keep == FALSE,
+             .data$comment == "remove_class") %>%
+      select(.data$LipidClass, .data$class_ion, .data$keep, .data$comment) %>%
+      distinct(.data$class_ion,
+               .keep_all = TRUE)
   })
 
   #### About / Help  section ####
