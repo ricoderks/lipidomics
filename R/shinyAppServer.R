@@ -33,6 +33,8 @@ shinyAppServer <- function(input, output, session) {
 
   all_data <- reactiveValues(lipid_data = NULL,
                              lipid_data_long = NULL,
+                             lipid_data_filter = NULL,
+                             clean_data = NULL,
                              qc_results = NULL,
                              class_ion = NULL,
                              class_ion_selected = NULL,
@@ -70,7 +72,9 @@ shinyAppServer <- function(input, output, session) {
     # add some extra columns for lipid selection
     all_data$lipid_data <- results %>%
       mutate(keep = TRUE,
-             comment = NA_character_)
+             comment = NA_character_,
+             class_ion = paste(.data$LipidClass, .data$ion,
+                               sep = " - "))
   })
 
   # show the raw data
@@ -79,13 +83,16 @@ shinyAppServer <- function(input, output, session) {
 
     all_data$lipid_data %>%
       # remove a few columns
-      select(-.data$MSMSspectrum, -.data$scale_DotProduct, -.data$scale_RevDotProduct) %>%
+      select(-.data$MSMSspectrum, -.data$scale_DotProduct, -.data$scale_RevDotProduct, -.data$keep, -.data$comment) %>%
       head(20)
   })
 
   # make the lipid data in long format and calculate the RSD values
   observe({
     req(all_data$lipid_data)
+
+    # make a copy of the original data and work with this
+    all_data$clean_data <- all_data$lipid_data
 
     # make the data long
     all_data$lipid_data_long <- tidy_lipids(df = all_data$lipid_data)
@@ -109,7 +116,7 @@ shinyAppServer <- function(input, output, session) {
     # regular expression patterns
     pattern_PL <- "^((Ox)?(Ether)?(L)?(LNA)?(MM)?P[ACEGISM]|HBMP|BMP)"
     pattern_GL <- "^(Ox|Ether|SQ|EtherS|L|A)?[DMT]G"
-    pattern_Cer <- "^Cer_"
+    pattern_Cer <- "^Cer[P_]"
     pattern_HexCer <- "^A?Hex[23]?Cer"
     pattern_FA <- "^((Ox)?FA|FAHFA|NAGly|NAGlySer|NAOrn|NAE|CAR)"
     pattern_PSL <- "^(ASM|PE_Cer(\\+O)?|PI_Cer(\\+O)?|SM|SM\\+O)"
@@ -117,7 +124,7 @@ shinyAppServer <- function(input, output, session) {
     pattern_SA <- "^(GM3|SHexCer|SHexCer\\+O)"
     pattern_CL <- "^([DM]L)?CL"
     pattern_ACPIM <- "^Ac[2-4]PIM[12]"
-    pattern_STL <- "^((BA|S)Sulfate|BileAcid|AHex[BCS][AIRTS][S]?|(BRS|CAS|C|SIS|STS|DCA|TDCA)E|SHex|Cholesterol|VitaminD)"
+    pattern_STL <- "^((BA|S)Sulfate|BileAcid|AHex[BCS][AIRTS][S]?|(BRS|CAS|C|SIS|STS|DCA|TDCA)E|SHex|Cholesterol|VitaminD|ST)"
     pattern_PRL <- "^(VAE|CoQ|VitaminE)"
 
     my_col_width <- 3
@@ -205,9 +212,8 @@ shinyAppServer <- function(input, output, session) {
     req(all_data$qc_results,
         all_data$class_ion_selected)
 
-    # show histogram
-    show_rsd_lipidclass_violin(df = all_data$qc_results,
-                               lipidclass_ion = all_data$class_ion_selected)
+    # show histogram/violing plot
+    show_rsd_lipidclass_violin(df = all_data$qc_results)
   })
 
   # create the output UI
@@ -252,13 +258,14 @@ shinyAppServer <- function(input, output, session) {
     )
   })
 
-  output$show_qc_table <- renderTable({
-    req(all_data$qc_results,
-        all_data$class_ion_selected)
-
-    all_data$qc_results %>%
-      filter(.data$class_ion %in% all_data$class_ion_selected)
-  })
+  # not used now
+  # output$show_qc_table <- renderTable({
+  #   req(all_data$qc_results,
+  #       all_data$class_ion_selected)
+  #
+  #   all_data$qc_results %>%
+  #     filter(.data$class_ion %in% all_data$class_ion_selected)
+  # })
 
   #### identification part ####
   # filter the identification data
@@ -297,21 +304,39 @@ shinyAppServer <- function(input, output, session) {
                       split = " - "))[1]
     })))
 
-    # filter the data
+    # filter the data, lipid classes are removed here
+    # all_data$lipid_data_filter <- all_data$lipid_data_long %>%
+    #   filter(.data$class_ion %in% all_data$class_ion_selected)
+
+    # instead of removing them, tag them that I don't want them
     all_data$lipid_data_filter <- all_data$lipid_data_long %>%
-      filter(.data$class_ion %in% all_data$class_ion_selected)
-  })
+      mutate(keep = if_else(.data$class_ion %in% all_data$class_ion_selected,
+                            TRUE,
+                            FALSE),
+             comment = if_else(.data$class_ion %in% all_data$class_ion_selected,
+                               NA_character_,
+                               "remove_class"))
+
+    all_data$clean_data <- all_data$clean_data %>%
+      mutate(keep = if_else(.data$class_ion %in% all_data$class_ion_selected,
+                            TRUE,
+                            FALSE),
+             comment = if_else(.data$class_ion %in% all_data$class_ion_selected,
+                               NA_character_,
+                               "remove_class"))
+  },
+  ignoreInit = TRUE)
 
   ### Fatty acids and conjugates
   filter_FA <- bubblePlotServer(id = "FA",
                                     data = reactive(all_data$lipid_data_filter),
                                     pattern = "^(Ox)?FA$",
-                                    lipid_data = reactive(all_data$lipid_data),
+                                    lipid_data = reactive(all_data$clean_data),
                                     title = input$navbar_selection)
 
   output$FA_UI <- renderUI({
     req(all_data$lipid_data_filter,
-        all_data$lipid_data)
+        all_data$clean_data)
 
     bubblePlotUI(id = "FA",
                  data = all_data$lipid_data_filter,
@@ -321,8 +346,8 @@ shinyAppServer <- function(input, output, session) {
   observe({
     req(filter_FA)
 
-    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_FA()$filter_data$my_id] <- filter_FA()$filter_data$keep
-    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_FA()$filter_data$my_id] <- filter_FA()$filter_data$comment
+    all_data$clean_data$keep[all_data$clean_data$my_id == filter_FA()$filter_data$my_id] <- filter_FA()$filter_data$keep
+    all_data$clean_data$comment[all_data$clean_data$my_id == filter_FA()$filter_data$my_id] <- filter_FA()$filter_data$comment
   })
   ###
 
@@ -330,12 +355,12 @@ shinyAppServer <- function(input, output, session) {
   filter_FAM <- bubblePlotServer(id = "FAM",
                    data = reactive(all_data$lipid_data_filter),
                    pattern = "^(NAGly|NAGlySer|NAOrn|NAE)",
-                   lipid_data = reactive(all_data$lipid_data),
+                   lipid_data = reactive(all_data$clean_data),
                    title = input$navbar_selection)
 
   output$FAM_UI <- renderUI({
     req(all_data$lipid_data_filter,
-        all_data$lipid_data)
+        all_data$clean_data)
 
     bubblePlotUI(id = "FAM",
                  data = all_data$lipid_data_filter,
@@ -345,8 +370,8 @@ shinyAppServer <- function(input, output, session) {
   observe({
     req(filter_FAM)
 
-    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_FAM()$filter_data$my_id] <- filter_FAM()$filter_data$keep
-    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_FAM()$filter_data$my_id] <- filter_FAM()$filter_data$comment
+    all_data$clean_data$keep[all_data$clean_data$my_id == filter_FAM()$filter_data$my_id] <- filter_FAM()$filter_data$keep
+    all_data$clean_data$comment[all_data$clean_data$my_id == filter_FAM()$filter_data$my_id] <- filter_FAM()$filter_data$comment
   })
   ###
 
@@ -354,12 +379,12 @@ shinyAppServer <- function(input, output, session) {
   filter_FE <- bubblePlotServer(id = "FE",
                                 data = reactive(all_data$lipid_data_filter),
                                 pattern = "^(CAR|FAHFA)",
-                                lipid_data = reactive(all_data$lipid_data),
+                                lipid_data = reactive(all_data$clean_data),
                                 title = input$navbar_selection)
 
   output$FE_UI <- renderUI({
     req(all_data$lipid_data_filter,
-        all_data$lipid_data)
+        all_data$clean_data)
 
     bubblePlotUI(id = "FE",
                  data = all_data$lipid_data_filter,
@@ -369,8 +394,8 @@ shinyAppServer <- function(input, output, session) {
   observe({
     req(filter_FE)
 
-    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_FE()$filter_data$my_id] <- filter_FE()$filter_data$keep
-    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_FE()$filter_data$my_id] <- filter_FE()$filter_data$comment
+    all_data$clean_data$keep[all_data$clean_data$my_id == filter_FE()$filter_data$my_id] <- filter_FE()$filter_data$keep
+    all_data$clean_data$comment[all_data$clean_data$my_id == filter_FE()$filter_data$my_id] <- filter_FE()$filter_data$comment
   })
   ###
 
@@ -378,12 +403,12 @@ shinyAppServer <- function(input, output, session) {
   filter_EGL <- bubblePlotServer(id = "EGL",
                                  data = reactive(all_data$lipid_data_filter),
                                  pattern = "^(Ether|Ox)[MDT]G$",
-                                 lipid_data = reactive(all_data$lipid_data),
+                                 lipid_data = reactive(all_data$clean_data),
                                  title = input$navbar_selection)
 
   output$EGL_UI <- renderUI({
     req(all_data$lipid_data_filter,
-        all_data$lipid_data)
+        all_data$clean_data)
 
       bubblePlotUI(id = "EGL",
                  data = all_data$lipid_data_filter,
@@ -393,8 +418,8 @@ shinyAppServer <- function(input, output, session) {
   observe({
     req(filter_EGL)
 
-    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_EGL()$filter_data$my_id] <- filter_EGL()$filter_data$keep
-    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_EGL()$filter_data$my_id] <- filter_EGL()$filter_data$comment
+    all_data$clean_data$keep[all_data$clean_data$my_id == filter_EGL()$filter_data$my_id] <- filter_EGL()$filter_data$keep
+    all_data$clean_data$comment[all_data$clean_data$my_id == filter_EGL()$filter_data$my_id] <- filter_EGL()$filter_data$comment
   })
   ###
 
@@ -402,12 +427,12 @@ shinyAppServer <- function(input, output, session) {
   filter_GL <- bubblePlotServer(id = "GL",
                                 data = reactive(all_data$lipid_data_filter),
                                 pattern = "^[MDT]G$",
-                                lipid_data = reactive(all_data$lipid_data),
+                                lipid_data = reactive(all_data$clean_data),
                                 title = input$navbar_selection)
 
   output$GL_UI <- renderUI({
     req(all_data$lipid_data_filter,
-        all_data$lipid_data)
+        all_data$clean_data)
 
     bubblePlotUI(id = "GL",
                  data = all_data$lipid_data_filter,
@@ -417,8 +442,8 @@ shinyAppServer <- function(input, output, session) {
   observe({
     req(filter_GL)
 
-    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_GL()$filter_data$my_id] <- filter_GL()$filter_data$keep
-    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_GL()$filter_data$my_id] <- filter_GL()$filter_data$comment
+    all_data$clean_data$keep[all_data$clean_data$my_id == filter_GL()$filter_data$my_id] <- filter_GL()$filter_data$keep
+    all_data$clean_data$comment[all_data$clean_data$my_id == filter_GL()$filter_data$my_id] <- filter_GL()$filter_data$comment
   })
   ###
 
@@ -426,12 +451,12 @@ shinyAppServer <- function(input, output, session) {
   filter_GLDG <- bubblePlotServer(id = "GLDG",
                                   data = reactive(all_data$lipid_data_filter),
                                   pattern = "^(Ether|EtherS)?[DMS][GQ]DG$",
-                                  lipid_data = reactive(all_data$lipid_data),
+                                  lipid_data = reactive(all_data$clean_data),
                                   title = input$navbar_selection)
 
   output$GLDG_UI <- renderUI({
     req(all_data$lipid_data_filter,
-        all_data$lipid_data)
+        all_data$clean_data)
 
     bubblePlotUI(id = "GLDG",
                  data = all_data$lipid_data_filter,
@@ -441,8 +466,8 @@ shinyAppServer <- function(input, output, session) {
   observe({
     req(filter_GLDG)
 
-    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_GLDG()$filter_data$my_id] <- filter_GLDG()$filter_data$keep
-    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_GLDG()$filter_data$my_id] <- filter_GLDG()$filter_data$comment
+    all_data$clean_data$keep[all_data$clean_data$my_id == filter_GLDG()$filter_data$my_id] <- filter_GLDG()$filter_data$keep
+    all_data$clean_data$comment[all_data$clean_data$my_id == filter_GLDG()$filter_data$my_id] <- filter_GLDG()$filter_data$comment
   })
   ###
 
@@ -450,12 +475,12 @@ shinyAppServer <- function(input, output, session) {
   filter_OGL <- bubblePlotServer(id = "OGL",
                                  data = reactive(all_data$lipid_data_filter),
                                  pattern = "^([AL]?DG(GA|CC|TS/A)|TG_EST)$",
-                                 lipid_data = reactive(all_data$lipid_data),
+                                 lipid_data = reactive(all_data$clean_data),
                                  title = input$navbar_selection)
 
   output$OGL_UI <- renderUI({
     req(all_data$lipid_data_filter,
-        all_data$lipid_data)
+        all_data$clean_data)
 
     bubblePlotUI(id = "OGL",
                  data = all_data$lipid_data_filter,
@@ -465,8 +490,8 @@ shinyAppServer <- function(input, output, session) {
   observe({
     req(filter_OGL)
 
-    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_OGL()$filter_data$my_id] <- filter_OGL()$filter_data$keep
-    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_OGL()$filter_data$my_id] <- filter_OGL()$filter_data$comment
+    all_data$clean_data$keep[all_data$clean_data$my_id == filter_OGL()$filter_data$my_id] <- filter_OGL()$filter_data$keep
+    all_data$clean_data$comment[all_data$clean_data$my_id == filter_OGL()$filter_data$my_id] <- filter_OGL()$filter_data$comment
   })
   ###
 
@@ -474,12 +499,12 @@ shinyAppServer <- function(input, output, session) {
   filter_PA <- bubblePlotServer(id = "PA",
                                 data = reactive(all_data$lipid_data_filter),
                                 pattern = "^L?PA$",
-                                lipid_data = reactive(all_data$lipid_data),
+                                lipid_data = reactive(all_data$clean_data),
                                 title = input$navbar_selection)
 
   output$PA_UI <- renderUI({
     req(all_data$lipid_data_filter,
-        all_data$lipid_data)
+        all_data$clean_data)
 
     bubblePlotUI(id = "PA",
                  data = all_data$lipid_data_filter,
@@ -489,8 +514,8 @@ shinyAppServer <- function(input, output, session) {
   observe({
     req(filter_PA)
 
-    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_PA()$filter_data$my_id] <- filter_PA()$filter_data$keep
-    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_PA()$filter_data$my_id] <- filter_PA()$filter_data$comment
+    all_data$clean_data$keep[all_data$clean_data$my_id == filter_PA()$filter_data$my_id] <- filter_PA()$filter_data$keep
+    all_data$clean_data$comment[all_data$clean_data$my_id == filter_PA()$filter_data$my_id] <- filter_PA()$filter_data$comment
   })
   ###
 
@@ -498,12 +523,12 @@ shinyAppServer <- function(input, output, session) {
   filter_PC <- bubblePlotServer(id = "PC",
                                 data = reactive(all_data$lipid_data_filter),
                                 pattern = "^(Ether)?L?PC$",
-                                lipid_data = reactive(all_data$lipid_data),
+                                lipid_data = reactive(all_data$clean_data),
                                 title = input$navbar_selection)
 
   output$PC_UI <- renderUI({
     req(all_data$lipid_data_filter,
-        all_data$lipid_data)
+        all_data$clean_data)
 
     bubblePlotUI(id = "PC",
                  data = all_data$lipid_data_filter,
@@ -513,8 +538,8 @@ shinyAppServer <- function(input, output, session) {
   observe({
     req(filter_PC)
 
-    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_PC()$filter_data$my_id] <- filter_PC()$filter_data$keep
-    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_PC()$filter_data$my_id] <- filter_PC()$filter_data$comment
+    all_data$clean_data$keep[all_data$clean_data$my_id == filter_PC()$filter_data$my_id] <- filter_PC()$filter_data$keep
+    all_data$clean_data$comment[all_data$clean_data$my_id == filter_PC()$filter_data$my_id] <- filter_PC()$filter_data$comment
   })
   ###
 
@@ -522,12 +547,12 @@ shinyAppServer <- function(input, output, session) {
   filter_PE <- bubblePlotServer(id = "PE",
                                 data = reactive(all_data$lipid_data_filter),
                                 pattern = "^(LNA)?(Ether)?L?PE(\\(P\\))?$",
-                                lipid_data = reactive(all_data$lipid_data),
+                                lipid_data = reactive(all_data$clean_data),
                                 title = input$navbar_selection)
 
   output$PE_UI <- renderUI({
     req(all_data$lipid_data_filter,
-        all_data$lipid_data)
+        all_data$clean_data)
 
     bubblePlotUI(id = "PE",
                  data = all_data$lipid_data_filter,
@@ -537,8 +562,8 @@ shinyAppServer <- function(input, output, session) {
   observe({
     req(filter_PE)
 
-    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_PE()$filter_data$my_id] <- filter_PE()$filter_data$keep
-    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_PE()$filter_data$my_id] <- filter_PE()$filter_data$comment
+    all_data$clean_data$keep[all_data$clean_data$my_id == filter_PE()$filter_data$my_id] <- filter_PE()$filter_data$keep
+    all_data$clean_data$comment[all_data$clean_data$my_id == filter_PE()$filter_data$my_id] <- filter_PE()$filter_data$comment
   })
   ###
 
@@ -546,12 +571,12 @@ shinyAppServer <- function(input, output, session) {
   filter_PG <- bubblePlotServer(id = "PG",
                                 data = reactive(all_data$lipid_data_filter),
                                 pattern = "^(H?BMP|(Ether)?L?PG)$",
-                                lipid_data = reactive(all_data$lipid_data),
+                                lipid_data = reactive(all_data$clean_data),
                                 title = input$navbar_selection)
 
   output$PG_UI <- renderUI({
     req(all_data$lipid_data_filter,
-        all_data$lipid_data)
+        all_data$clean_data)
 
     bubblePlotUI(id = "PG",
                  data = all_data$lipid_data_filter,
@@ -561,8 +586,8 @@ shinyAppServer <- function(input, output, session) {
   observe({
     req(filter_PG)
 
-    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_PG()$filter_data$my_id] <- filter_PG()$filter_data$keep
-    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_PG()$filter_data$my_id] <- filter_PG()$filter_data$comment
+    all_data$clean_data$keep[all_data$clean_data$my_id == filter_PG()$filter_data$my_id] <- filter_PG()$filter_data$keep
+    all_data$clean_data$comment[all_data$clean_data$my_id == filter_PG()$filter_data$my_id] <- filter_PG()$filter_data$comment
   })
   ###
 
@@ -570,12 +595,12 @@ shinyAppServer <- function(input, output, session) {
   filter_CL <- bubblePlotServer(id = "CL",
                                 data = reactive(all_data$lipid_data_filter),
                                 pattern = "^([DM]L)?CL$",
-                                lipid_data = reactive(all_data$lipid_data),
+                                lipid_data = reactive(all_data$clean_data),
                                 title = input$navbar_selection)
 
   output$CL_UI <- renderUI({
     req(all_data$lipid_data_filter,
-        all_data$lipid_data)
+        all_data$clean_data)
 
     bubblePlotUI(id = "CL",
                  data = all_data$lipid_data_filter,
@@ -585,8 +610,8 @@ shinyAppServer <- function(input, output, session) {
   observe({
     req(filter_CL)
 
-    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_CL()$filter_data$my_id] <- filter_CL()$filter_data$keep
-    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_CL()$filter_data$my_id] <- filter_CL()$filter_data$comment
+    all_data$clean_data$keep[all_data$clean_data$my_id == filter_CL()$filter_data$my_id] <- filter_CL()$filter_data$keep
+    all_data$clean_data$comment[all_data$clean_data$my_id == filter_CL()$filter_data$my_id] <- filter_CL()$filter_data$comment
   })
   ###
 
@@ -594,12 +619,12 @@ shinyAppServer <- function(input, output, session) {
   filter_AcPIM <- bubblePlotServer(id = "AcPIM",
                                    data = reactive(all_data$lipid_data_filter),
                                    pattern = "^Ac[2-4]PIM[12]$",
-                                   lipid_data = reactive(all_data$lipid_data),
+                                   lipid_data = reactive(all_data$clean_data),
                                    title = input$navbar_selection)
 
   output$AcPIM_UI <- renderUI({
     req(all_data$lipid_data_filter,
-        all_data$lipid_data)
+        all_data$clean_data)
 
     bubblePlotUI(id = "AcPIM",
                  data = all_data$lipid_data_filter,
@@ -609,8 +634,8 @@ shinyAppServer <- function(input, output, session) {
   observe({
     req(filter_AcPIM)
 
-    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_AcPIM()$filter_data$my_id] <- filter_AcPIM()$filter_data$keep
-    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_AcPIM()$filter_data$my_id] <- filter_AcPIM()$filter_data$comment
+    all_data$clean_data$keep[all_data$clean_data$my_id == filter_AcPIM()$filter_data$my_id] <- filter_AcPIM()$filter_data$keep
+    all_data$clean_data$comment[all_data$clean_data$my_id == filter_AcPIM()$filter_data$my_id] <- filter_AcPIM()$filter_data$comment
   })
   ###
 
@@ -618,12 +643,12 @@ shinyAppServer <- function(input, output, session) {
   filter_PI <- bubblePlotServer(id = "PI",
                                 data = reactive(all_data$lipid_data_filter),
                                 pattern = "^(Ether)?L?PI$",
-                                lipid_data = reactive(all_data$lipid_data),
+                                lipid_data = reactive(all_data$clean_data),
                                 title = input$navbar_selection)
 
   output$PI_UI <- renderUI({
     req(all_data$lipid_data_filter,
-        all_data$lipid_data)
+        all_data$clean_data)
 
     bubblePlotUI(id = "PI",
                  data = all_data$lipid_data_filter,
@@ -633,8 +658,8 @@ shinyAppServer <- function(input, output, session) {
   observe({
     req(filter_PI)
 
-    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_PI()$filter_data$my_id] <- filter_PI()$filter_data$keep
-    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_PI()$filter_data$my_id] <- filter_PI()$filter_data$comment
+    all_data$clean_data$keep[all_data$clean_data$my_id == filter_PI()$filter_data$my_id] <- filter_PI()$filter_data$keep
+    all_data$clean_data$comment[all_data$clean_data$my_id == filter_PI()$filter_data$my_id] <- filter_PI()$filter_data$comment
   })
   ###
 
@@ -642,12 +667,12 @@ shinyAppServer <- function(input, output, session) {
   filter_PS <- bubblePlotServer(id = "PS",
                                 data = reactive(all_data$lipid_data_filter),
                                 pattern = "^(LNA)?(Ether)?L?PS$",
-                                lipid_data = reactive(all_data$lipid_data),
+                                lipid_data = reactive(all_data$clean_data),
                                 title = input$navbar_selection)
 
   output$PS_UI <- renderUI({
     req(all_data$lipid_data_filter,
-        all_data$lipid_data)
+        all_data$clean_data)
 
     bubblePlotUI(id = "PS",
                  data = all_data$lipid_data_filter,
@@ -657,8 +682,8 @@ shinyAppServer <- function(input, output, session) {
   observe({
     req(filter_PS)
 
-    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_PS()$filter_data$my_id] <- filter_PS()$filter_data$keep
-    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_PS()$filter_data$my_id] <- filter_PS()$filter_data$comment
+    all_data$clean_data$keep[all_data$clean_data$my_id == filter_PS()$filter_data$my_id] <- filter_PS()$filter_data$keep
+    all_data$clean_data$comment[all_data$clean_data$my_id == filter_PS()$filter_data$my_id] <- filter_PS()$filter_data$comment
   })
   ###
 
@@ -666,12 +691,12 @@ shinyAppServer <- function(input, output, session) {
   filter_OPL <- bubblePlotServer(id = "OPL",
                                  data = reactive(all_data$lipid_data_filter),
                                  pattern = "^OxP[ACEGIS]$",
-                                 lipid_data = reactive(all_data$lipid_data),
+                                 lipid_data = reactive(all_data$clean_data),
                                  title = input$navbar_selection)
 
   output$OPL_UI <- renderUI({
     req(all_data$lipid_data_filter,
-        all_data$lipid_data)
+        all_data$clean_data)
 
     bubblePlotUI(id = "OPL",
                  data = all_data$lipid_data_filter,
@@ -681,8 +706,8 @@ shinyAppServer <- function(input, output, session) {
   observe({
     req(filter_OPL)
 
-    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_OPL()$filter_data$my_id] <- filter_OPL()$filter_data$keep
-    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_OPL()$filter_data$my_id] <- filter_OPL()$filter_data$comment
+    all_data$clean_data$keep[all_data$clean_data$my_id == filter_OPL()$filter_data$my_id] <- filter_OPL()$filter_data$keep
+    all_data$clean_data$comment[all_data$clean_data$my_id == filter_OPL()$filter_data$my_id] <- filter_OPL()$filter_data$comment
   })
   ###
 
@@ -690,12 +715,12 @@ shinyAppServer <- function(input, output, session) {
   filter_OGPL <- bubblePlotServer(id = "OGPL",
                                   data = reactive(all_data$lipid_data_filter),
                                   pattern = "^P(Et|Me)OH$",
-                                  lipid_data = reactive(all_data$lipid_data),
+                                  lipid_data = reactive(all_data$clean_data),
                                   title = input$navbar_selection)
 
   output$OGPL_UI <- renderUI({
     req(all_data$lipid_data_filter,
-        all_data$lipid_data)
+        all_data$clean_data)
 
     bubblePlotUI(id = "OGPL",
                  data = all_data$lipid_data_filter,
@@ -705,8 +730,8 @@ shinyAppServer <- function(input, output, session) {
   observe({
     req(filter_OGPL)
 
-    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_OGPL()$filter_data$my_id] <- filter_OGPL()$filter_data$keep
-    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_OGPL()$filter_data$my_id] <- filter_OGPL()$filter_data$comment
+    all_data$clean_data$keep[all_data$clean_data$my_id == filter_OGPL()$filter_data$my_id] <- filter_OGPL()$filter_data$keep
+    all_data$clean_data$comment[all_data$clean_data$my_id == filter_OGPL()$filter_data$my_id] <- filter_OGPL()$filter_data$comment
   })
   ###
 
@@ -714,12 +739,12 @@ shinyAppServer <- function(input, output, session) {
   filter_PRL <- bubblePlotServer(id = "PRL",
                                  data = reactive(all_data$lipid_data_filter),
                                  pattern = "^(VAE|CoQ|VitaminE)$",
-                                 lipid_data = reactive(all_data$lipid_data),
+                                 lipid_data = reactive(all_data$clean_data),
                                  title = input$navbar_selection)
 
   output$PRL_UI <- renderUI({
     req(all_data$lipid_data_filter,
-        all_data$lipid_data)
+        all_data$clean_data)
 
     bubblePlotUI(id = "PRL",
                  data = all_data$lipid_data_filter,
@@ -729,8 +754,8 @@ shinyAppServer <- function(input, output, session) {
   observe({
     req(filter_PRL)
 
-    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_PRL()$filter_data$my_id] <- filter_PRL()$filter_data$keep
-    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_PRL()$filter_data$my_id] <- filter_PRL()$filter_data$comment
+    all_data$clean_data$keep[all_data$clean_data$my_id == filter_PRL()$filter_data$my_id] <- filter_PRL()$filter_data$keep
+    all_data$clean_data$comment[all_data$clean_data$my_id == filter_PRL()$filter_data$my_id] <- filter_PRL()$filter_data$comment
   })
   ###
 
@@ -738,12 +763,12 @@ shinyAppServer <- function(input, output, session) {
   filter_AcGL <- bubblePlotServer(id = "AcGL",
                                   data = reactive(all_data$lipid_data_filter),
                                   pattern = "^(GM3|SHexCer(\\+O)?)$",
-                                  lipid_data = reactive(all_data$lipid_data),
+                                  lipid_data = reactive(all_data$clean_data),
                                   title = input$navbar_selection)
 
   output$AcGL_UI <- renderUI({
     req(all_data$lipid_data_filter,
-        all_data$lipid_data)
+        all_data$clean_data)
 
     bubblePlotUI(id = "AcGL",
                  data = all_data$lipid_data_filter,
@@ -753,32 +778,32 @@ shinyAppServer <- function(input, output, session) {
   observe({
     req(filter_AcGL)
 
-    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_AcGL()$filter_data$my_id] <- filter_AcGL()$filter_data$keep
-    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_AcGL()$filter_data$my_id] <- filter_AcGL()$filter_data$comment
+    all_data$clean_data$keep[all_data$clean_data$my_id == filter_AcGL()$filter_data$my_id] <- filter_AcGL()$filter_data$keep
+    all_data$clean_data$comment[all_data$clean_data$my_id == filter_AcGL()$filter_data$my_id] <- filter_AcGL()$filter_data$comment
   })
   ###
 
   ### Ceramides
   filter_Cer <- bubblePlotServer(id = "Cer",
                                  data = reactive(all_data$lipid_data_filter),
-                                 pattern = "^Cer_",
-                                 lipid_data = reactive(all_data$lipid_data),
+                                 pattern = "^Cer[P_]",
+                                 lipid_data = reactive(all_data$clean_data),
                                  title = input$navbar_selection)
 
   output$Cer_UI <- renderUI({
     req(all_data$lipid_data_filter,
-        all_data$lipid_data)
+        all_data$clean_data)
 
     bubblePlotUI(id = "Cer",
                  data = all_data$lipid_data_filter,
-                 pattern = "^Cer_")
+                 pattern = "^Cer[P_]")
   })
 
   observe({
     req(filter_Cer)
 
-    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_Cer()$filter_data$my_id] <- filter_Cer()$filter_data$keep
-    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_Cer()$filter_data$my_id] <- filter_Cer()$filter_data$comment
+    all_data$clean_data$keep[all_data$clean_data$my_id == filter_Cer()$filter_data$my_id] <- filter_Cer()$filter_data$keep
+    all_data$clean_data$comment[all_data$clean_data$my_id == filter_Cer()$filter_data$my_id] <- filter_Cer()$filter_data$comment
   })
   ###
 
@@ -786,12 +811,12 @@ shinyAppServer <- function(input, output, session) {
   filter_PSL <- bubblePlotServer(id = "PSL",
                                  data = reactive(all_data$lipid_data_filter),
                                  pattern = "^(ASM|PE_Cer(\\+O)?|PI_Cer(\\+O)?|SM|SM\\+O)",
-                                 lipid_data = reactive(all_data$lipid_data),
+                                 lipid_data = reactive(all_data$clean_data),
                                  title = input$navbar_selection)
 
   output$PSL_UI <- renderUI({
     req(all_data$lipid_data_filter,
-        all_data$lipid_data)
+        all_data$clean_data)
 
     bubblePlotUI(id = "PSL",
                  data = all_data$lipid_data_filter,
@@ -801,8 +826,8 @@ shinyAppServer <- function(input, output, session) {
   observe({
     req(filter_PSL)
 
-    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_PSL()$filter_data$my_id] <- filter_PSL()$filter_data$keep
-    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_PSL()$filter_data$my_id] <- filter_PSL()$filter_data$comment
+    all_data$clean_data$keep[all_data$clean_data$my_id == filter_PSL()$filter_data$my_id] <- filter_PSL()$filter_data$keep
+    all_data$clean_data$comment[all_data$clean_data$my_id == filter_PSL()$filter_data$my_id] <- filter_PSL()$filter_data$comment
   })
   ###
 
@@ -810,12 +835,12 @@ shinyAppServer <- function(input, output, session) {
   filter_NPSL <- bubblePlotServer(id = "NPSL",
                                   data = reactive(all_data$lipid_data_filter),
                                   pattern = "^A?Hex[23]?Cer",
-                                  lipid_data = reactive(all_data$lipid_data),
+                                  lipid_data = reactive(all_data$clean_data),
                                   title = input$navbar_selection)
 
   output$NPSL_UI <- renderUI({
     req(all_data$lipid_data_filter,
-        all_data$lipid_data)
+        all_data$clean_data)
 
     bubblePlotUI(id = "NPSL",
                  data = all_data$lipid_data_filter,
@@ -825,8 +850,8 @@ shinyAppServer <- function(input, output, session) {
   observe({
     req(filter_NPSL)
 
-    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_NPSL()$filter_data$my_id] <- filter_NPSL()$filter_data$keep
-    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_NPSL()$filter_data$my_id] <- filter_NPSL()$filter_data$comment
+    all_data$clean_data$keep[all_data$clean_data$my_id == filter_NPSL()$filter_data$my_id] <- filter_NPSL()$filter_data$keep
+    all_data$clean_data$comment[all_data$clean_data$my_id == filter_NPSL()$filter_data$my_id] <- filter_NPSL()$filter_data$comment
   })
   ###
 
@@ -834,12 +859,12 @@ shinyAppServer <- function(input, output, session) {
   filter_SB <- bubblePlotServer(id = "SB",
                                 data = reactive(all_data$lipid_data_filter),
                                 pattern = "^((Phyto|DH)?Sph|SL(\\+O)?)$",
-                                lipid_data = reactive(all_data$lipid_data),
+                                lipid_data = reactive(all_data$clean_data),
                                 title = input$navbar_selection)
 
   output$SB_UI <- renderUI({
     req(all_data$lipid_data_filter,
-        all_data$lipid_data)
+        all_data$clean_data)
 
     bubblePlotUI(id = "SB",
                  data = all_data$lipid_data_filter,
@@ -849,8 +874,8 @@ shinyAppServer <- function(input, output, session) {
   observe({
     req(filter_SB)
 
-    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_SB()$filter_data$my_id] <- filter_SB()$filter_data$keep
-    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_SB()$filter_data$my_id] <- filter_SB()$filter_data$comment
+    all_data$clean_data$keep[all_data$clean_data$my_id == filter_SB()$filter_data$my_id] <- filter_SB()$filter_data$keep
+    all_data$clean_data$comment[all_data$clean_data$my_id == filter_SB()$filter_data$my_id] <- filter_SB()$filter_data$comment
   })
   ###
 
@@ -858,12 +883,12 @@ shinyAppServer <- function(input, output, session) {
   filter_BA <- bubblePlotServer(id = "BA",
                                 data = reactive(all_data$lipid_data_filter),
                                 pattern = "^(BASulfate|BileAcid|DCAE)$",
-                                lipid_data = reactive(all_data$lipid_data),
+                                lipid_data = reactive(all_data$clean_data),
                                 title = input$navbar_selection)
 
   output$BA_UI <- renderUI({
     req(all_data$lipid_data_filter,
-        all_data$lipid_data)
+        all_data$clean_data)
 
     bubblePlotUI(id = "BA",
                  data = all_data$lipid_data_filter,
@@ -873,8 +898,8 @@ shinyAppServer <- function(input, output, session) {
   observe({
     req(filter_BA)
 
-    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_BA()$filter_data$my_id] <- filter_BA()$filter_data$keep
-    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_BA()$filter_data$my_id] <- filter_BA()$filter_data$comment
+    all_data$clean_data$keep[all_data$clean_data$my_id == filter_BA()$filter_data$my_id] <- filter_BA()$filter_data$keep
+    all_data$clean_data$comment[all_data$clean_data$my_id == filter_BA()$filter_data$my_id] <- filter_BA()$filter_data$comment
   })
   ###
 
@@ -882,12 +907,12 @@ shinyAppServer <- function(input, output, session) {
   filter_SC <- bubblePlotServer(id = "SC",
                                 data = reactive(all_data$lipid_data_filter),
                                 pattern = "^VitaminD$",
-                                lipid_data = reactive(all_data$lipid_data),
+                                lipid_data = reactive(all_data$clean_data),
                                 title = input$navbar_selection)
 
   output$SC_UI <- renderUI({
     req(all_data$lipid_data_filter,
-        all_data$lipid_data)
+        all_data$clean_data)
 
     bubblePlotUI(id = "SC",
                  data = all_data$lipid_data_filter,
@@ -897,8 +922,8 @@ shinyAppServer <- function(input, output, session) {
   observe({
     req(filter_SC)
 
-    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_SC()$filter_data$my_id] <- filter_SC()$filter_data$keep
-    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_SC()$filter_data$my_id] <- filter_SC()$filter_data$comment
+    all_data$clean_data$keep[all_data$clean_data$my_id == filter_SC()$filter_data$my_id] <- filter_SC()$filter_data$keep
+    all_data$clean_data$comment[all_data$clean_data$my_id == filter_SC()$filter_data$my_id] <- filter_SC()$filter_data$comment
   })
   ###
 
@@ -906,12 +931,12 @@ shinyAppServer <- function(input, output, session) {
   filter_STC <- bubblePlotServer(id = "STC",
                                  data = reactive(all_data$lipid_data_filter),
                                  pattern = "^SSulfate$",
-                                 lipid_data = reactive(all_data$lipid_data),
+                                 lipid_data = reactive(all_data$clean_data),
                                  title = input$navbar_selection)
 
   output$STC_UI <- renderUI({
     req(all_data$lipid_data_filter,
-        all_data$lipid_data)
+        all_data$clean_data)
 
     bubblePlotUI(id = "STC",
                  data = all_data$lipid_data_filter,
@@ -921,21 +946,21 @@ shinyAppServer <- function(input, output, session) {
   observe({
     req(filter_STC)
 
-    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_STC()$filter_data$my_id] <- filter_STC()$filter_data$keep
-    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_STC()$filter_data$my_id] <- filter_STC()$filter_data$comment
+    all_data$clean_data$keep[all_data$clean_data$my_id == filter_STC()$filter_data$my_id] <- filter_STC()$filter_data$keep
+    all_data$clean_data$comment[all_data$clean_data$my_id == filter_STC()$filter_data$my_id] <- filter_STC()$filter_data$comment
   })
   ###
 
   ### Sterols
   filter_ST <- bubblePlotServer(id = "ST",
                                 data = reactive(all_data$lipid_data_filter),
-                                pattern = "^((BR|CA|SI|ST)?[CS]E|Cholesterol|SHex)$",
-                                lipid_data = reactive(all_data$lipid_data),
+                                pattern = "^((BR|CA|SI|ST)?[CS]E|Cholesterol|SHex|ST)$",
+                                lipid_data = reactive(all_data$clean_data),
                                 title = input$navbar_selection)
 
   output$ST_UI <- renderUI({
     req(all_data$lipid_data_filter,
-        all_data$lipid_data)
+        all_data$clean_data)
 
     bubblePlotUI(id = "ST",
                  data = all_data$lipid_data_filter,
@@ -945,8 +970,8 @@ shinyAppServer <- function(input, output, session) {
   observe({
     req(filter_ST)
 
-    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_ST()$filter_data$my_id] <- filter_ST()$filter_data$keep
-    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_ST()$filter_data$my_id] <- filter_ST()$filter_data$comment
+    all_data$clean_data$keep[all_data$clean_data$my_id == filter_ST()$filter_data$my_id] <- filter_ST()$filter_data$keep
+    all_data$clean_data$comment[all_data$clean_data$my_id == filter_ST()$filter_data$my_id] <- filter_ST()$filter_data$comment
   })
   ###
 
@@ -954,12 +979,12 @@ shinyAppServer <- function(input, output, session) {
   filter_OST <- bubblePlotServer(id = "OST",
                                  data = reactive(all_data$lipid_data_filter),
                                  pattern = "^AHex(CAS|CS|SIS|BRS|STS)$",
-                                 lipid_data = reactive(all_data$lipid_data),
+                                 lipid_data = reactive(all_data$clean_data),
                                  title = input$navbar_selection)
 
   output$OST_UI <- renderUI({
     req(all_data$lipid_data_filter,
-        all_data$lipid_data)
+        all_data$clean_data)
 
     bubblePlotUI(id = "OST",
                  data = all_data$lipid_data_filter,
@@ -969,16 +994,16 @@ shinyAppServer <- function(input, output, session) {
   observe({
     req(filter_OST)
 
-    all_data$lipid_data$keep[all_data$lipid_data$my_id == filter_OST()$filter_data$my_id] <- filter_OST()$filter_data$keep
-    all_data$lipid_data$comment[all_data$lipid_data$my_id == filter_OST()$filter_data$my_id] <- filter_OST()$filter_data$comment
+    all_data$clean_data$keep[all_data$clean_data$my_id == filter_OST()$filter_data$my_id] <- filter_OST()$filter_data$keep
+    all_data$clean_data$comment[all_data$clean_data$my_id == filter_OST()$filter_data$my_id] <- filter_OST()$filter_data$comment
   })
   ###
 
   ### Show the issues
   output$tbl_issues <- renderTable({
-    req(all_data$lipid_data)
+    req(all_data$clean_data)
 
-    all_data$lipid_data %>%
+    all_data$clean_data %>%
       filter(.data$keep == FALSE) %>%
       select(.data$my_id:.data$polarity, -.data$scale_DotProduct, -.data$scale_RevDotProduct, .data$keep, .data$comment)
   })
