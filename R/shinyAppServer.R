@@ -33,6 +33,7 @@ shinyAppServer <- function(input, output, session) {
 
   all_data <- reactiveValues(lipid_data = NULL,
                              lipid_data_long = NULL,
+                             lipid_data_filter = NULL,
                              qc_results = NULL,
                              class_ion = NULL,
                              class_ion_selected = NULL,
@@ -70,7 +71,9 @@ shinyAppServer <- function(input, output, session) {
     # add some extra columns for lipid selection
     all_data$lipid_data <- results %>%
       mutate(keep = TRUE,
-             comment = NA_character_)
+             comment = NA_character_,
+             class_ion = paste(.data$LipidClass, .data$ion,
+                               sep = " - "))
   })
 
   # show the raw data
@@ -109,7 +112,7 @@ shinyAppServer <- function(input, output, session) {
     # regular expression patterns
     pattern_PL <- "^((Ox)?(Ether)?(L)?(LNA)?(MM)?P[ACEGISM]|HBMP|BMP)"
     pattern_GL <- "^(Ox|Ether|SQ|EtherS|L|A)?[DMT]G"
-    pattern_Cer <- "^Cer_"
+    pattern_Cer <- "^Cer[P_]"
     pattern_HexCer <- "^A?Hex[23]?Cer"
     pattern_FA <- "^((Ox)?FA|FAHFA|NAGly|NAGlySer|NAOrn|NAE|CAR)"
     pattern_PSL <- "^(ASM|PE_Cer(\\+O)?|PI_Cer(\\+O)?|SM|SM\\+O)"
@@ -117,7 +120,7 @@ shinyAppServer <- function(input, output, session) {
     pattern_SA <- "^(GM3|SHexCer|SHexCer\\+O)"
     pattern_CL <- "^([DM]L)?CL"
     pattern_ACPIM <- "^Ac[2-4]PIM[12]"
-    pattern_STL <- "^((BA|S)Sulfate|BileAcid|AHex[BCS][AIRTS][S]?|(BRS|CAS|C|SIS|STS|DCA|TDCA)E|SHex|Cholesterol|VitaminD)"
+    pattern_STL <- "^((BA|S)Sulfate|BileAcid|AHex[BCS][AIRTS][S]?|(BRS|CAS|C|SIS|STS|DCA|TDCA)E|SHex|Cholesterol|VitaminD|ST)"
     pattern_PRL <- "^(VAE|CoQ|VitaminE)"
 
     my_col_width <- 3
@@ -205,7 +208,7 @@ shinyAppServer <- function(input, output, session) {
     req(all_data$qc_results,
         all_data$class_ion_selected)
 
-    # show histogram
+    # show histogram/violing plot
     show_rsd_lipidclass_violin(df = all_data$qc_results,
                                lipidclass_ion = all_data$class_ion_selected)
   })
@@ -252,13 +255,14 @@ shinyAppServer <- function(input, output, session) {
     )
   })
 
-  output$show_qc_table <- renderTable({
-    req(all_data$qc_results,
-        all_data$class_ion_selected)
-
-    all_data$qc_results %>%
-      filter(.data$class_ion %in% all_data$class_ion_selected)
-  })
+  # not used now
+  # output$show_qc_table <- renderTable({
+  #   req(all_data$qc_results,
+  #       all_data$class_ion_selected)
+  #
+  #   all_data$qc_results %>%
+  #     filter(.data$class_ion %in% all_data$class_ion_selected)
+  # })
 
   #### identification part ####
   # filter the identification data
@@ -276,7 +280,8 @@ shinyAppServer <- function(input, output, session) {
     input$select_SA_class
     input$select_STL_class
   }, {
-    req(all_data$lipid_data_long)
+    req(all_data$lipid_data_long,
+        all_data$lipid_data)
     # get all the selected classes
     all_data$class_ion_selected <- c(input$select_PL_class,
                                      input$select_GL_class,
@@ -297,10 +302,28 @@ shinyAppServer <- function(input, output, session) {
                       split = " - "))[1]
     })))
 
-    # filter the data
+    # filter the data, lipid classes are removed here
+    # all_data$lipid_data_filter <- all_data$lipid_data_long %>%
+    #   filter(.data$class_ion %in% all_data$class_ion_selected)
+
+    # instead of removing them, tag them that I don't want them
     all_data$lipid_data_filter <- all_data$lipid_data_long %>%
-      filter(.data$class_ion %in% all_data$class_ion_selected)
-  })
+      mutate(keep = if_else(.data$class_ion %in% all_data$class_ion_selected,
+                            TRUE,
+                            FALSE),
+             comment = if_else(.data$class_ion %in% all_data$class_ion_selected,
+                               NA_character_,
+                               "remove_class"))
+
+    # all_data$lipid_data <- all_data$lipid_data %>%
+    #   mutate(keep = if_else(.data$class_ion %in% all_data$class_ion_selected,
+    #                         TRUE,
+    #                         FALSE),
+    #          comment = if_else(.data$class_ion %in% all_data$class_ion_selected,
+    #                            NA_character_,
+    #                            "remove_class"))
+  },
+  ignoreInit = TRUE)
 
   ### Fatty acids and conjugates
   filter_FA <- bubblePlotServer(id = "FA",
@@ -761,7 +784,7 @@ shinyAppServer <- function(input, output, session) {
   ### Ceramides
   filter_Cer <- bubblePlotServer(id = "Cer",
                                  data = reactive(all_data$lipid_data_filter),
-                                 pattern = "^Cer_",
+                                 pattern = "^Cer[P_]",
                                  lipid_data = reactive(all_data$lipid_data),
                                  title = input$navbar_selection)
 
@@ -771,7 +794,7 @@ shinyAppServer <- function(input, output, session) {
 
     bubblePlotUI(id = "Cer",
                  data = all_data$lipid_data_filter,
-                 pattern = "^Cer_")
+                 pattern = "^Cer[P_]")
   })
 
   observe({
@@ -929,7 +952,7 @@ shinyAppServer <- function(input, output, session) {
   ### Sterols
   filter_ST <- bubblePlotServer(id = "ST",
                                 data = reactive(all_data$lipid_data_filter),
-                                pattern = "^((BR|CA|SI|ST)?[CS]E|Cholesterol|SHex)$",
+                                pattern = "^((BR|CA|SI|ST)?[CS]E|Cholesterol|SHex|ST)$",
                                 lipid_data = reactive(all_data$lipid_data),
                                 title = input$navbar_selection)
 
