@@ -4,12 +4,10 @@
 \alias{show_rsd_lipidclass_violin}
 \title{Show a violin plot of all RSD values per lipid class}
 \usage{
-show_rsd_lipidclass_violin(df, lipidclass_ion)
+show_rsd_lipidclass_violin(df)
 }
 \arguments{
 \item{df}{tibble in tidy format}
-
-\item{lipidclass_ion}{character vector containing "lipidclass - ion"}
 }
 \value{
 ggplot2 object

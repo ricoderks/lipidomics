@@ -83,7 +83,7 @@ shinyAppServer <- function(input, output, session) {
 
     all_data$lipid_data %>%
       # remove a few columns
-      select(-.data$MSMSspectrum, -.data$scale_DotProduct, -.data$scale_RevDotProduct, -data.$keep, -.data$comment) %>%
+      select(-.data$MSMSspectrum, -.data$scale_DotProduct, -.data$scale_RevDotProduct, -.data$keep, -.data$comment) %>%
       head(20)
   })
 
@@ -213,8 +213,7 @@ shinyAppServer <- function(input, output, session) {
         all_data$class_ion_selected)
 
     # show histogram/violing plot
-    show_rsd_lipidclass_violin(df = all_data$qc_results,
-                               lipidclass_ion = all_data$class_ion_selected)
+    show_rsd_lipidclass_violin(df = all_data$qc_results)
   })
 
   # create the output UI

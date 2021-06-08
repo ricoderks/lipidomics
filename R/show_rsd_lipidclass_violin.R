@@ -4,7 +4,6 @@
 #'     within all QCpool samples..
 #'
 #' @param df tibble in tidy format
-#' @param lipidclass_ion character vector containing "lipidclass - ion"
 #'
 #' @return ggplot2 object
 #'
@@ -16,12 +15,11 @@
 #'
 #' @author Rico Derks
 #'
-show_rsd_lipidclass_violin <- function(df, lipidclass_ion) {
+show_rsd_lipidclass_violin <- function(df) {
   my_colors <- cpm_cols(c("green", "red"))
   names(my_colors) <- c("pos", "neg")
 
   p <- df %>%
-    filter(.data$class_ion %in% lipidclass_ion) %>%
     ggplot(aes(x = .data$LipidClass,
                y = .data$rsd_area)) +
     geom_violin() +
