@@ -19,6 +19,7 @@ Imports:
     magrittr,
     methods,
     pheatmap,
+    plotly,
     purrr,
     readr,
     readxl,

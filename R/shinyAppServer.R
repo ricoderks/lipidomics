@@ -19,6 +19,7 @@
 #' @importFrom tools file_ext
 #' @importFrom readxl read_xlsx
 #' @importFrom DT renderDT
+#' @importFrom plotly renderPlotly plotlyOutput
 #'
 #' @author Rico Derks
 
@@ -223,10 +224,10 @@ shinyAppServer <- function(input, output, session) {
     )
   })
 
-  output$create_corplot <- renderPlot({
+  output$create_corplot <- renderPlotly({
     req(all_data$lipid_data)
 
-    cor_heatmap(df = all_data$lipid_data)
+    cor_heatmap2(df = all_data$lipid_data)
   })
 
   # create UI for correlation plot
@@ -244,7 +245,7 @@ shinyAppServer <- function(input, output, session) {
     new_height <- ceiling(num_samples * 15 + 25)
 
     tagList(
-      plotOutput(outputId = "create_corplot",
+      plotlyOutput(outputId = "create_corplot",
                  width = "50%",
                  height = paste0(new_height, "px"))
     )
