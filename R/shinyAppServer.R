@@ -10,12 +10,14 @@
 #' @importFrom sessioninfo session_info
 #'
 #' @importFrom tibble tibble
-#' @importFrom dplyr filter mutate select arrange pull distinct
+#' @importFrom dplyr filter mutate select pull distinct
 #' @importFrom rlang .data
 #' @importFrom purrr map
 #' @importFrom magrittr %>%
 #' @importFrom tidyr unnest
 #' @importFrom utils head
+#' @importFrom tools file_ext
+#' @importFrom readxl read_xlsx
 #'
 #' @author Rico Derks
 
@@ -35,6 +37,7 @@ shinyAppServer <- function(input, output, session) {
                              lipid_data_long = NULL,
                              lipid_data_filter = NULL,
                              clean_data = NULL,
+                             meta_data = NULL,
                              qc_results = NULL,
                              class_ion = NULL,
                              class_ion_selected = NULL,
@@ -57,17 +60,11 @@ shinyAppServer <- function(input, output, session) {
       mutate(raw_data = map(.x = .data$datapath,
                             .f = ~ read_msdial(filename = .x)))
 
-    # make a single dataframe
-    results <- results %>%
-      select(.data$polarity, .data$raw_data) %>%
-      unnest(c(.data$polarity, .data$raw_data))
-
     # cleanup some column names
     results <- clean_up(df = results)
 
     # keep only the identified lipids and sort by lipid class, lipid
-    results <- select_identified(results) %>%
-      arrange(.data$LipidClass, .data$LipidName, .data$polarity)
+    results <- select_identified(df = results)
 
     # add some extra columns for lipid selection
     all_data$lipid_data <- results %>%
@@ -131,14 +128,6 @@ shinyAppServer <- function(input, output, session) {
     my_col_width <- 3
 
     tagList(
-      # this shows one huge checkboxGroupInput
-      # column(width = my_col_width,
-      #        checkboxGroupInput(inputId = "select_lipidclass_ion",
-      #                           label = "Select lipid class:",
-      #                           choices = all_data$class_ion,
-      #                           selected = all_data$class_ion),
-      #        style = "background-color: #E8E8E8"
-      # ),
       p("Select the lipid classes you want to keep."),
       column(width = my_col_width,
              checkboxGroupInput(inputId = "select_PL_class",
@@ -259,15 +248,6 @@ shinyAppServer <- function(input, output, session) {
     )
   })
 
-  # not used now
-  # output$show_qc_table <- renderTable({
-  #   req(all_data$qc_results,
-  #       all_data$class_ion_selected)
-  #
-  #   all_data$qc_results %>%
-  #     filter(.data$class_ion %in% all_data$class_ion_selected)
-  # })
-
   #### identification part ####
   # filter the identification data
   observeEvent({
@@ -304,10 +284,6 @@ shinyAppServer <- function(input, output, session) {
       unlist(strsplit(x = x,
                       split = " - "))[1]
     })))
-
-    # filter the data, lipid classes are removed here
-    # all_data$lipid_data_filter <- all_data$lipid_data_long %>%
-    #   filter(.data$class_ion %in% all_data$class_ion_selected)
 
     # instead of removing them, tag them that I don't want them
     all_data$lipid_data_filter <- all_data$lipid_data_long %>%
@@ -1026,6 +1002,34 @@ shinyAppServer <- function(input, output, session) {
   output$about_session <- renderPrint({
     session_info()
   })
+
+  #### meta data part
+  # get the file
+  xlsx_file <- reactive({
+    req(input$meta_data_file)
+    # If no file is selected, don't do anything
+    # validate(need(input$meta_data_file, message = FALSE))
+
+    # check if it is an xlsx file
+    my_file <- input$meta_data_file
+    ext <- file_ext(my_file$datapath)
+    validate(need(ext == "xlsx", "Please upload a .xlsx file!"))
+
+    return(input$meta_data_file)
+  })
+
+  # read the meta data file
+  all_data$meta_data <- reactive({
+    read_xlsx(path = xlsx_file()$datapath)
+  })
+
+  # show the content of the meta data file
+  output$show_meta_data <- renderTable({
+    req(all_data$meta_data)
+
+    all_data$meta_data()
+  })
+  ####
 
   # for debugging: check which lipid classes / ions are selected
   # output$lipid_classes <- renderText({

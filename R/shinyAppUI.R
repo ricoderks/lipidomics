@@ -170,6 +170,7 @@ shinyAppUI <- navbarPage(title = "CPM - Lipidomics",
                                              uiOutput(outputId = "OST_UI")
                                     )
                          ), # end navbarMenu identification
+                         # start tabpanel issues
                          tabPanel(title = "Issues",
                                   fluidPage(
                                     fluidRow(column = 12,
@@ -177,7 +178,30 @@ shinyAppUI <- navbarPage(title = "CPM - Lipidomics",
                                     fluidRow(column = 12,
                                              tableOutput(outputId = "tbl_issues"))
                                   )
-                         ),
+                         ), # end tabpanel issues
+                         # start navbarMenu analysis
+                         navbarMenu(title = "Analysis",
+                                    tabPanel(title = "Meta data",
+                                             fluidPage(
+                                               fluidRow(column = 12,
+                                                        h4("Meta data")
+                                               ),
+                                               fluidRow(
+                                                 column(width = 12,
+                                                        p("Read an Excel file with meta data."),
+                                                        fileInput(inputId = "meta_data_file",
+                                                                  label = "Meta data file:",
+                                                                  multiple = FALSE,
+                                                                  accept = c(".xlsx"),
+                                                                  width = 400),
+                                                        style = "background-color: #E8E8E8")
+                                               ),
+                                               fluidRow(
+                                                 column(width = 12,
+                                                        tableOutput(outputId = "show_meta_data"))
+                                               )
+                                             ))
+                         ), # end navbarmenu analysis
                          # tabPanel About
                          navbarMenu(title = "Help",
                                     tabPanel(title = "Lipids",

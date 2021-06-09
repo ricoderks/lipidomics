@@ -6,7 +6,7 @@
 #'
 #' @return Returns a tibble
 #'
-#' @importFrom dplyr filter
+#' @importFrom dplyr filter arrange
 #' @importFrom magrittr %>%
 #' @importFrom rlang .data
 #'
@@ -21,7 +21,8 @@ select_identified <- function(df) {
            !grepl(x = .data$LipidName,
                   pattern = "w/o *"),
            !grepl(x = .data$LipidName,
-                  pattern = "RIKEN"))
+                  pattern = "RIKEN")) %>%
+    arrange(.data$LipidClass, .data$LipidName, .data$polarity)
 
   return(df)
 }

@@ -20,6 +20,7 @@ Imports:
     pheatmap,
     purrr,
     readr,
+    readxl,
     rlang,
     scales,
     sessioninfo,
@@ -29,6 +30,7 @@ Imports:
     tibble,
     tidyr,
     tidyselect,
+    tools,
     utils
 Remotes:
     github::ricoderks/ggCPM

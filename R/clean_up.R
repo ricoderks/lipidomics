@@ -14,7 +14,12 @@
 #' @author Rico Derks
 #'
 clean_up <- function(df) {
-    # rename some columns in the data frame for ease of access later on.
+  # make a single dataframe
+  df <- df %>%
+    select(.data$polarity, .data$raw_data) %>%
+    unnest(c(.data$polarity, .data$raw_data))
+
+  # rename some columns in the data frame for ease of access later on.
   df <- df %>%
     rename(AlignmentID = .data$`Alignment ID`,
            AverageRT = .data$`Average Rt(min)`,
