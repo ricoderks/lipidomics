@@ -159,7 +159,8 @@ bubblePlotServer <- function(id, data, pattern, lipid_data, title) {
         toReturn$filter_data <- lipid_data() %>%
           filter(.data$my_id == data$selected_data$my_id) %>%
           select(.data$my_id, .data$keep, .data$comment) %>%
-          mutate(keep = if_else(input$select_reason == "keep",
+          mutate(keep = if_else(input$select_reason == "keep" |
+                                  input$select_reason == "rename",
                                 TRUE,
                                 FALSE),
                  comment = if_else(input$select_reason == "keep",
@@ -177,7 +178,8 @@ bubblePlotServer <- function(id, data, pattern, lipid_data, title) {
         toReturn$filter_data <- lipid_data() %>%
           filter(.data$my_id == data$selected_data$my_id) %>%
           select(.data$my_id, .data$keep, .data$comment) %>%
-          mutate(keep = if_else(input$select_reason == "keep",
+          mutate(keep = if_else(input$select_reason == "keep" |
+                                  input$select_reason == "rename",
                                 TRUE,
                                 FALSE),
                  comment = if_else(input$select_reason == "keep",

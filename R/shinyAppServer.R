@@ -18,6 +18,7 @@
 #' @importFrom utils head
 #' @importFrom tools file_ext
 #' @importFrom readxl read_xlsx
+#' @importFrom DT renderDT
 #'
 #' @author Rico Derks
 
@@ -38,6 +39,7 @@ shinyAppServer <- function(input, output, session) {
                              lipid_data_filter = NULL,
                              clean_data = NULL,
                              meta_data = NULL,
+                             merged_data = NULL,
                              qc_results = NULL,
                              class_ion = NULL,
                              class_ion_selected = NULL,
@@ -982,7 +984,8 @@ shinyAppServer <- function(input, output, session) {
     req(all_data$clean_data)
 
     all_data$clean_data %>%
-      filter(.data$keep == FALSE,
+      filter(.data$keep == FALSE |
+               (.data$keep == TRUE & .data$comment == "rename"),
              .data$comment != "remove_class") %>%
       select(.data$my_id:.data$polarity, -.data$scale_DotProduct, -.data$scale_RevDotProduct, .data$keep, .data$comment, .data$append_name)
   })
@@ -1024,10 +1027,68 @@ shinyAppServer <- function(input, output, session) {
   })
 
   # show the content of the meta data file
-  output$show_meta_data <- renderTable({
+  output$show_meta_data <- renderDT({
     req(all_data$meta_data)
 
     all_data$meta_data()
+  },
+  options = list(pageLength = 10,
+                 lengthChange = FALSE,
+                 dom = "pt",
+                 ordering = TRUE),
+  selection = "none")
+
+  # generate the UI part for column selecting and merging
+  output$merge_ui <- renderUI({
+    req(all_data$meta_data)
+
+    # get the column names of the meta data
+    merge_colnames <- colnames(all_data$meta_data())
+
+    tagList(
+      # create pull down list for column selection
+      selectInput(inputId = "select_meta_column",
+                  label = "Select column for merging:",
+                  choices = c("none", merge_colnames),
+                  selected = "none"),
+      # show status on which column the merge was done
+      htmlOutput(outputId = "status_merge"),
+      # the merge button
+      actionButton(inputId = "btn_merge_meta",
+                   label = "Merge")
+    )
+  })
+
+  # show status on which column the merge was done
+  output$status_merge <- renderUI({
+    req(input$btn_merge_meta)
+
+    # make sure this doesn't change if only a new column is selected.
+    selected_column <- isolate(input$select_meta_column)
+    # nothing should happen if the selected column is 'none'
+    if(selected_column != "none") {
+      p("Data merged on column ", HTML("<b>"), selected_column, HTML("</b>"), ".")
+    }
+  })
+
+  # show the merged data
+  output$show_merged_data <- renderDT({
+    req(all_data$clean_data,
+        all_data$meta_data,
+        input$btn_merge_meta)
+
+    # make sure this doesn't change if only a new column is selected.
+    selected_column <- isolate(input$select_meta_column)
+    # nothing should happen if the selected column is 'none'
+    if(selected_column != "none") {
+      all_data$merged_data <- merge_data(lipid_data = all_data$clean_data,
+                                         meta_data = all_data$meta_data(),
+                                         by = selected_column)
+    } else {
+      all_data$merged_data <- NULL
+    }
+
+    all_data$merged_data
   })
   ####
 

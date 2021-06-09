@@ -11,6 +11,7 @@ Encoding: UTF-8
 LazyData: true
 Imports:
     dplyr,
+    DT,
     ggCPM,
     ggplot2,
     ggrepel,

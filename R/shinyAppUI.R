@@ -3,6 +3,7 @@
 #' @description This is the UI function for the shiny app.
 #'
 #' @import shiny
+#' @importFrom DT DTOutput
 
 # create the shiny application user interface
 shinyAppUI <- navbarPage(title = "CPM - Lipidomics",
@@ -181,26 +182,41 @@ shinyAppUI <- navbarPage(title = "CPM - Lipidomics",
                          ), # end tabpanel issues
                          # start navbarMenu analysis
                          navbarMenu(title = "Analysis",
+                                    # start tabpanel meta data
                                     tabPanel(title = "Meta data",
                                              fluidPage(
                                                fluidRow(column = 12,
                                                         h4("Meta data")
                                                ),
                                                fluidRow(
-                                                 column(width = 12,
+                                                 column(width = 6,
                                                         p("Read an Excel file with meta data."),
                                                         fileInput(inputId = "meta_data_file",
                                                                   label = "Meta data file:",
                                                                   multiple = FALSE,
                                                                   accept = c(".xlsx"),
-                                                                  width = 400),
-                                                        style = "background-color: #E8E8E8")
+                                                                  width = 400)),
+                                                 column(width = 6,
+                                                        uiOutput(outputId = "merge_ui")),
+                                                 style = "background-color: #E8E8E8"
                                                ),
                                                fluidRow(
                                                  column(width = 12,
-                                                        tableOutput(outputId = "show_meta_data"))
+                                                        # this needs DT:: in front of it?!?
+                                                        DT::DTOutput(outputId = "show_meta_data"))
                                                )
-                                             ))
+                                             )), # end tabpanel meta data
+                                    # start tabpanel merged data
+                                    tabPanel(title = "Merged data",
+                                      fluidPage(
+                                        fluidRow(column = 12,
+                                                 h4("Merged data"),
+                                                 p("This is only to have a quick overview of the merged data. Merged data is in long format."),
+                                                 # this needs DT:: in front of it?!?
+                                                 DT::DTOutput(outputId = "show_merged_data")
+                                                 )
+                                      )
+                                    ) # end tabpanel merged data
                          ), # end navbarmenu analysis
                          # tabPanel About
                          navbarMenu(title = "Help",
