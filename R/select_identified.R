@@ -32,6 +32,8 @@ select_identified <- function(lipid_data) {
       # get the short lipid name
       ShortLipidName = str_extract(string = .data$LipidName,
                                    pattern = "[A-Za-z- 0-9:;/\\(\\)]+"),
+      # make a copy of the ShortLipidName
+      orgShortLipidName = .data$ShortLipidName,
       # get the long lipid name
       LongLipidName = str_replace(string = .data$LipidName,
                                   pattern = "([A-Za-z-_ 0-9:;/]*)([|])([A-Za-z-_ 0-9:;]*)",
@@ -43,8 +45,7 @@ select_identified <- function(lipid_data) {
       class_ion = paste(.data$LipidClass, .data$ion,
                         sep = " - "),
       keep = TRUE,
-      comment = "",
-      append_name = "")
+      comment = "")
 
   return(lipid_data)
 }

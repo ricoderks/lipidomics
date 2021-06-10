@@ -34,8 +34,7 @@ bubblePlotServer <- function(id, data, pattern, lipid_data, title) {
 
       toReturn <- reactiveValues(filter_data = tibble(my_id = character(),
                                                       keep = logical(),
-                                                      comment = character(),
-                                                      append_name = character()))
+                                                      comment = character()))
 
       # show which identification tab is selected
       output$show_tab_id_ui <- renderUI({
@@ -122,14 +121,14 @@ bubblePlotServer <- function(id, data, pattern, lipid_data, title) {
             lipid_status <- "keep"
           }
 
-          append_name <- lipid_data() %>%
-            filter(.data$my_id == data$selected_data$my_id) %>%
-            pull(append_name)
+          # append_name <- lipid_data() %>%
+          #   filter(.data$my_id == data$selected_data$my_id) %>%
+          #   pull(append_name)
 
           # if there is no append name this is NA_character_
-          if(is.na(append_name)) {
-            append_name <- ""
-          }
+          # if(is.na(append_name)) {
+          #   append_name <- ""
+          # }
         }
         if(nrow(data$selected_data) == 1) {
           tagList(
@@ -140,12 +139,12 @@ bubblePlotServer <- function(id, data, pattern, lipid_data, title) {
                                            "No convincing match" = "no_match",
                                            "Incorrect ret. time" = "wrong_rt",
                                            "Rename" = "rename"),
-                               selected = lipid_status),
-                   conditionalPanel(condition = "input.select_reason == 'rename'",
-                                    ns = session$ns,
-                                    textInput(inputId = session$ns("rename"),
-                                              label = "Append to name:",
-                                              value = append_name))
+                               selected = lipid_status)
+                   # conditionalPanel(condition = "input.select_reason == 'rename'",
+                   #                  ns = session$ns,
+                   #                  textInput(inputId = session$ns("rename"),
+                   #                            label = "Append to name:",
+                   #                            value = append_name))
             )
           )
         } else {
