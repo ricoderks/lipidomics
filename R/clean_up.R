@@ -3,7 +3,7 @@
 #' @description Clean up the columns and column names of the tibble after
 #'     reading the MS-DIAL result files.
 #'
-#' @param df The tibble.
+#' @param lipid_data The tibble.
 #'
 #' @return Returns a tibble
 #'
@@ -13,14 +13,14 @@
 #'
 #' @author Rico Derks
 #'
-clean_up <- function(df) {
+clean_up <- function(lipid_data) {
   # make a single dataframe
-  df <- df %>%
+  lipid_data <- lipid_data %>%
     select(.data$polarity, .data$raw_data) %>%
     unnest(c(.data$polarity, .data$raw_data))
 
   # rename some columns in the data frame for ease of access later on.
-  df <- df %>%
+  lipid_data <- lipid_data %>%
     rename(AlignmentID = .data$`Alignment ID`,
            AverageRT = .data$`Average Rt(min)`,
            AverageMZ = .data$`Average Mz`,
@@ -41,5 +41,5 @@ clean_up <- function(df) {
            .data$FragPresence, .data$TotalScore, .data$polarity, .data$MSMSspectrum,
            matches("^([qQ][cC]pool|[sS]ample|[bB]lank)_.*[0-9]{3}$"))
 
-  return(df)
+  return(lipid_data)
 }

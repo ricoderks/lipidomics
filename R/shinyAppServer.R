@@ -65,10 +65,10 @@ shinyAppServer <- function(input, output, session) {
                             .f = ~ read_msdial(filename = .x)))
 
     # cleanup some column names
-    results <- clean_up(df = results)
+    results <- clean_up(lipid_data = results)
 
     # keep only the identified lipids and sort by lipid class, lipid
-    results <- select_identified(df = results)
+    results <- select_identified(lipid_data = results)
 
     # add some extra columns for lipid selection
     all_data$lipid_data <- results %>%
@@ -97,10 +97,10 @@ shinyAppServer <- function(input, output, session) {
     all_data$clean_data <- all_data$lipid_data
 
     # make the data long
-    all_data$lipid_data_long <- tidy_lipids(df = all_data$lipid_data)
+    all_data$lipid_data_long <- tidy_lipids(lipid_data = all_data$lipid_data)
 
     # calculate the RSD values
-    all_data$qc_results <- calc_rsd(df = all_data$lipid_data_long)
+    all_data$qc_results <- calc_rsd(lipid_data = all_data$lipid_data_long)
   })
 
   #### Select lipid classes ####
@@ -198,7 +198,7 @@ shinyAppServer <- function(input, output, session) {
     req(all_data$lipid_data_long)
 
     # show histogram
-    show_rsd_histogram(df = all_data$qc_results)
+    show_rsd_histogram(qc_data = all_data$qc_results)
   })
 
   # create histogram of all lipids per lipid class
@@ -207,7 +207,7 @@ shinyAppServer <- function(input, output, session) {
         all_data$class_ion_selected)
 
     # show histogram/violing plot
-    show_rsd_lipidclass_violin(df = all_data$qc_results)
+    show_rsd_lipidclass_violin(qc_data = all_data$qc_results)
   })
 
   # create the output UI
@@ -228,7 +228,7 @@ shinyAppServer <- function(input, output, session) {
   output$create_corplot <- renderPlotly({
     req(all_data$lipid_data)
 
-    cor_heatmap2(df = all_data$lipid_data)
+    cor_heatmap2(lipid_data = all_data$lipid_data)
   })
 
   # create UI for correlation plot

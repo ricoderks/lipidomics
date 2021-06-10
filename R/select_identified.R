@@ -2,7 +2,7 @@
 #'
 #' @description Filter the tibble to keep only the identified lipids.
 #'
-#' @param df The tibble.
+#' @param lipid_data The tibble.
 #'
 #' @return Returns a tibble
 #'
@@ -12,9 +12,9 @@
 #'
 #' @author Rico Derks
 #'
-select_identified <- function(df) {
+select_identified <- function(lipid_data) {
     # rename some columns in the data frame for ease of access later on.
-  df <- df %>%
+  lipid_data <- lipid_data %>%
     filter(.data$LipidName != "Unknown",
            .data$LipidClass != "Others",
            # remove annotated peaks without library result
@@ -24,5 +24,5 @@ select_identified <- function(df) {
                   pattern = "RIKEN")) %>%
     arrange(.data$LipidClass, .data$LipidName, .data$polarity)
 
-  return(df)
+  return(lipid_data)
 }

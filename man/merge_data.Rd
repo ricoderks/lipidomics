@@ -4,7 +4,7 @@
 \alias{merge_data}
 \title{Merge the meta data with the lipid data}
 \usage{
-merge_data(lipid_data, meta_data, by)
+merge_data(lipid_data, meta_data = NULL, by = NULL)
 }
 \arguments{
 \item{lipid_data}{data frame containing the lipid data (wide format).}
@@ -19,6 +19,9 @@ Returns a merged data frame in tidy format
 }
 \description{
 Merge the meta data with the lipid data.
+}
+\details{
+If there is not meta data the lipid data will be converted to tidy format.
 }
 \author{
 Rico Derks

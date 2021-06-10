@@ -3,7 +3,7 @@
 #' @description Show a violin plot of all RSD values of all lipids per lipid class
 #'     within all QCpool samples..
 #'
-#' @param df tibble in tidy format
+#' @param qc_data tibble in tidy format
 #'
 #' @return ggplot2 object
 #'
@@ -15,11 +15,11 @@
 #'
 #' @author Rico Derks
 #'
-show_rsd_lipidclass_violin <- function(df) {
+show_rsd_lipidclass_violin <- function(qc_data) {
   my_colors <- cpm_cols(c("green", "red"))
   names(my_colors) <- c("pos", "neg")
 
-  p <- df %>%
+  p <- qc_data %>%
     ggplot(aes(x = .data$LipidClass,
                y = .data$rsd_area)) +
     geom_violin() +

@@ -2,7 +2,7 @@
 #'
 #' @description Filter the tibble to keep only the identified lipids.
 #'
-#' @param df The tibble.
+#' @param lipid_data The tibble.
 #'
 #' @details After making the tibble in long format also some additional columns ared added.
 #'
@@ -17,9 +17,9 @@
 #'
 #' @author Rico Derks
 #'
-tidy_lipids <- function(df) {
+tidy_lipids <- function(lipid_data) {
   # create long table
-  df_long <- df %>%
+  df_long <- lipid_data %>%
     pivot_longer(cols = matches("^([sS]ample|[qQ][cC]pool|[bB]lank).*"),
                  names_to = "sample_name",
                  values_to = "area") %>%

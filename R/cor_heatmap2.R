@@ -2,7 +2,7 @@
 #'
 #' @description Create a correlation heatmap of all samples..
 #'
-#' @param df tibble with all the lipid data
+#' @param lipid_data tibble with all the lipid data
 #'
 #' @return plotly object
 #'
@@ -16,8 +16,8 @@
 #'
 #' @author Rico Derks
 #'
-cor_heatmap2 <- function(df) {
-  df_m <- df %>%
+cor_heatmap2 <- function(lipid_data) {
+  df_m <- lipid_data %>%
     select(matches("([qQ][cC]pool|[sS]ample)"))
 
   # calculate the correlation

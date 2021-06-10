@@ -4,10 +4,10 @@
 \alias{cor_heatmap2}
 \title{Create correlation heatmap of all samples}
 \usage{
-cor_heatmap2(df)
+cor_heatmap2(lipid_data)
 }
 \arguments{
-\item{df}{tibble with all the lipid data}
+\item{lipid_data}{tibble with all the lipid data}
 }
 \value{
 plotly object
