@@ -16,7 +16,8 @@
 compare_samples_heatmap <- function(lipid_data) {
   lipid_data <- lipid_data %>%
     # only select the samples
-    filter(.data$sample_type == "sample") %>%
+    filter(.data$sample_type == "sample",
+           .data$keep == TRUE) %>%
     # scale "row wise" i.e. lipid
     group_by(.data$my_id) %>%
     # keep in mind, scale returns a matrix
