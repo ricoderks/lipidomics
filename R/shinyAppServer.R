@@ -68,15 +68,16 @@ shinyAppServer <- function(input, output, session) {
     results <- clean_up(lipid_data = results)
 
     # keep only the identified lipids and sort by lipid class, lipid
-    results <- select_identified(lipid_data = results)
-
-    # add some extra columns for lipid selection
-    all_data$lipid_data <- results %>%
-      mutate(keep = TRUE,
-             comment = "",
-             append_name = "",
-             class_ion = paste(.data$LipidClass, .data$ion,
-                               sep = " - "))
+    all_data$lipid_data <- select_identified(lipid_data = results)
+    # results <- select_identified(lipid_data = results)
+    #
+    # # add some extra columns for lipid selection
+    # all_data$lipid_data <- results %>%
+    #   mutate(keep = TRUE,
+    #          comment = "",
+    #          append_name = "",
+    #          class_ion = paste(.data$LipidClass, .data$ion,
+    #                            sep = " - "))
   })
 
   # show the raw data
@@ -298,6 +299,7 @@ shinyAppServer <- function(input, output, session) {
                                "",
                                "remove_class"))
 
+    # Do this here as well
     all_data$clean_data <- all_data$clean_data %>%
       mutate(keep = if_else(.data$class_ion %in% all_data$class_ion_selected,
                             TRUE,
@@ -329,7 +331,9 @@ shinyAppServer <- function(input, output, session) {
 
     all_data$clean_data$keep[all_data$clean_data$my_id == filter_FA()$filter_data$my_id] <- filter_FA()$filter_data$keep
     all_data$clean_data$comment[all_data$clean_data$my_id == filter_FA()$filter_data$my_id] <- filter_FA()$filter_data$comment
-    all_data$clean_data$append_name[all_data$clean_data$my_id == filter_FA()$filter_data$my_id] <- filter_FA()$filter_data$append_name
+    # rename_lipid(lipid_data = all_data$clean_data,
+    #              rename_info = filter_FA()$filter_data)
+    # all_data$clean_data$append_name[all_data$clean_data$my_id == filter_FA()$filter_data$my_id] <- filter_FA()$filter_data$append_name
   })
   ###
 

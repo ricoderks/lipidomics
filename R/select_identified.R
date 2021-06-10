@@ -22,7 +22,29 @@ select_identified <- function(lipid_data) {
                   pattern = "w/o *"),
            !grepl(x = .data$LipidName,
                   pattern = "RIKEN")) %>%
-    arrange(.data$LipidClass, .data$LipidName, .data$polarity)
+    arrange(.data$LipidClass, .data$LipidName, .data$polarity)%>%
+    # add some extra columns
+    mutate(
+      # make LipdClass a factor
+      LipidClass = factor(.data$LipidClass,
+                          levels = sort(unique(.data$LipidClass)),
+                          labels = sort(unique(.data$LipidClass))),
+      # get the short lipid name
+      ShortLipidName = str_extract(string = .data$LipidName,
+                                   pattern = "[A-Za-z- 0-9:;/\\(\\)]+"),
+      # get the long lipid name
+      LongLipidName = str_replace(string = .data$LipidName,
+                                  pattern = "([A-Za-z-_ 0-9:;/]*)([|])([A-Za-z-_ 0-9:;]*)",
+                                  replacement = "\\3"),
+      # correct for empty long lipid names
+      LongLipidName = ifelse(.data$LongLipidName == "" | is.na(.data$LongLipidName),
+                             .data$ShortLipidName,
+                             .data$LongLipidName),
+      class_ion = paste(.data$LipidClass, .data$ion,
+                        sep = " - "),
+      keep = TRUE,
+      comment = "",
+      append_name = "")
 
   return(lipid_data)
 }
