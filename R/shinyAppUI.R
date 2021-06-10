@@ -222,7 +222,7 @@ shinyAppUI <- navbarPage(title = "CPM - Lipidomics",
                                              fluidPage(
                                                fluidRow(column = 12,
                                                         plotlyOutput(outputId = "compare_samples",
-                                                                     height = "1000px"))
+                                                                     height = "900px"))
                                              )
                                     ) # end tabpanel sampels
                          ), # end navbarmenu analysis

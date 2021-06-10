@@ -22,14 +22,19 @@ compare_samples_heatmap <- function(lipid_data) {
     group_by(.data$my_id) %>%
     # keep in mind, scale returns a matrix
     mutate(scaled_area = scale(.data$area)[, 1]) %>%
-    ungroup()
+    ungroup() %>%
+    mutate(order_yaxis = paste(.data$LipidClass, .data$ShortLipidName, sep = "_"))
 
   p <- lipid_data %>%
     plot_ly(x = ~sample_name,
             y = ~ShortLipidName) %>%
-    add_heatmap(z = ~scaled_area) %>%
-    layout(yaxis = list(title = "Short lipid name"),
-           xaxis = list(title = "Sample name"))
+    add_heatmap(z = ~scaled_area,
+                colorscale = "Rainbow",
+                yaxis = list(type = "category",
+                             categoryorder = "array",
+                             categoryarray =  ~order_yaxis)) %>%
+    layout(yaxis = list(title = list(text = "Short lipid name")),
+           xaxis = list(title = list(text = "Sample name")))
 
   return(p)
 }
