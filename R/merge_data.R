@@ -7,9 +7,11 @@
 #' @param by column name (character) of the the column to use to merge the meta
 #'     data with the lipid data
 #'
+#' @details If there is not meta data the lipid data will be converted to tidy format.
+#'
 #' @return Returns a merged data frame in tidy format
 #'
-#' @importFrom dplyr mutate left_join
+#' @importFrom dplyr mutate left_join if_else
 #' @importFrom tidyselect matches
 #' @importFrom tidyr pivot_longer
 #' @importFrom stringr str_extract str_replace
@@ -18,7 +20,7 @@
 #'
 #' @author Rico Derks
 #'
-merge_data <- function(lipid_data, meta_data, by) {
+merge_data <- function(lipid_data, meta_data = NULL, by = NULL) {
 
   # make the lipid data long and add some extra columns, same as in tidy_lipids
   lipid_data_long <- lipid_data %>%
@@ -33,6 +35,8 @@ merge_data <- function(lipid_data, meta_data, by) {
       # get the short lipid name
       ShortLipidName = str_extract(string = .data$LipidName,
                                    pattern = "[A-Za-z- 0-9:;/\\(\\)]+"),
+      # make a copy of the short lipid name column
+      orgShortLipidName = .data$ShortLipidName,
       # get the long lipid name
       LongLipidName = str_replace(string = .data$LipidName,
                                   pattern = "([A-Za-z-_ 0-9:;/]*)([|])([A-Za-z-_ 0-9:;]*)",
@@ -48,15 +52,23 @@ merge_data <- function(lipid_data, meta_data, by) {
                               pattern = "[0-9]{2}:[0-9]{1,2}"),
       sample_type = factor(tolower(str_extract(string = .data$sample_name,
                                                pattern = "([bB]lank|[qQ][cC]pool|[sS]ample)"))),
-      # some lipids need to be renamed
-      ShortLipidName = if_else(.data$comment == "rename",
-                              paste0(.data$ShortLipidName, .data$append_name),
-                              .data$ShortLipidName)) %>%
-    # join the meta data
-    left_join(y = meta_data,
-              by = c("sample_name" = by),
-              suffix = c("", ".y")) %>%
-    # only select a few columns
+      # some lipids need to be renamed, this does not work, it removes all ShortLipidName
+      ShortLipidName = ifelse(.data$comment == "rename",
+                              paste0(.data$orgShortLipidName, .data$append_name),
+                              .data$orgShortLipidName)
+    )
+
+  # if there is no meta data only return the data in long format
+  if(!is.null(meta_data)) {
+    lipid_data_long <- lipid_data_long %>%
+      # join the meta data
+      left_join(y = meta_data,
+                by = c("sample_name" = by),
+                suffix = c("", ".y"))
+  }
+
+  # only select a few columns
+  lipid_data_long <- lipid_data_long%>%
     select(-c(.data$DotProduct:.data$TotalScore), -.data$MSMSspectrum)
 
   return(lipid_data_long)

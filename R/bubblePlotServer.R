@@ -164,11 +164,11 @@ bubblePlotServer <- function(id, data, pattern, lipid_data, title) {
                                 TRUE,
                                 FALSE),
                  comment = if_else(input$select_reason == "keep",
-                                   NA_character_,
+                                   "",
                                    input$select_reason),
                  append_name = if_else(input$select_reason == "rename",
                                        input$rename,
-                                       NA_character_))
+                                       ""))
       },
       ignoreInit = TRUE) # doesn't seem to work
 
@@ -183,11 +183,11 @@ bubblePlotServer <- function(id, data, pattern, lipid_data, title) {
                                 TRUE,
                                 FALSE),
                  comment = if_else(input$select_reason == "keep",
-                                   NA_character_,
+                                   "",
                                    input$select_reason),
                  append_name = if_else(input$select_reason == "rename",
                                        input$rename,
-                                       NA_character_))
+                                       ""))
       },
       ignoreInit = TRUE) # doesn't seem to work
 

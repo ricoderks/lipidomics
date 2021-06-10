@@ -25,7 +25,7 @@ compare_samples_heatmap <- function(lipid_data) {
 
   p <- lipid_data %>%
     plot_ly(x = ~sample_name,
-            y = ~orgShortLipidName) %>%
+            y = ~ShortLipidName) %>%
     add_heatmap(z = ~scaled_area) %>%
     layout(yaxis = list(title = "Short lipid name"),
            xaxis = list(title = "Sample name"))

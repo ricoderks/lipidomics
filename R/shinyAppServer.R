@@ -39,6 +39,7 @@ shinyAppServer <- function(input, output, session) {
                              lipid_data_long = NULL,
                              lipid_data_filter = NULL,
                              clean_data = NULL,
+                             analysis_data = NULL,
                              meta_data = NULL,
                              merged_data = NULL,
                              qc_results = NULL,
@@ -72,8 +73,8 @@ shinyAppServer <- function(input, output, session) {
     # add some extra columns for lipid selection
     all_data$lipid_data <- results %>%
       mutate(keep = TRUE,
-             comment = NA_character_,
-             append_name = NA_character_,
+             comment = "",
+             append_name = "",
              class_ion = paste(.data$LipidClass, .data$ion,
                                sep = " - "))
   })
@@ -246,8 +247,8 @@ shinyAppServer <- function(input, output, session) {
 
     tagList(
       plotlyOutput(outputId = "create_corplot",
-                 width = "50%",
-                 height = paste0(new_height, "px"))
+                   width = "50%",
+                   height = paste0(new_height, "px"))
     )
   })
 
@@ -281,7 +282,7 @@ shinyAppServer <- function(input, output, session) {
                                      input$select_PRL_class,
                                      input$select_SA_class,
                                      input$select_STL_class
-                                     )
+    )
     # how many lipid classes are selected
     all_data$num_lipid_classes <- length(unique(sapply(all_data$class_ion_selected, function(x) {
       unlist(strsplit(x = x,
@@ -294,7 +295,7 @@ shinyAppServer <- function(input, output, session) {
                             TRUE,
                             FALSE),
              comment = if_else(.data$class_ion %in% all_data$class_ion_selected,
-                               NA_character_,
+                               "",
                                "remove_class"))
 
     all_data$clean_data <- all_data$clean_data %>%
@@ -302,17 +303,17 @@ shinyAppServer <- function(input, output, session) {
                             TRUE,
                             FALSE),
              comment = if_else(.data$class_ion %in% all_data$class_ion_selected,
-                               NA_character_,
+                               "",
                                "remove_class"))
   },
   ignoreInit = TRUE)
 
   ### Fatty acids and conjugates
   filter_FA <- bubblePlotServer(id = "FA",
-                                    data = reactive(all_data$lipid_data_filter),
-                                    pattern = "^(Ox)?FA$",
-                                    lipid_data = reactive(all_data$clean_data),
-                                    title = input$navbar_selection)
+                                data = reactive(all_data$lipid_data_filter),
+                                pattern = "^(Ox)?FA$",
+                                lipid_data = reactive(all_data$clean_data),
+                                title = input$navbar_selection)
 
   output$FA_UI <- renderUI({
     req(all_data$lipid_data_filter,
@@ -334,10 +335,10 @@ shinyAppServer <- function(input, output, session) {
 
   ### Fatty amides
   filter_FAM <- bubblePlotServer(id = "FAM",
-                   data = reactive(all_data$lipid_data_filter),
-                   pattern = "^(NAGly|NAGlySer|NAOrn|NAE)",
-                   lipid_data = reactive(all_data$clean_data),
-                   title = input$navbar_selection)
+                                 data = reactive(all_data$lipid_data_filter),
+                                 pattern = "^(NAGly|NAGlySer|NAOrn|NAE)",
+                                 lipid_data = reactive(all_data$clean_data),
+                                 title = input$navbar_selection)
 
   output$FAM_UI <- renderUI({
     req(all_data$lipid_data_filter,
@@ -391,7 +392,7 @@ shinyAppServer <- function(input, output, session) {
     req(all_data$lipid_data_filter,
         all_data$clean_data)
 
-      bubblePlotUI(id = "EGL",
+    bubblePlotUI(id = "EGL",
                  data = all_data$lipid_data_filter,
                  pattern = "^(Ether|Ox)[MDT]G$")
   })
@@ -979,6 +980,7 @@ shinyAppServer <- function(input, output, session) {
     all_data$clean_data$comment[all_data$clean_data$my_id == filter_OST()$filter_data$my_id] <- filter_OST()$filter_data$comment
   })
   ###
+  ####
 
   ### Show the issues
   output$tbl_issues <- renderTable({
@@ -1001,11 +1003,7 @@ shinyAppServer <- function(input, output, session) {
       distinct(.data$class_ion,
                .keep_all = TRUE)
   })
-
-  #### About / Help  section ####
-  output$about_session <- renderPrint({
-    session_info()
-  })
+  #### eind issues part
 
   #### meta data part
   # get the file
@@ -1072,11 +1070,9 @@ shinyAppServer <- function(input, output, session) {
     }
   })
 
-  # show the merged data
-  output$show_merged_data <- renderDT({
+  observeEvent(input$btn_merge_meta, {
     req(all_data$clean_data,
-        all_data$meta_data,
-        input$btn_merge_meta)
+        all_data$meta_data)
 
     # make sure this doesn't change if only a new column is selected.
     selected_column <- isolate(input$select_meta_column)
@@ -1088,10 +1084,40 @@ shinyAppServer <- function(input, output, session) {
     } else {
       all_data$merged_data <- NULL
     }
+  })
+
+  # show the merged data
+  output$show_merged_data <- renderDT({
+    req(all_data$merged_data)
 
     all_data$merged_data
   })
-  ####
+  #### end meta merge part
+
+  # keep on eye on if the data gets merged
+  observe({
+    req(all_data$clean_data)
+
+    if(!is.null(all_data$merged_data)) {
+      all_data$analysis_data <- all_data$merged_data
+    } else {
+      all_data$analysis_data <- merge_data(lipid_data = all_data$clean_data)
+    }
+  })
+
+  #### Analysis part
+  output$compare_samples <- renderPlotly({
+     req(all_data$analysis_data)
+
+    compare_samples_heatmap(lipid_data = all_data$analysis_data)
+  })
+
+  #### end analysis part
+
+  #### About / Help  section ####
+  output$about_session <- renderPrint({
+    session_info()
+  })
 
   # for debugging: check which lipid classes / ions are selected
   # output$lipid_classes <- renderText({

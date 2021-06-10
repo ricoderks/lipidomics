@@ -4,6 +4,7 @@
 #'
 #' @import shiny
 #' @importFrom DT DTOutput
+#' @importFrom plotly plotlyOutput
 
 # create the shiny application user interface
 shinyAppUI <- navbarPage(title = "CPM - Lipidomics",
@@ -207,15 +208,23 @@ shinyAppUI <- navbarPage(title = "CPM - Lipidomics",
                                              )), # end tabpanel meta data
                                     # start tabpanel merged data
                                     tabPanel(title = "Merged data",
-                                      fluidPage(
-                                        fluidRow(column = 12,
-                                                 h4("Merged data"),
-                                                 p("This is only to have a quick overview of the merged data. Merged data is in long format."),
-                                                 # this needs DT:: in front of it?!?
-                                                 DT::DTOutput(outputId = "show_merged_data")
-                                                 )
-                                      )
-                                    ) # end tabpanel merged data
+                                             fluidPage(
+                                               fluidRow(column = 12,
+                                                        h4("Merged data"),
+                                                        p("This is only to have a quick overview of the merged data. Merged data is in long format."),
+                                                        # this needs DT:: in front of it?!?
+                                                        DT::DTOutput(outputId = "show_merged_data")
+                                               )
+                                             )
+                                    ), # end tabpanel merged data
+                                    # start tabpanel samples
+                                    tabPanel(title = "Samples",
+                                             fluidPage(
+                                               fluidRow(column = 12,
+                                                        plotlyOutput(outputId = "compare_samples",
+                                                                     height = "1000px"))
+                                             )
+                                    ) # end tabpanel sampels
                          ), # end navbarmenu analysis
                          # tabPanel About
                          navbarMenu(title = "Help",
