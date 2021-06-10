@@ -10,7 +10,7 @@ cor_heatmap2(df)
 \item{df}{tibble with all the lipid data}
 }
 \value{
-pheatmap object
+plotly object
 }
 \description{
 Create a correlation heatmap of all samples..
