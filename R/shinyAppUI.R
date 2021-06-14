@@ -40,7 +40,7 @@ shinyAppUI <- navbarPage(title = "CPM - Lipidomics",
                          tabPanel(title = "Lipid data",
                                   fluidPage(
                                     fluidRow(column = 12,
-                                             tableOutput(outputId = "lipid_data_table"))
+                                             DT::DTOutput(outputId = "lipid_data_table"))
                                   )
                          ), # end tabPanel Data
                          # navbarMenu QC

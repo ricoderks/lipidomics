@@ -45,7 +45,11 @@ select_identified <- function(lipid_data) {
       class_ion = paste(.data$LipidClass, .data$ion,
                         sep = " - "),
       keep = TRUE,
-      comment = "")
+      comment = "",
+      # clean up some levels which might not be present anymore
+      ion = droplevels(.data$ion),
+      polarity = droplevels(.data$polarity),
+      LipidClass = droplevels(.data$LipidClass))
 
   return(lipid_data)
 }

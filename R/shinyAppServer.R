@@ -72,14 +72,25 @@ shinyAppServer <- function(input, output, session) {
   })
 
   # show the raw data
-  output$lipid_data_table <- renderTable({
+  output$lipid_data_table <- renderDT({
     req(all_data$lipid_data)
 
     all_data$lipid_data %>%
       # remove a few columns
-      select(-.data$MSMSspectrum, -.data$scale_DotProduct, -.data$scale_RevDotProduct, -.data$keep, -.data$comment) %>%
-      head(20)
-  })
+      select(-.data$MSMSspectrum, -.data$scale_DotProduct, -.data$scale_RevDotProduct, -.data$keep, -.data$comment)
+    # all_data$lipid_data %>%
+    #   # remove a few columns
+    #   select(-.data$MSMSspectrum, -.data$scale_DotProduct, -.data$scale_RevDotProduct, -.data$keep, -.data$comment) %>%
+    #   head(20)
+  },
+  options = list(pageLength = 10,
+                 lengthChange = FALSE,
+                 dom = "pt",
+                 ordering = TRUE,
+                 autoWidth = TRUE),
+  selection = "none",
+  filter = "top",
+  rownames = FALSE)
 
   # make the lipid data in long format and calculate the RSD values
   observe({

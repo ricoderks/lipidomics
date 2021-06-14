@@ -35,7 +35,9 @@ clean_up <- function(lipid_data) {
            MSMSspectrum = .data$`MS/MS spectrum`) %>%
     mutate(scale_DotProduct = .data$DotProduct / 10,
            scale_RevDotProduct = .data$RevDotProduct / 10,
-           my_id = paste(.data$polarity, "_", .data$AlignmentID, sep = "")) %>%
+           my_id = paste(.data$polarity, "_", .data$AlignmentID, sep = ""),
+           ion = factor(.data$ion),
+           polarity = factor(.data$polarity)) %>%
     select(.data$my_id, .data$AlignmentID, .data$AverageRT, .data$AverageMZ, .data$ion, .data$LipidName, .data$LipidClass,
            .data$DotProduct, .data$scale_DotProduct, .data$RevDotProduct, .data$scale_RevDotProduct,
            .data$FragPresence, .data$TotalScore, .data$polarity, .data$MSMSspectrum,
