@@ -78,10 +78,6 @@ shinyAppServer <- function(input, output, session) {
     all_data$lipid_data %>%
       # remove a few columns
       select(-.data$MSMSspectrum, -.data$scale_DotProduct, -.data$scale_RevDotProduct, -.data$keep, -.data$comment)
-    # all_data$lipid_data %>%
-    #   # remove a few columns
-    #   select(-.data$MSMSspectrum, -.data$scale_DotProduct, -.data$scale_RevDotProduct, -.data$keep, -.data$comment) %>%
-    #   head(20)
   },
   options = list(pageLength = 10,
                  lengthChange = FALSE,
@@ -119,7 +115,7 @@ shinyAppServer <- function(input, output, session) {
     all_data$class_ion_selected <- all_data$class_ion
 
     # regular expression patterns
-    pattern_PL <- "^((Ox)?(Ether)?(L)?(LNA)?(MM)?P[ACEGISM]|HBMP|BMP)"
+    pattern_PL <- "^((Ether)?(Ox)?(L)?(LNA)?(MM)?P[ACEGISM]|HBMP|BMP)"
     pattern_GL <- "^(Ox|Ether|SQ|EtherS|L|A)?[DMT]G"
     pattern_Cer <- "^Cer[P_]"
     pattern_HexCer <- "^A?Hex[23]?Cer"
