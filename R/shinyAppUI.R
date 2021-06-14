@@ -82,97 +82,125 @@ shinyAppUI <- navbarPage(title = "CPM - Lipidomics",
                                     "Fatty acyls",
                                     tabPanel(title = "Fatty acids and conjugates",
                                              # tableOutput(outputId = "debug"),
-                                             uiOutput(outputId = "FA_UI")
+                                             shinycssloaders::withSpinner(uiOutput(outputId = "FA_UI"),
+                                                                          type = 5)
                                     ),
                                     tabPanel(title = "Fatty amides",
-                                             uiOutput(outputId = "FAM_UI")
+                                             shinycssloaders::withSpinner(uiOutput(outputId = "FAM_UI"),
+                                                                          type = 5)
                                     ),
                                     tabPanel(title = "Fatty esters",
-                                             uiOutput(outputId = "FE_UI")
+                                             shinycssloaders::withSpinner(uiOutput(outputId = "FE_UI"),
+                                                                          type = 5)
                                     ),
                                     "----",
                                     "Glyceroplipids",
                                     tabPanel(title = "Ether/Oxidized glycerolipids",
-                                             uiOutput(outputId = "EGL_UI")
+                                             shinycssloaders::withSpinner(uiOutput(outputId = "EGL_UI"),
+                                                                          type = 5)
                                     ),
                                     tabPanel(title = "Glycerolipids",
-                                             uiOutput(outputId = "GL_UI")
+                                             shinycssloaders::withSpinner(uiOutput(outputId = "GL_UI"),
+                                                                          type = 5)
                                     ),
                                     tabPanel(title = "Glycosyldiradylglycerols ",
-                                             uiOutput(outputId = "GLDG_UI")
+                                             shinycssloaders::withSpinner(uiOutput(outputId = "GLDG_UI"),
+                                                                          type = 5)
                                     ),
                                     tabPanel(title = "Other glycerolipids ",
-                                             uiOutput(outputId = "OGL_UI")
+                                             shinycssloaders::withSpinner(uiOutput(outputId = "OGL_UI"),
+                                                                          type = 5)
                                     ),
                                     "----",
                                     "Glycerophospholipids",
                                     tabPanel(title = "Glycerophosphates (PA)",
-                                             uiOutput(outputId = "PA_UI")
+                                             shinycssloaders::withSpinner(uiOutput(outputId = "PA_UI"),
+                                                                          type = 5)
                                     ),
                                     tabPanel(title = "Glycerophosphocholines (PC)",
-                                             uiOutput(outputId = "PC_UI")
+                                             shinycssloaders::withSpinner(uiOutput(outputId = "PC_UI"),
+                                                                          type = 5)
                                     ),
                                     tabPanel(title = "Glycerophosphoethanolamines (PE)",
-                                             uiOutput(outputId = "PE_UI")
+                                             shinycssloaders::withSpinner(uiOutput(outputId = "PE_UI"),
+                                                                          type = 5)
                                     ),
                                     tabPanel(title = "Glycerophosphoglycerols (PG)",
-                                             uiOutput(outputId = "PG_UI")
+                                             shinycssloaders::withSpinner(uiOutput(outputId = "PG_UI"),
+                                                                          type = 5)
                                     ),
                                     tabPanel(title = "Glycerophosphoglycerophosphoglycerols (CL)",
-                                             uiOutput(outputId = "CL_UI")
+                                             shinycssloaders::withSpinner(uiOutput(outputId = "CL_UI"),
+                                                                          type = 5)
                                     ),
                                     tabPanel(title = "Glycerophosphoinositolglycans",
-                                             uiOutput(outputId = "AcPIM_UI")
+                                             shinycssloaders::withSpinner(uiOutput(outputId = "AcPIM_UI"),
+                                                                          type = 5)
                                     ),
                                     tabPanel(title = "Glycerophosphoinositols (PI)",
-                                             uiOutput(outputId = "PI_UI")
+                                             shinycssloaders::withSpinner(uiOutput(outputId = "PI_UI"),
+                                                                          type = 5)
                                     ),
                                     tabPanel(title = "Glycerophosphoserines (PS)",
-                                             uiOutput(outputId = "PS_UI")
+                                             shinycssloaders::withSpinner(uiOutput(outputId = "PS_UI"),
+                                                                          type = 5)
                                     ),
                                     tabPanel(title = "Other glycerophospholipids",
-                                             uiOutput(outputId = "OGPL_UI")
+                                             shinycssloaders::withSpinner(uiOutput(outputId = "OGPL_UI"),
+                                                                          type = 5)
                                     ),
                                     tabPanel(title = "Oxidized glycerophospholipids",
-                                             uiOutput(outputId = "OPL_UI")
+                                             shinycssloaders::withSpinner(uiOutput(outputId = "OPL_UI"),
+                                                                          type = 5)
                                     ),
                                     "----",
                                     tabPanel(title = "Prenol lipids",
-                                             uiOutput(outputId = "PRL_UI")
+                                             shinycssloaders::withSpinner(uiOutput(outputId = "PRL_UI"),
+                                                                          type = 5)
                                     ),
                                     "----",
                                     "Sphingolipids",
                                     tabPanel(title = "Acidic glycosphingolipids",
-                                             uiOutput(outputId = "AcGL_UI")
+                                             shinycssloaders::withSpinner(uiOutput(outputId = "AcGL_UI"),
+                                                                          type = 5)
                                     ),
                                     tabPanel(title = "Ceramides ",
-                                             uiOutput(outputId = "Cer_UI")
+                                             shinycssloaders::withSpinner(uiOutput(outputId = "Cer_UI"),
+                                                                          type = 5)
                                     ),
                                     tabPanel(title = "Phosphosphingolipids ",
-                                             uiOutput(outputId = "PSL_UI")
+                                             shinycssloaders::withSpinner(uiOutput(outputId = "PSL_UI"),
+                                                                          type = 5)
                                     ),
                                     tabPanel(title = "Neutral glycosphingolipids",
-                                             uiOutput(outputId = "NPSL_UI")
+                                             shinycssloaders::withSpinner(uiOutput(outputId = "NPSL_UI"),
+                                                                          type = 5)
                                     ),
                                     tabPanel(title = "Sphingoid bases",
-                                             uiOutput(outputId = "SB_UI")
+                                             shinycssloaders::withSpinner(uiOutput(outputId = "SB_UI"),
+                                                                          type = 5)
                                     ),
                                     "----",
                                     "Sterol lipids",
                                     tabPanel(title = "Bile acids and derivatives",
-                                             uiOutput(outputId = "BA_UI")
+                                             shinycssloaders::withSpinner(uiOutput(outputId = "BA_UI"),
+                                                                          type = 5)
                                     ),
                                     tabPanel(title = "Secosteroids ",
-                                             uiOutput(outputId = "SC_UI")
+                                             shinycssloaders::withSpinner(uiOutput(outputId = "SC_UI"),
+                                                                          type = 5)
                                     ),
                                     tabPanel(title = "Steroid conjugates",
-                                             uiOutput(outputId = "STC_UI")
+                                             shinycssloaders::withSpinner(uiOutput(outputId = "STC_UI"),
+                                                                          type = 5)
                                     ),
                                     tabPanel(title = "Sterols",
-                                             uiOutput(outputId = "ST_UI")
+                                             shinycssloaders::withSpinner(uiOutput(outputId = "ST_UI"),
+                                                                          type = 5)
                                     ),
                                     tabPanel(title = "Other sterol lipids",
-                                             uiOutput(outputId = "OST_UI")
+                                             shinycssloaders::withSpinner(uiOutput(outputId = "OST_UI"),
+                                                                          type = 5)
                                     )
                          ), # end navbarMenu identification
                          # start tabpanel issues
