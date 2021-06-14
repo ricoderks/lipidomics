@@ -27,6 +27,7 @@ Imports:
     scales,
     sessioninfo,
     shiny,
+    shinycssloaders,
     stats,
     stringr,
     tibble,

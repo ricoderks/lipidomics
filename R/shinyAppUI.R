@@ -5,6 +5,7 @@
 #' @import shiny
 #' @importFrom DT DTOutput
 #' @importFrom plotly plotlyOutput
+#' @importFrom shinycssloaders withSpinner
 
 # create the shiny application user interface
 shinyAppUI <- navbarPage(title = "CPM - Lipidomics",
@@ -40,7 +41,8 @@ shinyAppUI <- navbarPage(title = "CPM - Lipidomics",
                          tabPanel(title = "Lipid data",
                                   fluidPage(
                                     fluidRow(column = 12,
-                                             DT::DTOutput(outputId = "lipid_data_table"))
+                                             shinycssloaders::withSpinner(DT::DTOutput(outputId = "lipid_data_table"),
+                                                                          type = 5))
                                   )
                          ), # end tabPanel Data
                          # navbarMenu QC
@@ -60,7 +62,8 @@ shinyAppUI <- navbarPage(title = "CPM - Lipidomics",
                                     tabPanel(title = "QC - Lipid class",
                                              fluidPage(
                                                fluidRow(column = 12,
-                                                        uiOutput(outputId = "rsd_lipidclass_ui")
+                                                        shinycssloaders::withSpinner(uiOutput(outputId = "rsd_lipidclass_ui"),
+                                                                                     type = 5)
                                                )
                                              )
                                     ), # end tabpanel QC lipid class
@@ -68,7 +71,8 @@ shinyAppUI <- navbarPage(title = "CPM - Lipidomics",
                                     tabPanel(title = "QC - Correlation",
                                              fluidPage(
                                                fluidRow(column = 12,
-                                                        uiOutput(outputId = "corplot")
+                                                        shinycssloaders::withSpinner(uiOutput(outputId = "corplot"),
+                                                                                     type = 5)
                                                )
                                              )
                                     ) # end tabpanel correlation plot
@@ -221,8 +225,9 @@ shinyAppUI <- navbarPage(title = "CPM - Lipidomics",
                                     tabPanel(title = "Samples",
                                              fluidPage(
                                                fluidRow(column = 12,
-                                                        plotlyOutput(outputId = "compare_samples",
-                                                                     height = "900px"))
+                                                        shinycssloaders::withSpinner(plotlyOutput(outputId = "compare_samples",
+                                                                                                  height = "900px"),
+                                                                                     type = 5))
                                              )
                                     ) # end tabpanel sampels
                          ), # end navbarmenu analysis
