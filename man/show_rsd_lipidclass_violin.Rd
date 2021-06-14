@@ -4,10 +4,10 @@
 \alias{show_rsd_lipidclass_violin}
 \title{Show a violin plot of all RSD values per lipid class}
 \usage{
-show_rsd_lipidclass_violin(df)
+show_rsd_lipidclass_violin(qc_data)
 }
 \arguments{
-\item{df}{tibble in tidy format}
+\item{qc_data}{tibble in tidy format}
 }
 \value{
 ggplot2 object

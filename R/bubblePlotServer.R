@@ -120,38 +120,72 @@ bubblePlotServer <- function(id, data, pattern, lipid_data, title) {
           if(is.na(lipid_status)) {
             lipid_status <- "keep"
           }
-        }
 
-        tagList(
-          column(width = 3,
-                 if(nrow(data$selected_data) == 1) {
+          # append_name <- lipid_data() %>%
+          #   filter(.data$my_id == data$selected_data$my_id) %>%
+          #   pull(append_name)
+
+          # if there is no append name this is NA_character_
+          # if(is.na(append_name)) {
+          #   append_name <- ""
+          # }
+        }
+        if(nrow(data$selected_data) == 1) {
+          tagList(
+            column(width = 3,
                    selectInput(inputId = session$ns("select_reason"),
                                label = "Keep:",
                                choices = c("Keep" = "keep",
                                            "No convincing match" = "no_match",
-                                           "Incorrect ret. time" = "wrong_rt"),
+                                           "Incorrect ret. time" = "wrong_rt",
+                                           "Rename" = "rename"),
                                selected = lipid_status)
-                 } else {
-                   NULL
-                 }
+                   # conditionalPanel(condition = "input.select_reason == 'rename'",
+                   #                  ns = session$ns,
+                   #                  textInput(inputId = session$ns("rename"),
+                   #                            label = "Append to name:",
+                   #                            value = append_name))
+            )
           )
-        )
+        } else {
+          NULL
+        }
       })
 
       observeEvent(input$select_reason, {
         req(data$selected_data)
 
-        toReturn$filter_data <- lipid_data() %>%
-          filter(.data$my_id == data$selected_data$my_id) %>%
-          select(.data$my_id, .data$keep, .data$comment) %>%
-          mutate(keep = if_else(input$select_reason == "keep",
-                                TRUE,
-                                FALSE),
-                 comment = if_else(input$select_reason == "keep",
-                                   NA_character_,
-                                   input$select_reason))
+          toReturn$filter_data <- lipid_data() %>%
+            filter(.data$my_id == data$selected_data$my_id) %>%
+            select(.data$my_id, .data$keep, .data$comment) %>%
+            mutate(keep = if_else(input$select_reason == "keep" |
+                                    input$select_reason == "rename",
+                                  TRUE,
+                                  FALSE),
+                   comment = if_else(input$select_reason == "keep",
+                                     "",
+                                     input$select_reason))
       },
       ignoreInit = TRUE) # doesn't seem to work
+
+      # observeEvent(input$rename, {
+      #   req(data$selected_data)
+      #
+      #   toReturn$filter_data <- lipid_data() %>%
+      #     filter(.data$my_id == data$selected_data$my_id) %>%
+      #     select(.data$my_id, .data$keep, .data$comment) %>%
+      #     mutate(keep = if_else(input$select_reason == "keep" |
+      #                             input$select_reason == "rename",
+      #                           TRUE,
+      #                           FALSE),
+      #            comment = if_else(input$select_reason == "keep",
+      #                              "",
+      #                              input$select_reason),
+      #            append_name = if_else(input$select_reason == "rename",
+      #                                  input$rename,
+      #                                  ""))
+      # },
+      # ignoreInit = TRUE) # doesn't seem to work
 
       # show the row clicked
       output$info <- renderTable({

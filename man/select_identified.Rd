@@ -4,10 +4,10 @@
 \alias{select_identified}
 \title{Keep only the identified lipids}
 \usage{
-select_identified(df)
+select_identified(lipid_data)
 }
 \arguments{
-\item{df}{The tibble.}
+\item{lipid_data}{The tibble.}
 }
 \value{
 Returns a tibble

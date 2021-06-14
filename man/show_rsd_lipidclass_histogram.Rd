@@ -4,10 +4,10 @@
 \alias{show_rsd_lipidclass_histogram}
 \title{Show the histogram of all RSD values per lipid class}
 \usage{
-show_rsd_lipidclass_histogram(df, lipidclass_ion)
+show_rsd_lipidclass_histogram(qc_data, lipidclass_ion)
 }
 \arguments{
-\item{df}{tibble in tidy format}
+\item{qc_data}{tibble in tidy format}
 
 \item{lipidclass_ion}{character vector containing "lipidclass - ion"}
 }

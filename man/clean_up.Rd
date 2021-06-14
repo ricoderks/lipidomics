@@ -4,10 +4,10 @@
 \alias{clean_up}
 \title{Clean up tibble from MS-DIAL}
 \usage{
-clean_up(df)
+clean_up(lipid_data)
 }
 \arguments{
-\item{df}{The tibble.}
+\item{lipid_data}{The tibble.}
 }
 \value{
 Returns a tibble

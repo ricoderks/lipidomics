@@ -4,10 +4,10 @@
 \alias{show_rsd_histogram}
 \title{Show the histogram of all RSD values}
 \usage{
-show_rsd_histogram(df)
+show_rsd_histogram(qc_data)
 }
 \arguments{
-\item{df}{tibble in tidy format}
+\item{qc_data}{tibble in tidy format}
 }
 \value{
 ggplot2 object

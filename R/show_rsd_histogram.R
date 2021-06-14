@@ -3,7 +3,7 @@
 #' @description Show the histogram of all RSD values of all lipids within
 #'     all QCpool samples..
 #'
-#' @param df tibble in tidy format
+#' @param qc_data tibble in tidy format
 #'
 #' @return ggplot2 object
 #'
@@ -15,11 +15,11 @@
 #'
 #' @author Rico Derks
 #'
-show_rsd_histogram <- function(df) {
+show_rsd_histogram <- function(qc_data) {
   my_colors <- cpm_cols(c("green", "red"))
   names(my_colors) <- c("pos", "neg")
 
-  p <- df %>%
+  p <- qc_data %>%
     ggplot(aes(.data$rsd_area)) +
     geom_histogram(aes(fill = .data$polarity),
                    binwidth = 0.005,

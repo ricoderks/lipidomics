@@ -3,7 +3,7 @@
 #' @description Show the histogram of all RSD values of all lipids per lipid class
 #'     within all QCpool samples..
 #'
-#' @param df tibble in tidy format
+#' @param qc_data tibble in tidy format
 #' @param lipidclass_ion character vector containing "lipidclass - ion"
 #'
 #' @return ggplot2 object
@@ -16,11 +16,11 @@
 #'
 #' @author Rico Derks
 #'
-show_rsd_lipidclass_histogram <- function(df, lipidclass_ion) {
+show_rsd_lipidclass_histogram <- function(qc_data, lipidclass_ion) {
   my_colors <- cpm_cols(c("green", "red"))
   names(my_colors) <- c("pos", "neg")
 
-  p <- df %>%
+  p <- qc_data %>%
     filter(.data$class_ion %in% lipidclass_ion) %>%
     ggplot(aes(.data$rsd_area)) +
     geom_histogram(aes(fill = .data$polarity),

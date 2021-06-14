@@ -4,10 +4,10 @@
 \alias{calc_rsd}
 \title{Calculate RSD values of all lipids}
 \usage{
-calc_rsd(df)
+calc_rsd(lipid_data)
 }
 \arguments{
-\item{df}{tibble in tidy format}
+\item{lipid_data}{tibble in tidy format}
 }
 \value{
 Returns a tibble in tidy with RSD values for each lipid.

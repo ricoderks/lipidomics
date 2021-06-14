@@ -2,7 +2,7 @@
 #'
 #' @description Calculate RSD values of all lipids within all QCpool samples..
 #'
-#' @param df tibble in tidy format
+#' @param lipid_data tibble in tidy format
 #'
 #' @return Returns a tibble in tidy with RSD values for each lipid.
 #'
@@ -13,9 +13,9 @@
 #'
 #' @author Rico Derks
 #'
-calc_rsd <- function(df) {
+calc_rsd <- function(lipid_data) {
   # create long table
-  qc_df <- df %>%
+  qc_df <- lipid_data %>%
     filter(.data$sample_type == "qcpool") %>%
     group_by(.data$my_id, .data$polarity) %>%
     summarise(rsd_area = sd(.data$area, na.rm = TRUE) / mean(.data$area, na.rm = TRUE),

@@ -4,10 +4,10 @@
 \alias{tidy_lipids}
 \title{Make the tibble in tidy format}
 \usage{
-tidy_lipids(df)
+tidy_lipids(lipid_data)
 }
 \arguments{
-\item{df}{The tibble.}
+\item{lipid_data}{The tibble.}
 }
 \value{
 Returns a tibble in tidy (long) format
