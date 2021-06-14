@@ -37,6 +37,10 @@ shinyAppUI <- navbarPage(title = "CPM - Lipidomics",
                                     )
                                   )
                          ), # end tabPanel Files
+                         # tabPanel samples
+                         tabPanel(title = "Samples",
+                                  uiOutput(outputId = "samples_list")
+                                  ), # end of tabpanel samples
                          # tabpanel Lipid data
                          tabPanel(title = "Lipid data",
                                   fluidPage(

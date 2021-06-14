@@ -45,7 +45,8 @@ shinyAppServer <- function(input, output, session) {
                              qc_results = NULL,
                              class_ion = NULL,
                              class_ion_selected = NULL,
-                             num_lipid_classes = NULL)
+                             num_lipid_classes = NULL,
+                             samples_selected = NULL)
 
   #### Read the files ####
   # watch the positive mode file
@@ -101,6 +102,34 @@ shinyAppServer <- function(input, output, session) {
     # calculate the RSD values
     all_data$qc_results <- calc_rsd(lipid_data = all_data$lipid_data_long)
   })
+
+  #### select samples
+  # show the checkboxes for (de-)selecting samples
+  output$samples_list <- renderUI({
+    req(all_data$lipid_data_long)
+
+    # get all the sample/qcpool names
+    all_sample_names <- all_data$lipid_data_long %>%
+      pull(.data$sample_name) %>%
+      unique() %>%
+      sort()
+
+    tagList(
+      checkboxGroupInput(inputId = "select_samples",
+                         label = "(De-)select samples:",
+                         choices = all_sample_names,
+                         selected = all_sample_names)
+    )
+  })
+
+  # do the actual "removing" of the samples
+  observeEvent(input$select_samples, {
+    req(all_data$lipid_data_long)
+
+    # get everything which is selected
+    all_data$samples_selected <- input$select_samples
+  })
+  ####
 
   #### Select lipid classes ####
   # get the lipid classes
@@ -1238,9 +1267,24 @@ shinyAppServer <- function(input, output, session) {
     req(all_data$clean_data)
 
     if(!is.null(all_data$merged_data)) {
+      # data is merged
       all_data$analysis_data <- all_data$merged_data
     } else {
+      # data is not merged
       all_data$analysis_data <- merge_data(lipid_data = all_data$clean_data)
+    }
+
+    # isolate the analysis data, because it needs to overwritten
+    tmp_data <- isolate(all_data$analysis_data)
+    # remove the unwanted samples
+    if(!is.null(all_data$samples_selected)) {
+      all_data$analysis_data <- tmp_data %>%
+        mutate(keep = if_else(.data$sample_name %in% all_data$samples_selected,
+                              TRUE,
+                              FALSE),
+               comment = if_else(.data$sample_name %in% all_data$samples_selected,
+                                 "",
+                                 "remove_sample"))
     }
   })
 
