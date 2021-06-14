@@ -20,7 +20,7 @@ compare_samples_heatmap <- function(lipid_data) {
            .data$keep == TRUE) %>%
     # scale "row wise" i.e. lipid
     group_by(.data$my_id) %>%
-    # keep in mind, scale returns a matrix
+    # keep in mind, scale always returns a matrix
     mutate(scaled_area = scale(.data$area)[, 1]) %>%
     ungroup() %>%
     mutate(order_yaxis = paste(.data$LipidClass, .data$ShortLipidName, sep = "_"))
