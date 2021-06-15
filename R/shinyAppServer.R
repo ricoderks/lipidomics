@@ -52,7 +52,8 @@ shinyAppServer <- function(input, output, session) {
   # watch the positive mode file
   observe({
     req(input$res_file_pos,
-        input$res_file_neg)
+        input$res_file_neg,
+        input$rsd_cutoff)
 
     # initialize the tibble for storing all the data
     results <- tibble(filename = c(input$res_file_pos$name, input$res_file_neg$name),
@@ -71,14 +72,10 @@ shinyAppServer <- function(input, output, session) {
     # keep only the identified lipids and sort by lipid class, lipid
     all_data$lipid_data <- select_identified(lipid_data = results)
 
-    # make a copy of the original data and work with this
-    all_data$clean_data <- all_data$lipid_data
-
     # make the data long
     all_data$lipid_data_long <- tidy_lipids(lipid_data = all_data$lipid_data)
 
-    # initialize a data frame for filtering
-    all_data$lipid_data_filter <- all_data$lipid_data_long
+    ### can't this be simpler??
 
     # get all lipid classes with their respective ion
     all_data$class_ion <- all_data$lipid_data_long %>%
@@ -89,6 +86,31 @@ shinyAppServer <- function(input, output, session) {
 
     # calculate the RSD values
     all_data$qc_results <- calc_rsd(lipid_data = all_data$lipid_data_long)
+
+    # tag lipids which have a too high RSD value
+    # find the lipids to keep
+    keep_lipids <- all_data$qc_results %>%
+      filter(.data$rsd_area <= input$rsd_cutoff) %>%
+      pull(.data$my_id) %>%
+      unique()
+
+    # instead of removing them, tag them that I don't want them
+    all_data$lipid_data_filter <- all_data$lipid_data_long %>%
+      mutate(keep = if_else(.data$my_id %in% keep_lipids,
+                            TRUE,
+                            FALSE),
+             comment = if_else(.data$my_id %in% keep_lipids,
+                               "",
+                               "large_rsd"))
+
+    # Do this here as well
+    all_data$clean_data <- all_data$lipid_data %>%
+      mutate(keep = if_else(.data$my_id %in% keep_lipids,
+                            TRUE,
+                            FALSE),
+             comment = if_else(.data$my_id %in% keep_lipids,
+                               "",
+                               "large_rsd"))
   })
 
   # show the raw data
@@ -262,7 +284,7 @@ shinyAppServer <- function(input, output, session) {
                        rsd = input$rsd_cutoff)
   })
 
-  # create histogram of all lipids per lipid class
+  # create histogram/violin plot of all lipids per lipid class
   output$rsd_lipid_classes <- renderPlot({
     req(all_data$qc_results,
         input$rsd_cutoff)
@@ -270,6 +292,36 @@ shinyAppServer <- function(input, output, session) {
     # show histogram/violing plot
     show_rsd_lipidclass_violin(qc_data = all_data$qc_results,
                                rsd = input$rsd_cutoff)
+  })
+
+  observeEvent(input$rsd_cutoff, {
+    req(input$rsd_cutoff,
+        all_data$qc_results)
+
+    # find the lipids to keep
+    keep_lipids <- all_data$qc_results %>%
+      filter(.data$rsd_area <= input$rsd_cutoff) %>%
+      pull(.data$my_id) %>%
+      unique()
+
+    # instead of removing them, tag them that I don't want them
+    all_data$lipid_data_filter <- all_data$lipid_data_long %>%
+      mutate(keep = if_else(.data$my_id %in% keep_lipids,
+                            TRUE,
+                            FALSE),
+             comment = if_else(.data$my_id %in% keep_lipids,
+                               "",
+                               "large_rsd"))
+
+    # Do this here as well
+    all_data$clean_data <- all_data$clean_data %>%
+      mutate(keep = if_else(.data$my_id %in% keep_lipids,
+                            TRUE,
+                            FALSE),
+             comment = if_else(.data$my_id %in% keep_lipids,
+                               "",
+                               "large_rsd"))
+
   })
 
   # create the output UI
