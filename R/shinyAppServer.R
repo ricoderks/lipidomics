@@ -455,7 +455,10 @@ shinyAppServer <- function(input, output, session) {
     input$select_SA_class
     input$select_STL_class
   }, {
-    req(all_data$lipid_data_long)
+    req(input$rsd_cutoff,
+        input$dotprod_cutoff,
+        input$revdotprod_cutoff,
+        all_data$qc_results)
     # get all the selected classes
     all_data$class_ion_selected <- c(input$select_PL_class,
                                      input$select_GL_class,
@@ -476,23 +479,68 @@ shinyAppServer <- function(input, output, session) {
                       split = " - "))[1]
     })))
 
-    # instead of removing them, tag them that I don't want them
-    all_data$lipid_data_filter <- all_data$lipid_data_long %>%
-      mutate(keep = if_else(.data$class_ion %in% all_data$class_ion_selected,
-                            TRUE,
-                            FALSE),
-             comment = if_else(.data$class_ion %in% all_data$class_ion_selected,
-                               "",
-                               "remove_class"))
+    tmp_filter <- isolate(all_data$lipid_data_filter)
+    tmp_clean <- isolate(all_data$clean_data)
 
-    # Do this here as well
-    all_data$clean_data <- all_data$clean_data %>%
-      mutate(keep = if_else(.data$class_ion %in% all_data$class_ion_selected,
-                            TRUE,
-                            FALSE),
-             comment = if_else(.data$class_ion %in% all_data$class_ion_selected,
-                               "",
-                               "remove_class"))
+    # which lipids have a low RSD
+    keep_lipids_rsd <- all_data$qc_results %>%
+      filter(.data$rsd_area <= input$rsd_cutoff) %>%
+      pull(.data$my_id) %>%
+      unique()
+
+    # which lipids have a high dotproduct and revdotproduct
+    keep_lipids_msms <- tmp_clean %>%
+      filter(!(.data$DotProduct <= input$dotprod_cutoff &
+                 .data$RevDotProduct <= input$revdotprod_cutoff &
+                 .data$comment != "large_rsd")) %>%
+      pull(.data$my_id) %>%
+      unique()
+
+    all_data$lipid_data_filter <- tmp_filter %>%
+      mutate(
+        keep = case_when(
+          !(.data$my_id %in% keep_lipids_rsd) ~ FALSE,
+          !(.data$my_id %in% keep_lipids_msms) ~ FALSE,
+          !(.data$class_ion %in% all_data$class_ion_selected) ~ FALSE,
+          TRUE ~ TRUE),
+        comment = case_when(
+          !(.data$my_id %in% keep_lipids_rsd) ~ "large_rsd",
+          !(.data$my_id %in% keep_lipids_msms) ~ "no_match",
+          !(.data$class_ion %in% all_data$class_ion_selected) ~ "remove_class",
+          TRUE ~ "")
+      )
+
+    all_data$clean_data <- tmp_clean %>%
+      mutate(
+        keep = case_when(
+          !(.data$my_id %in% keep_lipids_rsd) ~ FALSE,
+          !(.data$my_id %in% keep_lipids_msms) ~ FALSE,
+          !(.data$class_ion %in% all_data$class_ion_selected) ~ FALSE,
+          TRUE ~ TRUE),
+        comment = case_when(
+          !(.data$my_id %in% keep_lipids_rsd) ~ "large_rsd",
+          !(.data$my_id %in% keep_lipids_msms) ~ "no_match",
+          !(.data$class_ion %in% all_data$class_ion_selected) ~ "remove_class",
+          TRUE ~ "")
+      )
+
+    # # instead of removing them, tag them that I don't want them
+    # all_data$lipid_data_filter <- tmp_filter %>%
+    #   mutate(keep = if_else(!(.data$class_ion %in% all_data$class_ion_selected),
+    #                         FALSE,
+    #                         FALSE),
+    #          comment = if_else(.data$class_ion %in% all_data$class_ion_selected,
+    #                            .data$comment,
+    #                            "remove_class"))
+    #
+    # # Do this here as well
+    # all_data$clean_data <- tmp_clean %>%
+    #   mutate(keep = if_else(.data$class_ion %in% all_data$class_ion_selected,
+    #                         .data$keep,
+    #                         FALSE),
+    #          comment = if_else(.data$class_ion %in% all_data$class_ion_selected,
+    #                            .data$comment,
+    #                            "remove_class"))
   },
   ignoreInit = TRUE)
 
