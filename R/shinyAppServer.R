@@ -7,8 +7,8 @@
 #' @param session provided by shiny
 #'
 #' @import shiny
+#' @importFrom shinyjs toggle
 #' @importFrom sessioninfo session_info
-#'
 #' @importFrom tibble tibble
 #' @importFrom dplyr filter mutate select pull distinct
 #' @importFrom rlang .data
@@ -102,6 +102,23 @@ shinyAppServer <- function(input, output, session) {
     # calculate the RSD values
     all_data$qc_results <- calc_rsd(lipid_data = all_data$lipid_data_long)
   })
+
+  #### info msdial files
+  # show/hide info about msdial files
+  observeEvent(input$btn_info_msdial, {
+    toggle(id = "info_msdial")
+  })
+
+  # the text to show
+  output$info_msdial <- renderUI({
+    tagList(
+      column(width = 4,
+             p("You can load the exported result files from MS-DIAL here (>= v4.60). There
+               should be a file for positive and negative mode.")
+      )
+    )
+  })
+  ####
 
   #### select samples
   # show the checkboxes for (de-)selecting samples

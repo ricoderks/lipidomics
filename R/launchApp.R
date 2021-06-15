@@ -14,7 +14,10 @@
 #'  }
 #'
 #' @import shiny
+#' @importFrom shinyjs useShinyjs
 #'
 launchApp <- function() {
+  useShinyjs()
+
   shinyApp(ui = shinyAppUI, server = shinyAppServer)
 }

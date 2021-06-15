@@ -28,6 +28,7 @@ Imports:
     sessioninfo,
     shiny,
     shinycssloaders,
+    shinyjs,
     stats,
     stringr,
     tibble,
