@@ -29,7 +29,15 @@ compare_samples_heatmap <- function(lipid_data) {
     plot_ly(x = ~sample_name,
             y = ~ShortLipidName) %>%
     add_heatmap(z = ~scaled_area,
+                text = ~LipidClass,
                 colorscale = "Rainbow",
+                hovertemplate = paste(
+                  "%{xaxis.title.text}: %{x}<br>",
+                  "%{yaxis.title.text}: %{y}<br>",
+                  "Lipid class: %{text}<br>",
+                  "Value: %{z:.3f}",
+                  "<extra></extra>" # needed to remove the trace box
+                ),
                 yaxis = list(type = "category",
                              categoryorder = "array",
                              categoryarray =  ~order_yaxis)) %>%
