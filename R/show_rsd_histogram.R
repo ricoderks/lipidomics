@@ -4,6 +4,7 @@
 #'     all QCpool samples..
 #'
 #' @param qc_data tibble in tidy format
+#' @param rsd rsd threshold to show in the plot
 #'
 #' @return ggplot2 object
 #'
@@ -15,7 +16,7 @@
 #'
 #' @author Rico Derks
 #'
-show_rsd_histogram <- function(qc_data) {
+show_rsd_histogram <- function(qc_data, rsd) {
   my_colors <- cpm_cols(c("green", "red"))
   names(my_colors) <- c("pos", "neg")
 
@@ -25,8 +26,8 @@ show_rsd_histogram <- function(qc_data) {
                    binwidth = 0.005,
                    alpha = 0.50,
                    position = "identity") +
-    geom_vline(aes(xintercept = 0.3,
-                   colour = "red"),
+    geom_vline(xintercept = rsd,
+               colour = "red",
                linetype = 2) +
     scale_fill_manual(values = my_colors) +
     guides(colour = FALSE,

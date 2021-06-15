@@ -4,10 +4,12 @@
 \alias{show_rsd_histogram}
 \title{Show the histogram of all RSD values}
 \usage{
-show_rsd_histogram(qc_data)
+show_rsd_histogram(qc_data, rsd)
 }
 \arguments{
 \item{qc_data}{tibble in tidy format}
+
+\item{rsd}{rsd threshold to show in the plot}
 }
 \value{
 ggplot2 object

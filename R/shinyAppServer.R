@@ -23,7 +23,7 @@
 #'
 #' @author Rico Derks
 
-# Define server logic required to draw a histogram
+# Define server logic
 shinyAppServer <- function(input, output, session) {
   # increase upload limit
   options(shiny.maxRequestSize = 30 * 1024^2)
@@ -254,18 +254,22 @@ shinyAppServer <- function(input, output, session) {
   #### Calculate the RSD values of the QCpool ####
   # show the histogram of all lipids
   output$rsd_all <- renderPlot({
-    req(all_data$lipid_data_long)
+    req(all_data$lipid_data_long,
+        input$rsd_cutoff)
 
     # show histogram
-    show_rsd_histogram(qc_data = all_data$qc_results)
+    show_rsd_histogram(qc_data = all_data$qc_results,
+                       rsd = input$rsd_cutoff)
   })
 
   # create histogram of all lipids per lipid class
   output$rsd_lipid_classes <- renderPlot({
-    req(all_data$qc_results)
+    req(all_data$qc_results,
+        input$rsd_cutoff)
 
     # show histogram/violing plot
-    show_rsd_lipidclass_violin(qc_data = all_data$qc_results)
+    show_rsd_lipidclass_violin(qc_data = all_data$qc_results,
+                               rsd = input$rsd_cutoff)
   })
 
   # create the output UI

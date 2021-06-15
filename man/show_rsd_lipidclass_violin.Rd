@@ -4,10 +4,12 @@
 \alias{show_rsd_lipidclass_violin}
 \title{Show a violin plot of all RSD values per lipid class}
 \usage{
-show_rsd_lipidclass_violin(qc_data)
+show_rsd_lipidclass_violin(qc_data, rsd)
 }
 \arguments{
 \item{qc_data}{tibble in tidy format}
+
+\item{rsd}{rsd threshold to show in the plot}
 }
 \value{
 ggplot2 object

@@ -67,6 +67,49 @@ shinyAppUI <- fluidPage(
              ), # end tabPanel Files
              # start navbarMenu filter
              navbarMenu(title = "Filter",
+                        # tabPanel settings
+                        tabPanel(title = "Settings",
+                                 fluidPage(
+                                   fluidRow(
+                                     column(width = 12,
+                                            h4("QC"))
+                                   ),
+                                   fluidRow(
+                                     column(width = 12,
+                                            numericInput(inputId = "rsd_cutoff",
+                                                         label = "RSD cut off value:",
+                                                         value = 0.3,
+                                                         min = 0,
+                                                         max = 1,
+                                                         step = 0.01,
+                                                         width = "150px"),
+                                            style = "background-color: #E8E8E8")
+                                   ),
+                                   fluidRow(
+                                     column(width = 12,
+                                            h4("Identification"))
+                                   ),
+                                   fluidRow(
+                                     column(width = 12,
+                                            splitLayout(
+                                              cellWidths = c("200px", NA),
+                                              numericInput(inputId = "dotprod_cutoff",
+                                                           label = "Dot product cut off value:",
+                                                           value = 50,
+                                                           min = 0,
+                                                           max = 100,
+                                                           step = 1,
+                                                           width = "150px"),
+                                              numericInput(inputId = "revdotprod_cutoff",
+                                                           label = "Reverse dot product cut off value:",
+                                                           value = 50,
+                                                           min = 0,
+                                                           max = 100,
+                                                           step = 1)),
+                                            style = "background-color: #E8E8E8")
+                                   )
+                                 )
+                        ), # end of tabpanel settings
                         # tabPanel lipid classes
                         tabPanel(title = "Lipid classes",
                                  fluidRow(column = 12,
