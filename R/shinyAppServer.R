@@ -70,6 +70,9 @@ shinyAppServer <- function(input, output, session) {
 
     # keep only the identified lipids and sort by lipid class, lipid
     all_data$lipid_data <- select_identified(lipid_data = results)
+
+    # make a copy of the original data and work with this
+    all_data$clean_data <- all_data$lipid_data
   })
 
   # show the raw data
@@ -93,11 +96,11 @@ shinyAppServer <- function(input, output, session) {
   observe({
     req(all_data$lipid_data)
 
-    # make a copy of the original data and work with this
-    all_data$clean_data <- all_data$lipid_data
-
     # make the data long
     all_data$lipid_data_long <- tidy_lipids(lipid_data = all_data$lipid_data)
+
+    # initialize a data frame for filtering
+    all_data$lipid_data_filter <- all_data$lipid_data_long
 
     # calculate the RSD values
     all_data$qc_results <- calc_rsd(lipid_data = all_data$lipid_data_long)
