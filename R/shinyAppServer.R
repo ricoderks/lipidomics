@@ -73,6 +73,22 @@ shinyAppServer <- function(input, output, session) {
 
     # make a copy of the original data and work with this
     all_data$clean_data <- all_data$lipid_data
+
+    # make the data long
+    all_data$lipid_data_long <- tidy_lipids(lipid_data = all_data$lipid_data)
+
+    # initialize a data frame for filtering
+    all_data$lipid_data_filter <- all_data$lipid_data_long
+
+    # get all lipid classes with their respective ion
+    all_data$class_ion <- all_data$lipid_data_long %>%
+      pull(.data$class_ion) %>%
+      unique()
+
+    all_data$class_ion_selected <- all_data$class_ion
+
+    # calculate the RSD values
+    all_data$qc_results <- calc_rsd(lipid_data = all_data$lipid_data_long)
   })
 
   # show the raw data
@@ -91,20 +107,6 @@ shinyAppServer <- function(input, output, session) {
   selection = "none",
   filter = "top",
   rownames = FALSE)
-
-  # make the lipid data in long format and calculate the RSD values
-  observe({
-    req(all_data$lipid_data)
-
-    # make the data long
-    all_data$lipid_data_long <- tidy_lipids(lipid_data = all_data$lipid_data)
-
-    # initialize a data frame for filtering
-    all_data$lipid_data_filter <- all_data$lipid_data_long
-
-    # calculate the RSD values
-    all_data$qc_results <- calc_rsd(lipid_data = all_data$lipid_data_long)
-  })
 
   #### info msdial files
   # show/hide info about msdial files
@@ -171,13 +173,6 @@ shinyAppServer <- function(input, output, session) {
   # get the lipid classes
   output$select_lipid_classes <- renderUI({
     req(all_data$lipid_data_long)
-
-    # get all lipid classes with their respective ion
-    all_data$class_ion <- all_data$lipid_data_long %>%
-      pull(.data$class_ion) %>%
-      unique()
-
-    all_data$class_ion_selected <- all_data$class_ion
 
     # regular expression patterns
     pattern_PL <- "^((Ether)?(Ox)?(L)?(LNA)?(MM)?P[ACEGISM]|HBMP|BMP)"
@@ -267,8 +262,7 @@ shinyAppServer <- function(input, output, session) {
 
   # create histogram of all lipids per lipid class
   output$rsd_lipid_classes <- renderPlot({
-    req(all_data$qc_results,
-        all_data$class_ion_selected)
+    req(all_data$qc_results)
 
     # show histogram/violing plot
     show_rsd_lipidclass_violin(qc_data = all_data$qc_results)
@@ -276,8 +270,15 @@ shinyAppServer <- function(input, output, session) {
 
   # create the output UI
   output$rsd_lipidclass_ui <- renderUI({
-    req(all_data$qc_results,
-        all_data$num_lipid_classes)
+    req(all_data$qc_results)
+
+    # if the number of lipid classes is not calculated yet, do it here
+    if(is.null(all_data$num_lipid_classes)) {
+      all_data$num_lipid_classes <- length(unique(sapply(all_data$class_ion_selected, function(x) {
+        unlist(strsplit(x = x,
+                        split = " - "))[1]
+      })))
+    }
 
     # calculate the new height for the violin plot
     new_height <- ceiling(all_data$num_lipid_classes * 25)
