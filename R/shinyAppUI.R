@@ -17,11 +17,13 @@ shinyAppUI <- fluidPage(
              # tabPanel Files
              tabPanel(title = "Files",
                       fluidPage(
-                        fluidRow(column = 12,
+                        fluidRow(
+                          column(width = 12,
                                  actionButton(inputId = "btn_info_msdial",
                                               label = "",
                                               icon = icon("info")),
-                                 h4("MS-DIAL files")),
+                                 h4("MS-DIAL files"))
+                        ),
                         fluidRow(
                           shinyjs::hidden(uiOutput(outputId = "info_msdial")),
                           column(width = 8,
@@ -38,25 +40,69 @@ shinyAppUI <- fluidPage(
                                  style = "background-color: #E8E8E8")
                         ),
                         fluidRow(column = 12,
-                                 h4("Lipid classes")),
+                                 h4("Meta data")
+                        ),
                         fluidRow(
-                          uiOutput(outputId = "select_lipid_classes"),
+                          column(width = 6,
+                                 p("Read an Excel file with meta data."),
+                                 fileInput(inputId = "meta_data_file",
+                                           label = "Meta data file:",
+                                           multiple = FALSE,
+                                           accept = c(".xlsx"),
+                                           width = 400)),
+                          column(width = 6,
+                                 uiOutput(outputId = "merge_ui")),
                           style = "background-color: #E8E8E8"
                         )
                       )
              ), # end tabPanel Files
-             # tabPanel samples
-             tabPanel(title = "Samples",
-                      uiOutput(outputId = "samples_list")
-             ), # end of tabpanel samples
-             # tabpanel Lipid data
-             tabPanel(title = "Lipid data",
-                      fluidPage(
-                        fluidRow(column = 12,
-                                 shinycssloaders::withSpinner(DT::DTOutput(outputId = "lipid_data_table"),
-                                                              type = 5))
-                      )
-             ), # end tabPanel Data
+             # start navbarMenu filter
+             navbarMenu(title = "Filter",
+                        # tabPanel lipid classes
+                        tabPanel(title = "Lipid classes",
+                                 fluidRow(column = 12,
+                                          h4("Lipid classes")),
+                                 fluidRow(
+                                   uiOutput(outputId = "select_lipid_classes"),
+                                   style = "background-color: #E8E8E8"
+                                 )
+                        ), # end of tabpanel lipid classes
+                        # tabPanel samples
+                        tabPanel(title = "Samples",
+                                 uiOutput(outputId = "samples_list")
+                        ) # end of tabpanel samples
+             ), # end navbarMenu filter
+             # start navbarMenu data
+             navbarMenu(title = "Data",
+                        # tabpanel Lipid data
+                        tabPanel(title = "Lipid data",
+                                 fluidPage(
+                                   fluidRow(column = 12,
+                                            shinycssloaders::withSpinner(DT::DTOutput(outputId = "lipid_data_table"),
+                                                                         type = 5))
+                                 )
+                        ), # end tabPanel Data
+                        # start tabpanel meta data
+                        tabPanel(title = "Meta data",
+                                 fluidPage(
+                                   fluidRow(
+                                     column(width = 12,
+                                            # this needs DT:: in front of it?!?
+                                            DT::DTOutput(outputId = "show_meta_data"))
+                                   ))
+                        ), # end of tabpanel meta data
+                        # start tabpanel merged data
+                        tabPanel(title = "Merged data",
+                                 fluidPage(
+                                   fluidRow(column = 12,
+                                            h4("Merged data"),
+                                            p("This is only to have a quick overview of the merged data. Merged data is in long format."),
+                                            # this needs DT:: in front of it?!?
+                                            DT::DTOutput(outputId = "show_merged_data")
+                                   )
+                                 )
+                        ) # end tabpanel merged data
+             ), # end navbarMenu data
              # navbarMenu QC
              navbarMenu(title = "QC",
                         # tabpanel QC overall
@@ -226,50 +272,15 @@ shinyAppUI <- fluidPage(
              ), # end tabpanel issues
              # start navbarMenu analysis
              navbarMenu(title = "Analysis",
-                        # start tabpanel meta data
-                        tabPanel(title = "Meta data",
-                                 fluidPage(
-                                   fluidRow(column = 12,
-                                            h4("Meta data")
-                                   ),
-                                   fluidRow(
-                                     column(width = 6,
-                                            p("Read an Excel file with meta data."),
-                                            fileInput(inputId = "meta_data_file",
-                                                      label = "Meta data file:",
-                                                      multiple = FALSE,
-                                                      accept = c(".xlsx"),
-                                                      width = 400)),
-                                     column(width = 6,
-                                            uiOutput(outputId = "merge_ui")),
-                                     style = "background-color: #E8E8E8"
-                                   ),
-                                   fluidRow(
-                                     column(width = 12,
-                                            # this needs DT:: in front of it?!?
-                                            DT::DTOutput(outputId = "show_meta_data"))
-                                   )
-                                 )), # end tabpanel meta data
-                        # start tabpanel merged data
-                        tabPanel(title = "Merged data",
-                                 fluidPage(
-                                   fluidRow(column = 12,
-                                            h4("Merged data"),
-                                            p("This is only to have a quick overview of the merged data. Merged data is in long format."),
-                                            # this needs DT:: in front of it?!?
-                                            DT::DTOutput(outputId = "show_merged_data")
-                                   )
-                                 )
-                        ), # end tabpanel merged data
-                        # start tabpanel samples
-                        tabPanel(title = "Samples",
+                        # start tabpanel compare samples
+                        tabPanel(title = "Compare samples",
                                  fluidPage(
                                    fluidRow(column = 12,
                                             shinycssloaders::withSpinner(plotlyOutput(outputId = "compare_samples",
                                                                                       height = "900px"),
                                                                          type = 5))
                                  )
-                        ) # end tabpanel sampels
+                        ) # end tabpanel compare samples
              ), # end navbarmenu analysis
              # tabPanel About
              navbarMenu(title = "Help",

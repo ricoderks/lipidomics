@@ -114,7 +114,7 @@ shinyAppServer <- function(input, output, session) {
     tagList(
       column(width = 4,
              p("You can load the exported result files from MS-DIAL here (>= v4.60). There
-               should be a file for positive and negative mode.")
+               should be a separate file for positive and negative mode.")
       )
     )
   })
@@ -1276,7 +1276,11 @@ shinyAppServer <- function(input, output, session) {
     req(all_data$merged_data)
 
     all_data$merged_data
-  })
+  },
+  options = list(pageLength = 10,
+                 lengthChange = FALSE,
+                 dom = "pt"),
+  selection = "none")
   #### end meta merge part
 
   # keep on eye on if the data gets merged
