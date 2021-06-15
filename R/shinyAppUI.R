@@ -19,14 +19,15 @@ shinyAppUI <- fluidPage(
                       fluidPage(
                         fluidRow(
                           column(width = 12,
-                                 actionButton(inputId = "btn_info_msdial",
-                                              label = "",
-                                              icon = icon("info")),
-                                 h4("MS-DIAL files"))
+                                 splitLayout(cellWidths = c("35px", NA),
+                                             actionButton(inputId = "btn_info_msdial",
+                                                          label = "",
+                                                          icon = icon("info")),
+                                             h4("MS-DIAL files")))
                         ),
                         fluidRow(
                           shinyjs::hidden(uiOutput(outputId = "info_msdial")),
-                          column(width = 8,
+                          column(width = 9,
                                  fileInput(inputId = "res_file_pos",
                                            label = "Positive mode:",
                                            multiple = FALSE,
@@ -39,20 +40,28 @@ shinyAppUI <- fluidPage(
                                            width = 400),
                                  style = "background-color: #E8E8E8")
                         ),
+                        # create some empty space
                         fluidRow(column = 12,
-                                 h4("Meta data")
+                                 p("")),
+                        fluidRow(
+                          column(width = 12,
+                                 splitLayout(cellWidths = c("35px", NA),
+                                             actionButton(inputId = "btn_info_meta",
+                                                          label = "",
+                                                          icon = icon("info")),
+                                             h4("Meta data")))
                         ),
                         fluidRow(
-                          column(width = 6,
+                          shinyjs::hidden(uiOutput(outputId = "info_meta")),
+                          column(width = 9,
                                  p("Read an Excel file with meta data."),
-                                 fileInput(inputId = "meta_data_file",
-                                           label = "Meta data file:",
-                                           multiple = FALSE,
-                                           accept = c(".xlsx"),
-                                           width = 400)),
-                          column(width = 6,
-                                 uiOutput(outputId = "merge_ui")),
-                          style = "background-color: #E8E8E8"
+                                 splitLayout(fileInput(inputId = "meta_data_file",
+                                                       label = "Meta data file:",
+                                                       multiple = FALSE,
+                                                       accept = c(".xlsx"),
+                                                       width = 400),
+                                             uiOutput(outputId = "merge_ui")),
+                                 style = "background-color: #E8E8E8")
                         )
                       )
              ), # end tabPanel Files
@@ -87,7 +96,6 @@ shinyAppUI <- fluidPage(
                                  fluidPage(
                                    fluidRow(
                                      column(width = 12,
-                                            # this needs DT:: in front of it?!?
                                             DT::DTOutput(outputId = "show_meta_data"))
                                    ))
                         ), # end of tabpanel meta data
@@ -97,7 +105,6 @@ shinyAppUI <- fluidPage(
                                    fluidRow(column = 12,
                                             h4("Merged data"),
                                             p("This is only to have a quick overview of the merged data. Merged data is in long format."),
-                                            # this needs DT:: in front of it?!?
                                             DT::DTOutput(outputId = "show_merged_data")
                                    )
                                  )

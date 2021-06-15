@@ -112,9 +112,25 @@ shinyAppServer <- function(input, output, session) {
   # the text to show
   output$info_msdial <- renderUI({
     tagList(
-      column(width = 4,
+      column(width = 3,
              p("You can load the exported result files from MS-DIAL here (>= v4.60). There
                should be a separate file for positive and negative mode.")
+      )
+    )
+  })
+
+  # show/hide info about meta data files
+  observeEvent(input$btn_info_meta, {
+    toggle(id = "info_meta")
+  })
+
+  # the text to show
+  output$info_meta <- renderUI({
+    tagList(
+      column(width = 3,
+             p("The meta data file should be an Excel (.xlsx) file. The file must contain
+               a column with the filenames used. Please don't use any spaces in the column
+               names!!")
       )
     )
   })
