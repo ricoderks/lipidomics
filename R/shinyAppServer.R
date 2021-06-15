@@ -1299,13 +1299,20 @@ shinyAppServer <- function(input, output, session) {
     tmp_data <- isolate(all_data$analysis_data)
     # remove the unwanted samples
     if(!is.null(all_data$samples_selected)) {
+      # several samples removed
       all_data$analysis_data <- tmp_data %>%
-        mutate(keep = if_else(.data$sample_name %in% all_data$samples_selected,
+        # make sure not to overwrite lipids which are already on FALSE
+        mutate(keep = if_else(.data$sample_name %in% all_data$samples_selected &
+                                .data$keep == TRUE,
                               TRUE,
                               FALSE),
-               comment = if_else(.data$sample_name %in% all_data$samples_selected,
+               comment = if_else(.data$sample_name %in% all_data$samples_selected &
+                                   .data$keep == TRUE,
                                  "",
                                  "remove_sample"))
+    } else {
+      # no samples removed
+      all_data$analyis_data <- tmp_data
     }
   })
 
