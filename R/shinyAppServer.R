@@ -176,6 +176,38 @@ shinyAppServer <- function(input, output, session) {
       )
     )
   })
+
+  # show/hide info about QC filter
+  observeEvent(input$btn_info_qcfilter, {
+    toggle(id = "info_qcfilter")
+  })
+
+  # the text to show
+  output$info_qcfilter <- renderUI({
+    tagList(
+      column(width = 3,
+             p("Lipids are immediately tagged with `large_rsd` and will not show up in
+               the bubble plots (identification tab) or in the analysis part.")
+      )
+    )
+  })
+
+  # show/hide info about dot product filter
+  observeEvent(input$btn_info_prodfilter, {
+    toggle(id = "info_prodfilter")
+  })
+
+  # the text to show
+  output$info_prodfilter <- renderUI({
+    tagList(
+      column(width = 3,
+             p("Lipids are immediately tagged with `no_match` and will not show up in
+               the bubble plots (identification tab) or in the analysis part. Individual
+               lipids can be added back via the bubble plots (identification part). Keep
+               in mind that when the value of this filter is changed they might be removed again!!")
+      )
+    )
+  })
   ####
 
   #### select samples

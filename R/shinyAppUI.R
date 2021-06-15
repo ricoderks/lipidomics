@@ -72,10 +72,15 @@ shinyAppUI <- fluidPage(
                                  fluidPage(
                                    fluidRow(
                                      column(width = 12,
-                                            h4("QC"))
+                                            splitLayout(cellWidths = c("35px", NA),
+                                                        actionButton(inputId = "btn_info_qcfilter",
+                                                                     label = "",
+                                                                     icon = icon("info")),
+                                                        h4("QC")))
                                    ),
                                    fluidRow(
-                                     column(width = 12,
+                                     shinyjs::hidden(uiOutput(outputId = "info_qcfilter")),
+                                     column(width = 9,
                                             numericInput(inputId = "rsd_cutoff",
                                                          label = "RSD cut off value:",
                                                          value = 0.3,
@@ -85,12 +90,20 @@ shinyAppUI <- fluidPage(
                                                          width = "150px"),
                                             style = "background-color: #E8E8E8")
                                    ),
+                                   # create some empty space
+                                   fluidRow(column = 12,
+                                            p("")),
                                    fluidRow(
                                      column(width = 12,
-                                            h4("Identification"))
+                                            splitLayout(cellWidths = c("35px", NA),
+                                                        actionButton(inputId = "btn_info_prodfilter",
+                                                                     label = "",
+                                                                     icon = icon("info")),
+                                                        h4("Identification")))
                                    ),
                                    fluidRow(
-                                     column(width = 12,
+                                     shinyjs::hidden(uiOutput(outputId = "info_prodfilter")),
+                                     column(width = 9,
                                             splitLayout(
                                               cellWidths = c("200px", NA),
                                               numericInput(inputId = "dotprod_cutoff",
