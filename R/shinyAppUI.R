@@ -338,10 +338,18 @@ shinyAppUI <- fluidPage(
                         # start tabpanel compare samples
                         tabPanel(title = "Compare samples",
                                  fluidPage(
-                                   fluidRow(column = 12,
+                                   fluidRow(
+                                     column(width = 1,
+                                            radioButtons(inputId = "select_z_heatmap",
+                                                         label = "Select intensity scale:",
+                                                         choices = c("Raw" = "raw",
+                                                                     "z-score" = "zscore",
+                                                                     "Total area norm." = "totnorm"),
+                                                         selected = "zscore")),
+                                     column(width = 11,
                                             shinycssloaders::withSpinner(plotlyOutput(outputId = "compare_samples",
                                                                                       height = "900px"),
-                                                                         type = 5))
+                                                                         type = 5)))
                                  )
                         ) # end tabpanel compare samples
              ), # end navbarmenu analysis

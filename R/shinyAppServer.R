@@ -1460,9 +1460,11 @@ shinyAppServer <- function(input, output, session) {
 
   #### Analysis part
   output$compare_samples <- renderPlotly({
-    req(all_data$analysis_data)
+    req(all_data$analysis_data,
+        input$select_z_heatmap)
 
-    compare_samples_heatmap(lipid_data = all_data$analysis_data)
+    compare_samples_heatmap(lipid_data = all_data$analysis_data,
+                            z = input$select_z_heatmap)
   })
 
   #### end analysis part
