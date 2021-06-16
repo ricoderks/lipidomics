@@ -41,11 +41,12 @@ shinyAppServer <- function(input, output, session) {
                              clean_data = NULL,
                              analysis_data = NULL,
                              meta_data = NULL,
-                             merged_data = NULL,
+                             merged_data = FALSE,
                              qc_results = NULL,
                              class_ion = NULL,
                              class_ion_selected = NULL,
                              num_lipid_classes = NULL,
+                             all_samples = NULL,
                              samples_selected = NULL)
 
   #### Read the files ####
@@ -81,7 +82,15 @@ shinyAppServer <- function(input, output, session) {
       distinct(.data$class_ion) %>%
       pull(.data$class_ion)
 
+    # store them
     all_data$class_ion_selected <- all_data$class_ion
+
+    # get all sample name
+    all_data$all_samples <- all_data$lipid_data_long %>%
+      distinct(.data$sample_name) %>%
+      pull(.data$sample_name)
+
+    all_data$selected_samples <- all_data$all_samples
 
     # calculate the RSD values
     all_data$qc_results <- calc_rsd(lipid_data = all_data$lipid_data_long)
@@ -114,18 +123,18 @@ shinyAppServer <- function(input, output, session) {
 
     all_data$clean_data <- isolate(all_data$lipid_data_filter) %>%
       select(-.data$sample_type) %>%
-      pivot_wider(id_cols = -c(.data$sample_name, .data$area),
+      pivot_wider(id_cols = .data$my_id:.data$carbon_db,
                   names_from = .data$sample_name,
                   values_from = .data$area)
   })
 
   # show the raw data
   output$lipid_data_table <- renderDT({
-    req(all_data$lipid_data)
+    req(all_data$lipid_data_filter)
 
-    all_data$lipid_data %>%
+    all_data$lipid_data_filter #%>%
       # remove a few columns
-      select(-.data$MSMSspectrum, -.data$scale_DotProduct, -.data$scale_RevDotProduct, -.data$keep, -.data$comment)
+      # select(-.data$MSMSspectrum, -.data$scale_DotProduct, -.data$scale_RevDotProduct, .data$keep, .data$comment)
   },
   options = list(pageLength = 10,
                  lengthChange = FALSE,
@@ -206,28 +215,13 @@ shinyAppServer <- function(input, output, session) {
   output$samples_list <- renderUI({
     req(all_data$lipid_data_long)
 
-    # get all the sample/qcpool names
-    all_sample_names <- all_data$lipid_data_long %>%
-      pull(.data$sample_name) %>%
-      unique() %>%
-      sort()
-
     tagList(
       checkboxGroupInput(inputId = "select_samples",
                          label = "(De-)select samples:",
-                         choices = all_sample_names,
-                         selected = all_sample_names)
+                         choices = all_data$all_samples,
+                         selected = all_data$all_samples)
     )
   })
-
-  # do the actual "removing" of the samples
-  observeEvent(input$select_samples, {
-    req(all_data$lipid_data_long)
-
-    # get everything which is selected
-    all_data$samples_selected <- input$select_samples
-  })
-  ####
 
   #### Select lipid classes ####
   # get the lipid classes
@@ -384,6 +378,7 @@ shinyAppServer <- function(input, output, session) {
   #### identification part ####
   # filter the identification data
   observeEvent({
+    input$select_samples
     input$select_PL_class
     input$select_GL_class
     input$select_Cer_class
@@ -418,10 +413,17 @@ shinyAppServer <- function(input, output, session) {
                             input$select_SA_class,
                             input$select_STL_class)
 
-    # if they where not vissible yet, keep what was already there
+    # if they where not visible yet, keep what was already there
     if(!any(is.null(class_ion_selected))) {
       all_data$class_ion_selected <- class_ion_selected
     }
+
+    selected_samples <- input$select_samples
+    # if there are samples visible yet, store here
+    if(!any(is.null(selected_samples))) {
+      all_data$samples_selected <- selected_samples
+    }
+    print(all_data$selected_samples)
 
     # how many lipid classes are selected
     all_data$num_lipid_classes <- length(unique(sapply(all_data$class_ion_selected, function(x) {
@@ -461,9 +463,10 @@ shinyAppServer <- function(input, output, session) {
 
     all_data$clean_data <- isolate(all_data$lipid_data_filter) %>%
       select(-.data$sample_type) %>%
-      pivot_wider(id_cols = -c(.data$sample_name, .data$area),
+      pivot_wider(id_cols = .data$my_id:.data$carbon_db,
                   names_from = .data$sample_name,
                   values_from = .data$area)
+
   },
   ignoreInit = TRUE)
 
@@ -1369,26 +1372,37 @@ shinyAppServer <- function(input, output, session) {
   })
 
   observeEvent(input$btn_merge_meta, {
-    req(all_data$clean_data,
+    req(all_data$lipid_data_filter,
         all_data$meta_data)
 
     # make sure this doesn't change if only a new column is selected.
     selected_column <- isolate(input$select_meta_column)
     # nothing should happen if the selected column is 'none'
     if(selected_column != "none") {
-      all_data$merged_data <- merge_data(lipid_data = all_data$clean_data,
+      all_data$lipid_data_filter <- merge_data(lipid_data = isolate(all_data$lipid_data_filter),
                                          meta_data = all_data$meta_data(),
                                          by = selected_column)
+      all_data$merged_data <- TRUE
     } else {
-      all_data$merged_data <- NULL
+      all_data$lipid_data_filter <- isolate(all_data$lipid_data_filter)
+      all_data$merged_data <- FALSE
     }
+
+    # all_data$clean_data <- isolate(all_data$lipid_data_filter) %>%
+    #   select(-.data$sample_type) %>%
+    #   pivot_wider(id_cols = .data$my_id:.data$carbon_db,
+    #               names_from = .data$sample_name,
+    #               values_from = .data$area)
   })
 
   # show the merged data
   output$show_merged_data <- renderDT({
     req(all_data$merged_data)
 
-    all_data$merged_data
+    if(all_data$merged_data == TRUE) {
+      all_data$lipid_data_filter %>%
+        select(-.data$MSMSspectrum)
+    }
   },
   options = list(pageLength = 10,
                  lengthChange = FALSE,
@@ -1396,42 +1410,19 @@ shinyAppServer <- function(input, output, session) {
   selection = "none")
   #### end meta merge part
 
-  # keep on eye on if the data gets merged
+  # # keep on eye on if the data gets merged
   observe({
-    req(all_data$clean_data)
+    req(all_data$lipid_data_filter,
+        all_data$selected_samples)
 
-    if(!is.null(all_data$merged_data)) {
-      # data is merged
-      all_data$analysis_data <- all_data$merged_data
-    } else {
-      # data is not merged
-      all_data$analysis_data <- merge_data(lipid_data = all_data$clean_data)
-    }
-
-    # isolate the analysis data, because it needs to overwritten
-    tmp_data <- isolate(all_data$analysis_data)
-    # remove the unwanted samples
-    if(!is.null(all_data$samples_selected)) {
-      # several samples removed
-      all_data$analysis_data <- tmp_data %>%
-        # make sure not to overwrite lipids which are already on FALSE
-        mutate(keep = if_else(.data$sample_name %in% all_data$samples_selected &
-                                .data$keep == TRUE,
-                              TRUE,
-                              FALSE),
-               comment = if_else(.data$sample_name %in% all_data$samples_selected &
-                                   .data$keep == TRUE,
-                                 "",
-                                 "remove_sample"))
-    } else {
-      # no samples removed
-      all_data$analyis_data <- tmp_data
-    }
+    # remove samples for the analysis part
+    all_data$analysis_data <- isolate(all_data$lipid_data_filter) %>%
+      filter(.data$sample_name %in% all_data$selected_samples)
   })
 
   #### Analysis part
   output$compare_samples <- renderPlotly({
-    req(all_data$analysis_data,
+    req(all_data$lipid_data_filter,
         input$select_z_heatmap)
 
     compare_samples_heatmap(lipid_data = all_data$analysis_data,

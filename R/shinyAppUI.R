@@ -125,16 +125,20 @@ shinyAppUI <- fluidPage(
                         ), # end of tabpanel settings
                         # tabPanel lipid classes
                         tabPanel(title = "Lipid classes",
-                                 fluidRow(column = 12,
-                                          h4("Lipid classes")),
-                                 fluidRow(
-                                   uiOutput(outputId = "select_lipid_classes"),
-                                   style = "background-color: #E8E8E8"
-                                 )
+                                 fluidPage(
+                                   fluidRow(column = 12,
+                                            h4("Lipid classes")),
+                                   fluidRow(column = 12,
+                                            uiOutput(outputId = "select_lipid_classes"),
+                                            style = "background-color: #E8E8E8"
+                                   ))
                         ), # end of tabpanel lipid classes
                         # tabPanel samples
                         tabPanel(title = "Samples",
-                                 uiOutput(outputId = "samples_list")
+                                 fluidPage(
+                                   fluidRow(column = 12,
+                                            uiOutput(outputId = "samples_list"),
+                                            style = "background-color: #E8E8E8"))
                         ) # end of tabpanel samples
              ), # end navbarMenu filter
              # start navbarMenu data
