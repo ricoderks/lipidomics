@@ -14,7 +14,7 @@
 #' @importFrom rlang .data
 #' @importFrom purrr map
 #' @importFrom magrittr %>%
-#' @importFrom tidyr unnest
+#' @importFrom tidyr unnest pivot_wider
 #' @importFrom utils head
 #' @importFrom tools file_ext
 #' @importFrom readxl read_xlsx
@@ -52,10 +52,7 @@ shinyAppServer <- function(input, output, session) {
   # watch the positive mode file
   observe({
     req(input$res_file_pos,
-        input$res_file_neg,
-        input$rsd_cutoff,
-        input$dotprod_cutoff,
-        input$revdotprod_cutoff)
+        input$res_file_neg)
 
     # initialize the tibble for storing all the data
     results <- tibble(filename = c(input$res_file_pos$name, input$res_file_neg$name),
@@ -81,8 +78,8 @@ shinyAppServer <- function(input, output, session) {
 
     # get all lipid classes with their respective ion
     all_data$class_ion <- all_data$lipid_data_long %>%
-      pull(.data$class_ion) %>%
-      unique()
+      distinct(.data$class_ion) %>%
+      pull(.data$class_ion)
 
     all_data$class_ion_selected <- all_data$class_ion
 
@@ -92,16 +89,16 @@ shinyAppServer <- function(input, output, session) {
     # tag lipids which have a too high RSD value
     # find the lipids to keep
     keep_lipids_rsd <- all_data$qc_results %>%
-      filter(.data$rsd_area <= input$rsd_cutoff) %>%
-      pull(.data$my_id) %>%
-      unique()
+      filter(.data$rsd_area <= 0.3) %>%
+      distinct(.data$my_id) %>%
+      pull(.data$my_id)
 
     keep_lipids_msms <- all_data$lipid_data %>%
-      filter(!(.data$DotProduct <= input$dotprod_cutoff &
-                 .data$RevDotProduct <= input$revdotprod_cutoff &
+      filter(!(.data$DotProduct <= 50 &
+                 .data$RevDotProduct <= 50 &
                  .data$keep == TRUE)) %>%
-      pull(.data$my_id) %>%
-      unique()
+      distinct(.data$my_id) %>%
+      pull(.data$my_id)
 
     all_data$lipid_data_filter <- all_data$lipid_data_long %>%
       mutate(
@@ -115,17 +112,11 @@ shinyAppServer <- function(input, output, session) {
           TRUE ~ "")
       )
 
-    all_data$clean_data <- all_data$lipid_data %>%
-      mutate(
-        keep = case_when(
-          !(.data$my_id %in% keep_lipids_rsd) ~ FALSE,
-          !(.data$my_id %in% keep_lipids_msms) ~ FALSE,
-          TRUE ~ TRUE),
-        comment = case_when(
-          !(.data$my_id %in% keep_lipids_rsd) ~ "large_rsd",
-          !(.data$my_id %in% keep_lipids_msms) ~ "no_match",
-          TRUE ~ "")
-      )
+    all_data$clean_data <- isolate(all_data$lipid_data_filter) %>%
+      select(-.data$sample_type) %>%
+      pivot_wider(id_cols = -c(.data$sample_name, .data$area),
+                  names_from = .data$sample_name,
+                  values_from = .data$area)
   })
 
   # show the raw data
@@ -341,55 +332,6 @@ shinyAppServer <- function(input, output, session) {
                                rsd = input$rsd_cutoff)
   })
 
-  observeEvent(input$rsd_cutoff, {
-    req(input$rsd_cutoff,
-        input$dotprod_cutoff,
-        input$revdotprod_cutoff,
-        all_data$qc_results)
-
-
-    tmp_long <- isolate(all_data$lipid_data_long)
-    tmp_clean <- isolate(all_data$clean_data)
-
-    # which lipids have a low RSD
-    keep_lipids_rsd <- all_data$qc_results %>%
-      filter(.data$rsd_area <= input$rsd_cutoff) %>%
-      pull(.data$my_id) %>%
-      unique()
-
-    # which lipids have a high dotproduct and revdotproduct
-    keep_lipids_msms <- tmp_clean %>%
-      filter(!(.data$DotProduct <= input$dotprod_cutoff &
-                 .data$RevDotProduct <= input$revdotprod_cutoff &
-                 .data$keep == TRUE)) %>%
-      pull(.data$my_id) %>%
-      unique()
-
-    all_data$lipid_data_filter <- tmp_long %>%
-      mutate(
-        keep = case_when(
-          !(.data$my_id %in% keep_lipids_rsd) ~ FALSE,
-          !(.data$my_id %in% keep_lipids_msms) ~ FALSE,
-          TRUE ~ TRUE),
-        comment = case_when(
-          !(.data$my_id %in% keep_lipids_rsd) ~ "large_rsd",
-          !(.data$my_id %in% keep_lipids_msms) ~ "no_match",
-          TRUE ~ "")
-      )
-
-    all_data$clean_data <- tmp_clean %>%
-      mutate(
-        keep = case_when(
-          !(.data$my_id %in% keep_lipids_rsd) ~ FALSE,
-          !(.data$my_id %in% keep_lipids_msms) ~ FALSE,
-          TRUE ~ TRUE),
-        comment = case_when(
-          !(.data$my_id %in% keep_lipids_rsd) ~ "large_rsd",
-          !(.data$my_id %in% keep_lipids_msms) ~ "no_match",
-          TRUE ~ "")
-      )
-  })
-
   # create the output UI
   output$rsd_lipidclass_ui <- renderUI({
     req(all_data$qc_results)
@@ -425,8 +367,8 @@ shinyAppServer <- function(input, output, session) {
 
     # get the number of samples
     num_samples <- all_data$lipid_data_long %>%
+      distinct(.data$sample_name) %>%
       pull(.data$sample_name) %>%
-      unique() %>%
       length()
 
     # calculate the new height for the correlation plot
@@ -454,25 +396,33 @@ shinyAppServer <- function(input, output, session) {
     input$select_PRL_class
     input$select_SA_class
     input$select_STL_class
+    input$rsd_cutoff
+    input$dotprod_cutoff
+    input$revdotprod_cutoff
   }, {
     req(input$rsd_cutoff,
         input$dotprod_cutoff,
         input$revdotprod_cutoff,
         all_data$qc_results)
     # get all the selected classes
-    all_data$class_ion_selected <- c(input$select_PL_class,
-                                     input$select_GL_class,
-                                     input$select_Cer_class,
-                                     input$select_HexCer_class,
-                                     input$select_FA_class,
-                                     input$select_PSL_class,
-                                     input$select_SB_class,
-                                     input$select_CL_class,
-                                     input$select_ACPIM_class,
-                                     input$select_PRL_class,
-                                     input$select_SA_class,
-                                     input$select_STL_class
-    )
+    class_ion_selected <- c(input$select_PL_class,
+                            input$select_GL_class,
+                            input$select_Cer_class,
+                            input$select_HexCer_class,
+                            input$select_FA_class,
+                            input$select_PSL_class,
+                            input$select_SB_class,
+                            input$select_CL_class,
+                            input$select_ACPIM_class,
+                            input$select_PRL_class,
+                            input$select_SA_class,
+                            input$select_STL_class)
+
+    # if they where not vissible yet, keep what was already there
+    if(!any(is.null(class_ion_selected))) {
+      all_data$class_ion_selected <- class_ion_selected
+    }
+
     # how many lipid classes are selected
     all_data$num_lipid_classes <- length(unique(sapply(all_data$class_ion_selected, function(x) {
       unlist(strsplit(x = x,
@@ -480,21 +430,20 @@ shinyAppServer <- function(input, output, session) {
     })))
 
     tmp_filter <- isolate(all_data$lipid_data_filter)
-    tmp_clean <- isolate(all_data$clean_data)
 
     # which lipids have a low RSD
     keep_lipids_rsd <- all_data$qc_results %>%
       filter(.data$rsd_area <= input$rsd_cutoff) %>%
-      pull(.data$my_id) %>%
-      unique()
+      distinct(.data$my_id) %>%
+      pull(.data$my_id)
 
     # which lipids have a high dotproduct and revdotproduct
-    keep_lipids_msms <- tmp_clean %>%
+    keep_lipids_msms <- tmp_filter %>%
       filter(!(.data$DotProduct <= input$dotprod_cutoff &
                  .data$RevDotProduct <= input$revdotprod_cutoff &
                  .data$comment != "large_rsd")) %>%
-      pull(.data$my_id) %>%
-      unique()
+      distinct(.data$my_id) %>%
+      pull(.data$my_id)
 
     all_data$lipid_data_filter <- tmp_filter %>%
       mutate(
@@ -510,37 +459,11 @@ shinyAppServer <- function(input, output, session) {
           TRUE ~ "")
       )
 
-    all_data$clean_data <- tmp_clean %>%
-      mutate(
-        keep = case_when(
-          !(.data$my_id %in% keep_lipids_rsd) ~ FALSE,
-          !(.data$my_id %in% keep_lipids_msms) ~ FALSE,
-          !(.data$class_ion %in% all_data$class_ion_selected) ~ FALSE,
-          TRUE ~ TRUE),
-        comment = case_when(
-          !(.data$my_id %in% keep_lipids_rsd) ~ "large_rsd",
-          !(.data$my_id %in% keep_lipids_msms) ~ "no_match",
-          !(.data$class_ion %in% all_data$class_ion_selected) ~ "remove_class",
-          TRUE ~ "")
-      )
-
-    # # instead of removing them, tag them that I don't want them
-    # all_data$lipid_data_filter <- tmp_filter %>%
-    #   mutate(keep = if_else(!(.data$class_ion %in% all_data$class_ion_selected),
-    #                         FALSE,
-    #                         FALSE),
-    #          comment = if_else(.data$class_ion %in% all_data$class_ion_selected,
-    #                            .data$comment,
-    #                            "remove_class"))
-    #
-    # # Do this here as well
-    # all_data$clean_data <- tmp_clean %>%
-    #   mutate(keep = if_else(.data$class_ion %in% all_data$class_ion_selected,
-    #                         .data$keep,
-    #                         FALSE),
-    #          comment = if_else(.data$class_ion %in% all_data$class_ion_selected,
-    #                            .data$comment,
-    #                            "remove_class"))
+    all_data$clean_data <- isolate(all_data$lipid_data_filter) %>%
+      select(-.data$sample_type) %>%
+      pivot_wider(id_cols = -c(.data$sample_name, .data$area),
+                  names_from = .data$sample_name,
+                  values_from = .data$area)
   },
   ignoreInit = TRUE)
 
