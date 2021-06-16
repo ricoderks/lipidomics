@@ -418,12 +418,8 @@ shinyAppServer <- function(input, output, session) {
       all_data$class_ion_selected <- class_ion_selected
     }
 
-    selected_samples <- input$select_samples
-    # if there are samples visible yet, store here
-    if(!any(is.null(selected_samples))) {
-      all_data$samples_selected <- selected_samples
-    }
-    print(all_data$selected_samples)
+    # store which samples are selected
+    all_data$samples_selected <- input$select_samples
 
     # how many lipid classes are selected
     all_data$num_lipid_classes <- length(unique(sapply(all_data$class_ion_selected, function(x) {
@@ -1413,11 +1409,11 @@ shinyAppServer <- function(input, output, session) {
   # # keep on eye on if the data gets merged
   observe({
     req(all_data$lipid_data_filter,
-        all_data$selected_samples)
+        all_data$samples_selected)
 
     # remove samples for the analysis part
     all_data$analysis_data <- isolate(all_data$lipid_data_filter) %>%
-      filter(.data$sample_name %in% all_data$selected_samples)
+      filter(.data$sample_name %in% all_data$samples_selected)
   })
 
   #### Analysis part
