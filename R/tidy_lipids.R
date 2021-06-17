@@ -8,7 +8,7 @@
 #'
 #' @return Returns a tibble in tidy (long) format
 #'
-#' @importFrom dplyr mutate
+#' @importFrom dplyr mutate n group_by ungroup arrange if_else
 #' @importFrom tidyr pivot_longer
 #' @importFrom tidyselect matches
 #' @importFrom rlang .data
@@ -31,6 +31,22 @@ tidy_lipids <- function(lipid_data) {
                               pattern = "[0-9]{1,2}:?[0-9]?"),
       sample_type = factor(tolower(str_extract(string = .data$sample_name,
                                                pattern = "([bB]lank|[qQ][cC]pool|[sS]ample)"))))
+
+  ### rename duplicate lipids
+  df_long <- df_long %>%
+    # determine what are the duplicates
+    group_by(.data$ShortLipidName, .data$sample_name) %>%
+    arrange(.data$AverageRT) %>%
+    mutate(count_duplicates = n(),
+           append_name = paste0("_", 1:n())) %>%
+    ungroup() %>%
+    # rename them
+    mutate(ShortLipidName = if_else(.data$count_duplicates > 1,
+                                    paste0(.data$ShortLipidName, .data$append_name),
+                                    .data$ShortLipidName)) %>%
+    # sort back
+    arrange(.data$LipidClass, .data$ShortLipidName) %>%
+    select(-.data$count_duplicates, -.data$append_name)
 
     return(df_long)
 }

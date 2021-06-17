@@ -154,8 +154,7 @@ bubblePlotServer <- function(id, lipid_data, pattern, title) {
                                label = "Keep:",
                                choices = c("Keep" = "keep",
                                            "No convincing match" = "no_match",
-                                           "Incorrect ret. time" = "wrong_rt",
-                                           "Rename" = "rename"),
+                                           "Incorrect ret. time" = "wrong_rt"),
                                selected = lipid_status)
             )
           )
@@ -170,8 +169,7 @@ bubblePlotServer <- function(id, lipid_data, pattern, title) {
         toReturn$filter_data <- lipid_data_wide() %>%
           filter(.data$my_id == selected_data$data$my_id) %>%
           select(.data$my_id, .data$keep, .data$comment) %>%
-          mutate(keep = if_else(input$select_reason == "keep" |
-                                  input$select_reason == "rename",
+          mutate(keep = if_else(input$select_reason == "keep",
                                 TRUE,
                                 FALSE),
                  comment = if_else(input$select_reason == "keep",

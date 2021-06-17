@@ -1156,8 +1156,7 @@ shinyAppServer <- function(input, output, session) {
       pivot_wider(id_cols = .data$my_id:.data$carbon_db,
                   names_from = .data$sample_name,
                   values_from = .data$area) %>%
-      filter(.data$keep == FALSE |
-               (.data$keep == TRUE & .data$comment == "rename"),
+      filter(.data$keep == FALSE,
              .data$comment != "remove_class") %>%
       select(.data$my_id:.data$polarity, -.data$scale_DotProduct, -.data$scale_RevDotProduct, .data$keep, .data$comment) %>%
       distinct(.data$my_id,
