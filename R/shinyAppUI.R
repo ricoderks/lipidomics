@@ -366,7 +366,14 @@ shinyAppUI <- fluidPage(
                                                                                       height = "900px"),
                                                                          type = 5)))
                                  )
-                        ) # end tabpanel compare samples
+                        ), # end tabpanel compare samples
+                        # start tabPanel pca analysis
+                        tabPanel(title = "PCA",
+                                 fluidPage(
+                                   fluidRow(column = 12,
+                                            verbatimTextOutput(outputId = "pca_data"))
+                                 )
+                        ) # end tabpanel PCA
              ), # end navbarmenu analysis
              # tabPanel About
              navbarMenu(title = "Help",

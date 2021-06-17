@@ -1282,6 +1282,7 @@ shinyAppServer <- function(input, output, session) {
   #### end meta merge part
 
   #### Analysis part
+  #### compare samples
   observe({
     req(all_data$lipid_data_filter,
         all_data$samples_selected)
@@ -1302,6 +1303,24 @@ shinyAppServer <- function(input, output, session) {
     compare_samples_heatmap(lipid_data = all_data$analysis_data,
                             z = input$select_z_heatmap)
   })
+  ####
+
+  #### PCA
+  # do the PCA analysis
+  pca_data <- reactive({
+    req(all_data$lipid_data_filter)
+
+    data_pca <- do_pca(lipid_data = isolate(all_data$lipid_data_filter))
+
+    return(data_pca)
+  })
+
+  output$pca_data <- renderPrint({
+    req(pca_data)
+
+    pca_data()
+  })
+  ####
 
   #### end analysis part
 
