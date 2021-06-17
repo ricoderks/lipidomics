@@ -83,8 +83,8 @@ bubblePlotServer <- function(id, data, pattern, lipid_data = NULL, title) {
                        pattern = "[qQ][cC]pool_004"),
                  grepl(x = .data$LipidClass,
                        pattern = pattern),
-                 !(.data$keep == FALSE &.data$comment == "remove_class"),
-                 !(.data$keep == FALSE &.data$comment == "large_rsd")) %>%
+                 !(.data$keep == FALSE & .data$comment == "remove_class"),
+                 !(.data$keep == FALSE & .data$comment == "large_rsd")) %>%
           ggplot(aes(x = .data$AverageRT,
                      y = .data$AverageMZ,
                      color = .data$carbons)) +
