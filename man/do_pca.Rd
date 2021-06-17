@@ -4,10 +4,18 @@
 \alias{do_pca}
 \title{Do PCA analysis}
 \usage{
-do_pca(lipid_data)
+do_pca(
+  lipid_data,
+  observations = c("all", "samples"),
+  normalization = c("raw", "tot_area")
+)
 }
 \arguments{
 \item{lipid_data}{tibble in tidy format}
+
+\item{observations}{which observations to show}
+
+\item{normalization}{what normalization to use, none (raw data) or total area normalization}
 }
 \value{
 a list with scores, loadings and explained variance

@@ -370,8 +370,13 @@ shinyAppUI <- fluidPage(
                         # start tabPanel pca analysis
                         tabPanel(title = "PCA",
                                  fluidPage(
-                                   fluidRow(column = 12,
-                                            verbatimTextOutput(outputId = "pca_data"))
+                                   sidebarPanel(
+                                     uiOutput(outputId = "pca_scores_settings_ui")
+                                   ),
+                                   mainPanel(
+                                     # for debugging
+                                     # verbatimTextOutput(outputId = "pca_data"),
+                                     uiOutput(outputId = "pca_plot_ui"))
                                  )
                         ) # end tabpanel PCA
              ), # end navbarmenu analysis

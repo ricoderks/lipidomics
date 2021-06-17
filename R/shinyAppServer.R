@@ -19,7 +19,7 @@
 #' @importFrom tools file_ext
 #' @importFrom readxl read_xlsx
 #' @importFrom DT renderDT
-#' @importFrom plotly renderPlotly plotlyOutput
+#' @importFrom plotly renderPlotly plotlyOutput plot_ly add_markers
 #'
 #' @author Rico Derks
 
@@ -127,8 +127,8 @@ shinyAppServer <- function(input, output, session) {
     req(all_data$lipid_data)
 
     all_data$lipid_data %>%
-    # remove a few columns
-    select(-.data$MSMSspectrum, -.data$scale_DotProduct, -.data$scale_RevDotProduct, -.data$keep, -.data$comment)
+      # remove a few columns
+      select(-.data$MSMSspectrum, -.data$scale_DotProduct, -.data$scale_RevDotProduct, -.data$keep, -.data$comment)
   },
   options = list(pageLength = 10,
                  lengthChange = FALSE,
@@ -1308,17 +1308,54 @@ shinyAppServer <- function(input, output, session) {
   #### PCA
   # do the PCA analysis
   pca_data <- reactive({
-    req(all_data$lipid_data_filter)
+    req(all_data$analysis_data,
+        input$select_pca_observations,
+        input$select_pca_normalization)
 
-    data_pca <- do_pca(lipid_data = isolate(all_data$lipid_data_filter))
+    data_pca <- do_pca(lipid_data = isolate(all_data$analysis_data),
+                       observations = input$select_pca_observations,
+                       normalization = input$select_pca_normalization)
 
     return(data_pca)
+  })
+
+  # show the scores plot
+  output$pca_scores_plot <- renderPlotly({
+    req(pca_data)
+
+    pca_scores_plot(scores_data = pca_data()$scores)
   })
 
   output$pca_data <- renderPrint({
     req(pca_data)
 
     pca_data()
+  })
+
+  output$pca_scores_settings_ui <- renderUI({
+    req(all_data$analysis_data)
+
+    tagList(
+      h4("Settings score plot"),
+      radioButtons(inputId = "select_pca_observations",
+                   label = "Observations:",
+                   choices = c("QCpool and samples (all)" = "all",
+                               "Only samples" = "samples"),
+                   selected = "samples"),
+      radioButtons(inputId = "select_pca_normalization",
+                   label = "Normalization:",
+                   choices = c("Raw data" = "raw",
+                               "Total area normalization" = "tot_area"),
+                   selected = "tot_area")
+    )
+  })
+
+  output$pca_plot_ui <- renderUI({
+    req(pca_data)
+
+    tagList(
+      plotlyOutput(outputId = "pca_scores_plot")
+    )
   })
   ####
 
