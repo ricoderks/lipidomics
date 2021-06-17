@@ -4,16 +4,14 @@
 \alias{bubblePlotServer}
 \title{Create bubble plot server part}
 \usage{
-bubblePlotServer(id, data, pattern, lipid_data = NULL, title)
+bubblePlotServer(id, lipid_data, pattern, title)
 }
 \arguments{
 \item{id}{input id}
 
-\item{data}{data which is used to make the plot.}
+\item{lipid_data}{data which is used to make the plot.}
 
 \item{pattern}{regular expression pattern to select the correct lipid classes.}
-
-\item{lipid_data}{lipid info}
 
 \item{title}{is the title use on top of the indentication page}
 }

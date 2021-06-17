@@ -10,7 +10,7 @@
 #'
 #' @importFrom shiny NS fluidRow column plotOutput
 #' @importFrom magrittr %>%
-#' @importFrom dplyr filter pull
+#' @importFrom dplyr filter pull distinct
 #' @importFrom rlang .data
 #'
 #' @author Rico Derks
@@ -18,14 +18,18 @@
 bubblePlotUI <- function(id, data, pattern) {
   ns <- NS(id)
 
-  num_lipid_class <- data %>%
-    filter(grepl(x = .data$sample_name,
-                 pattern = "[qQ][cC]pool_004"),
-           grepl(x = .data$LipidClass,
-                 pattern = pattern)) %>%
-    pull(.data$LipidClass) %>%
-    unique() %>%
-    length()
+  if(nrow(data) > 0) {
+    num_lipid_class <- data %>%
+      filter(grepl(x = .data$sample_name,
+                   pattern = "[qQ][cC]pool_004"),
+             grepl(x = .data$LipidClass,
+                   pattern = pattern)) %>%
+      distinct(.data$LipidClass) %>%
+      pull(.data$LipidClass) %>%
+      length()
+  } else {
+    num_lipid_class <- 1
+  }
 
   # calculate new height for the plot
   new_height <- num_lipid_class * 175 + 25
@@ -34,8 +38,6 @@ bubblePlotUI <- function(id, data, pattern) {
     fluidRow(
       column(width = 12,
              uiOutput(outputId = ns("show_tab_id_ui")))
-      # tableOutput(outputId = ns("info")))
-      # div(style = "height:250px"))
     ),
     # show table with info about point clicked
     fluidRow(
@@ -63,5 +65,4 @@ bubblePlotUI <- function(id, data, pattern) {
              uiOutput(outputId = ns("msms_cutoff_ui")))
     )
   )
-
 }

@@ -3,9 +3,8 @@
 #' @description Create the server part for the bubble plot
 #'
 #' @param id input id
-#' @param data data which is used to make the plot.
+#' @param lipid_data data which is used to make the plot.
 #' @param pattern regular expression pattern to select the correct lipid classes.
-#' @param lipid_data lipid info
 #' @param title is the title use on top of the indentication page
 #'
 #' @return a part of the server
@@ -23,25 +22,25 @@
 #'
 #' @author Rico Derks
 #'
-bubblePlotServer <- function(id, data, pattern, lipid_data = NULL, title) {
+bubblePlotServer <- function(id, lipid_data, pattern, title) {
   moduleServer(
     id = id,
     module = function(input, output, session) {
       ranges <- reactiveValues(x = NULL,
                                y = NULL)
 
-      data <- reactiveValues(selected_data = NULL)
+      selected_data <- reactiveValues(data = NULL)
 
       toReturn <- reactiveValues(filter_data = tibble(my_id = character(),
                                                       keep = logical(),
                                                       comment = character()))
 
       lipid_data_wide <- reactive({
-        data_wide <- data() %>%
+        data_wide <- lipid_data() %>%
           select(-.data$sample_type) %>%
-            pivot_wider(id_cols = .data$my_id:.data$carbon_db,
-                        names_from = .data$sample_name,
-                        values_from = .data$area)
+          pivot_wider(id_cols = .data$my_id:.data$carbon_db,
+                      names_from = .data$sample_name,
+                      values_from = .data$area)
 
         return(data_wide)
       })
@@ -78,34 +77,43 @@ bubblePlotServer <- function(id, data, pattern, lipid_data = NULL, title) {
 
       # bubble plot
       output$bubble <- renderPlot({
-        data() %>%
+        plot_data <-  lipid_data() %>%
           filter(grepl(x = .data$sample_name,
                        pattern = "[qQ][cC]pool_004"),
                  grepl(x = .data$LipidClass,
                        pattern = pattern),
                  !(.data$keep == FALSE & .data$comment == "remove_class"),
-                 !(.data$keep == FALSE & .data$comment == "large_rsd")) %>%
-          ggplot(aes(x = .data$AverageRT,
-                     y = .data$AverageMZ,
-                     color = .data$carbons)) +
-          # group = .data$carbon_db)) +
-          geom_point(aes(size = .data$DotProduct),
-                     alpha = 0.4) +
-          scale_size(range = c(1, 10)) +
-          geom_line() +
-          geom_text(aes(label = .data$carbon_db),
-                    size = 3.0,
-                    color = "black") +
-          facet_grid(.data$LipidClass ~ .data$ion,
-                     scales = "free") +
-          labs(x = "Retention time [minutes]",
-               y = expression(italic("m/z"))) +
-          guides(color = FALSE,
-                 size = FALSE) +
-          coord_cartesian(xlim = ranges$x,
-                          ylim = ranges$y) +
-          theme_cpm() +
-          theme(strip.text = element_text(size = 10))
+                 !(.data$keep == FALSE & .data$comment == "large_rsd"))
+
+        # only make plot if data is available
+        if(nrow(plot_data) > 0) {
+          p <- plot_data %>%
+            ggplot(aes(x = .data$AverageRT,
+                       y = .data$AverageMZ,
+                       color = .data$carbons)) +
+            # group = .data$carbon_db)) +
+            geom_point(aes(size = .data$DotProduct),
+                       alpha = 0.4) +
+            scale_size(range = c(1, 10)) +
+            geom_line() +
+            geom_text(aes(label = .data$carbon_db),
+                      size = 3.0,
+                      color = "black") +
+            facet_grid(.data$LipidClass ~ .data$ion,
+                       scales = "free") +
+            labs(x = "Retention time [minutes]",
+                 y = expression(italic("m/z"))) +
+            guides(color = FALSE,
+                   size = FALSE) +
+            coord_cartesian(xlim = ranges$x,
+                            ylim = ranges$y) +
+            theme_cpm() +
+            theme(strip.text = element_text(size = 10))
+        } else {
+          p <- NULL
+        }
+
+        return(p)
       })
 
       # show which datapoint is clicked
@@ -119,12 +127,12 @@ bubblePlotServer <- function(id, data, pattern, lipid_data = NULL, title) {
 
       # show the selection for the reasons
       output$reason_ui <- renderUI({
-        req(data$selected_data)
+        req(selected_data$data)
 
-        if(nrow(data$selected_data) == 1) {
+        if(nrow(selected_data$data) == 1) {
           # get the current lipid status
           lipid_status <- lipid_data_wide() %>%
-            filter(.data$my_id == data$selected_data$my_id) %>%
+            filter(.data$my_id == selected_data$data$my_id) %>%
             pull(comment)
 
           # keep doesn't showup in the comments this is NA_character_
@@ -132,7 +140,7 @@ bubblePlotServer <- function(id, data, pattern, lipid_data = NULL, title) {
             lipid_status <- "keep"
           }
         }
-        if(nrow(data$selected_data) == 1) {
+        if(nrow(selected_data$data) == 1) {
           tagList(
             column(width = 3,
                    selectInput(inputId = session$ns("select_reason"),
@@ -150,31 +158,31 @@ bubblePlotServer <- function(id, data, pattern, lipid_data = NULL, title) {
       })
 
       observeEvent(input$select_reason, {
-        req(data$selected_data)
+        req(selected_data$data)
 
-          toReturn$filter_data <- lipid_data_wide() %>%
-            filter(.data$my_id == data$selected_data$my_id) %>%
-            select(.data$my_id, .data$keep, .data$comment) %>%
-            mutate(keep = if_else(input$select_reason == "keep" |
-                                    input$select_reason == "rename",
-                                  TRUE,
-                                  FALSE),
-                   comment = if_else(input$select_reason == "keep",
-                                     "",
-                                     input$select_reason))
+        toReturn$filter_data <- lipid_data_wide() %>%
+          filter(.data$my_id == selected_data$data$my_id) %>%
+          select(.data$my_id, .data$keep, .data$comment) %>%
+          mutate(keep = if_else(input$select_reason == "keep" |
+                                  input$select_reason == "rename",
+                                TRUE,
+                                FALSE),
+                 comment = if_else(input$select_reason == "keep",
+                                   "",
+                                   input$select_reason))
       },
       ignoreInit = TRUE) # doesn't seem to work
 
       # show the row clicked
       output$info <- renderTable({
-        data$selected_data <- nearPoints(df = lipid_data_wide(),
+        selected_data$data <- nearPoints(df = lipid_data_wide(),
                                          coordinfo = input$bubble_clk,
                                          xvar = "AverageRT",
                                          yvar = "AverageMZ",
                                          threshold = 10)
 
-        if(nrow(data$selected_data) > 0) {
-          data$selected_data %>%
+        if(nrow(selected_data$data) > 0) {
+          selected_data$data %>%
             select(.data$my_id:.data$polarity, -.data$scale_DotProduct, -.data$scale_RevDotProduct)
         } else {
           return(NULL)
@@ -182,10 +190,10 @@ bubblePlotServer <- function(id, data, pattern, lipid_data = NULL, title) {
       })
 
       output$msms_cutoff_ui <- renderUI({
-        req(data$selected_data)
+        req(selected_data$data)
 
         tagList(
-          if(nrow(data$selected_data) == 1) {
+          if(nrow(selected_data$data) == 1) {
             sliderInput(inputId = session$ns("msms_cutoff"),
                         label = "Annotation cutoff [%]:",
                         value = 5,
@@ -199,11 +207,11 @@ bubblePlotServer <- function(id, data, pattern, lipid_data = NULL, title) {
       })
 
       output$msms_clicked <- renderPlot({
-        req(data$selected_data,
+        req(selected_data$data,
             input$msms_cutoff)
 
-        if(nrow(data$selected_data) == 1) {
-          msms_data <- data$selected_data %>%
+        if(nrow(selected_data$data) == 1) {
+          msms_data <- selected_data$data %>%
             select(.data$MSMSspectrum) %>%
             transmute(data_pair = str_split(string = .data$MSMSspectrum,
                                             pattern = " ")) %>%
