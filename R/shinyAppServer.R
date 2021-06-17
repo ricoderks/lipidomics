@@ -90,7 +90,7 @@ shinyAppServer <- function(input, output, session) {
       distinct(.data$sample_name) %>%
       pull(.data$sample_name)
 
-    all_data$selected_samples <- all_data$all_samples
+    all_data$samples_selected <- all_data$all_samples
 
     # calculate the RSD values
     all_data$qc_results <- calc_rsd(lipid_data = all_data$lipid_data_long)
@@ -133,8 +133,8 @@ shinyAppServer <- function(input, output, session) {
     req(all_data$lipid_data_filter)
 
     all_data$lipid_data_filter #%>%
-      # remove a few columns
-      # select(-.data$MSMSspectrum, -.data$scale_DotProduct, -.data$scale_RevDotProduct, .data$keep, .data$comment)
+    # remove a few columns
+    # select(-.data$MSMSspectrum, -.data$scale_DotProduct, -.data$scale_RevDotProduct, .data$keep, .data$comment)
   },
   options = list(pageLength = 10,
                  lengthChange = FALSE,
@@ -487,10 +487,8 @@ shinyAppServer <- function(input, output, session) {
         all_data$clean_data)
 
     if(nrow(filter_FA()$filter_data) > 0) {
-      all_data$clean_data$keep[all_data$clean_data$my_id == filter_FA()$filter_data$my_id] <- filter_FA()$filter_data$keep
-      all_data$clean_data$comment[all_data$clean_data$my_id == filter_FA()$filter_data$my_id] <- filter_FA()$filter_data$comment
-      all_data$clean_data$ShortLipidName[all_data$clean_data$my_id == filter_FA()$filter_data$my_id] <- rename_lipid(lipid_data = all_data$clean_data,
-                                                                                                                     rename_info = filter_FA()$filter_data)
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
+                                                   info = isolate(filter_FA()))
     }
   })
   ###
@@ -516,10 +514,8 @@ shinyAppServer <- function(input, output, session) {
         all_data$clean_data)
 
     if(nrow(filter_FAM()$filter_data) > 0) {
-      all_data$clean_data$keep[all_data$clean_data$my_id == filter_FAM()$filter_data$my_id] <- filter_FAM()$filter_data$keep
-      all_data$clean_data$comment[all_data$clean_data$my_id == filter_FAM()$filter_data$my_id] <- filter_FAM()$filter_data$comment
-      all_data$clean_data$ShortLipidName[all_data$clean_data$my_id == filter_FAM()$filter_data$my_id] <- rename_lipid(lipid_data = all_data$clean_data,
-                                                                                                                      rename_info = filter_FAM()$filter_data)
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
+                                                   info = isolate(filter_FAM()))
     }
   })
   ###
@@ -545,10 +541,8 @@ shinyAppServer <- function(input, output, session) {
         all_data$clean_data)
 
     if(nrow(filter_FE()$filter_data) > 0) {
-      all_data$clean_data$keep[all_data$clean_data$my_id == filter_FE()$filter_data$my_id] <- filter_FE()$filter_data$keep
-      all_data$clean_data$comment[all_data$clean_data$my_id == filter_FE()$filter_data$my_id] <- filter_FE()$filter_data$comment
-      all_data$clean_data$ShortLipidName[all_data$clean_data$my_id == filter_FE()$filter_data$my_id] <- rename_lipid(lipid_data = all_data$clean_data,
-                                                                                                                     rename_info = filter_FE()$filter_data)
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
+                                                   info = isolate(filter_FE()))
     }
   })
   ###
@@ -574,10 +568,8 @@ shinyAppServer <- function(input, output, session) {
         all_data$clean_data)
 
     if(nrow(filter_EGL()$filter_data) > 0) {
-      all_data$clean_data$keep[all_data$clean_data$my_id == filter_EGL()$filter_data$my_id] <- filter_EGL()$filter_data$keep
-      all_data$clean_data$comment[all_data$clean_data$my_id == filter_EGL()$filter_data$my_id] <- filter_EGL()$filter_data$comment
-      all_data$clean_data$ShortLipidName[all_data$clean_data$my_id == filter_EGL()$filter_data$my_id] <- rename_lipid(lipid_data = all_data$clean_data,
-                                                                                                                      rename_info = filter_EGL()$filter_data)
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
+                                                   info = isolate(filter_EGL()))
     }
   })
   ###
@@ -603,10 +595,8 @@ shinyAppServer <- function(input, output, session) {
         all_data$clean_data)
 
     if(nrow(filter_GL()$filter_data) > 0) {
-      all_data$clean_data$keep[all_data$clean_data$my_id == filter_GL()$filter_data$my_id] <- filter_GL()$filter_data$keep
-      all_data$clean_data$comment[all_data$clean_data$my_id == filter_GL()$filter_data$my_id] <- filter_GL()$filter_data$comment
-      all_data$clean_data$ShortLipidName[all_data$clean_data$my_id == filter_GL()$filter_data$my_id] <- rename_lipid(lipid_data = all_data$clean_data,
-                                                                                                                     rename_info = filter_GL()$filter_data)
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
+                                                   info = isolate(filter_GL()))
     }
   })
   ###
@@ -632,10 +622,8 @@ shinyAppServer <- function(input, output, session) {
         all_data$clean_data)
 
     if(nrow(filter_GLDG()$filter_data) > 0) {
-      all_data$clean_data$keep[all_data$clean_data$my_id == filter_GLDG()$filter_data$my_id] <- filter_GLDG()$filter_data$keep
-      all_data$clean_data$comment[all_data$clean_data$my_id == filter_GLDG()$filter_data$my_id] <- filter_GLDG()$filter_data$comment
-      all_data$clean_data$ShortLipidName[all_data$clean_data$my_id == filter_GLDG()$filter_data$my_id] <- rename_lipid(lipid_data = all_data$clean_data,
-                                                                                                                       rename_info = filter_GLDG()$filter_data)
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
+                                                   info = isolate(filter_GLDG()))
     }
   })
   ###
@@ -661,10 +649,8 @@ shinyAppServer <- function(input, output, session) {
         all_data$clean_data)
 
     if(nrow(filter_OGL()$filter_data) > 0) {
-      all_data$clean_data$keep[all_data$clean_data$my_id == filter_OGL()$filter_data$my_id] <- filter_OGL()$filter_data$keep
-      all_data$clean_data$comment[all_data$clean_data$my_id == filter_OGL()$filter_data$my_id] <- filter_OGL()$filter_data$comment
-      all_data$clean_data$ShortLipidName[all_data$clean_data$my_id == filter_OGL()$filter_data$my_id] <- rename_lipid(lipid_data = all_data$clean_data,
-                                                                                                                      rename_info = filter_OGL()$filter_data)
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
+                                                   info = isolate(filter_OGL()))
     }
   })
   ###
@@ -690,10 +676,8 @@ shinyAppServer <- function(input, output, session) {
         all_data$clean_data)
 
     if(nrow(filter_PA()$filter_data) > 0) {
-      all_data$clean_data$keep[all_data$clean_data$my_id == filter_PA()$filter_data$my_id] <- filter_PA()$filter_data$keep
-      all_data$clean_data$comment[all_data$clean_data$my_id == filter_PA()$filter_data$my_id] <- filter_PA()$filter_data$comment
-      all_data$clean_data$ShortLipidName[all_data$clean_data$my_id == filter_PA()$filter_data$my_id] <- rename_lipid(lipid_data = all_data$clean_data,
-                                                                                                                     rename_info = filter_PA()$filter_data)
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
+                                                   info = isolate(filter_PA()))
     }
   })
   ###
@@ -719,10 +703,8 @@ shinyAppServer <- function(input, output, session) {
         all_data$clean_data)
 
     if(nrow(filter_PC()$filter_data) > 0) {
-      all_data$clean_data$keep[all_data$clean_data$my_id == filter_PC()$filter_data$my_id] <- filter_PC()$filter_data$keep
-      all_data$clean_data$comment[all_data$clean_data$my_id == filter_PC()$filter_data$my_id] <- filter_PC()$filter_data$comment
-      all_data$clean_data$ShortLipidName[all_data$clean_data$my_id == filter_PC()$filter_data$my_id] <- rename_lipid(lipid_data = all_data$clean_data,
-                                                                                                                     rename_info = filter_PC()$filter_data)
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
+                                                   info = isolate(filter_PC()))
     }
   })
   ###
@@ -748,10 +730,8 @@ shinyAppServer <- function(input, output, session) {
         all_data$clean_data)
 
     if(nrow(filter_PE()$filter_data) > 0) {
-      all_data$clean_data$keep[all_data$clean_data$my_id == filter_PE()$filter_data$my_id] <- filter_PE()$filter_data$keep
-      all_data$clean_data$comment[all_data$clean_data$my_id == filter_PE()$filter_data$my_id] <- filter_PE()$filter_data$comment
-      all_data$clean_data$ShortLipidName[all_data$clean_data$my_id == filter_PE()$filter_data$my_id] <- rename_lipid(lipid_data = all_data$clean_data,
-                                                                                                                     rename_info = filter_PE()$filter_data)
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
+                                                   info = isolate(filter_PE()))
     }
   })
   ###
@@ -777,10 +757,8 @@ shinyAppServer <- function(input, output, session) {
         all_data$clean_data)
 
     if(nrow(filter_PE()$filter_data) > 0) {
-      all_data$clean_data$keep[all_data$clean_data$my_id == filter_PG()$filter_data$my_id] <- filter_PG()$filter_data$keep
-      all_data$clean_data$comment[all_data$clean_data$my_id == filter_PG()$filter_data$my_id] <- filter_PG()$filter_data$comment
-      all_data$clean_data$ShortLipidName[all_data$clean_data$my_id == filter_PG()$filter_data$my_id] <- rename_lipid(lipid_data = all_data$clean_data,
-                                                                                                                     rename_info = filter_PG()$filter_data)
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
+                                                   info = isolate(filter_PG()))
     }
   })
   ###
@@ -806,10 +784,8 @@ shinyAppServer <- function(input, output, session) {
         all_data$clean_data)
 
     if(nrow(filter_CL()$filter_data) > 0) {
-      all_data$clean_data$keep[all_data$clean_data$my_id == filter_CL()$filter_data$my_id] <- filter_CL()$filter_data$keep
-      all_data$clean_data$comment[all_data$clean_data$my_id == filter_CL()$filter_data$my_id] <- filter_CL()$filter_data$comment
-      all_data$clean_data$ShortLipidName[all_data$clean_data$my_id == filter_CL()$filter_data$my_id] <- rename_lipid(lipid_data = all_data$clean_data,
-                                                                                                                     rename_info = filter_CL()$filter_data)
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
+                                                   info = isolate(filter_CL()))
     }
   })
   ###
@@ -835,10 +811,8 @@ shinyAppServer <- function(input, output, session) {
         all_data$clean_data)
 
     if(nrow(filter_AcPIM()$filter_data) > 0) {
-      all_data$clean_data$keep[all_data$clean_data$my_id == filter_AcPIM()$filter_data$my_id] <- filter_AcPIM()$filter_data$keep
-      all_data$clean_data$comment[all_data$clean_data$my_id == filter_AcPIM()$filter_data$my_id] <- filter_AcPIM()$filter_data$comment
-      all_data$clean_data$ShortLipidName[all_data$clean_data$my_id == filter_AcPIM()$filter_data$my_id] <- rename_lipid(lipid_data = all_data$clean_data,
-                                                                                                                        rename_info = filter_AcPIM()$filter_data)
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
+                                                   info = isolate(filter_AcPIM()))
     }
   })
   ###
@@ -864,10 +838,8 @@ shinyAppServer <- function(input, output, session) {
         all_data$clean_data)
 
     if(nrow(filter_PI()$filter_data) > 0) {
-      all_data$clean_data$keep[all_data$clean_data$my_id == filter_PI()$filter_data$my_id] <- filter_PI()$filter_data$keep
-      all_data$clean_data$comment[all_data$clean_data$my_id == filter_PI()$filter_data$my_id] <- filter_PI()$filter_data$comment
-      all_data$clean_data$ShortLipidName[all_data$clean_data$my_id == filter_PI()$filter_data$my_id] <- rename_lipid(lipid_data = all_data$clean_data,
-                                                                                                                     rename_info = filter_PI()$filter_data)
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
+                                                   info = isolate(filter_PI()))
     }
   })
   ###
@@ -893,10 +865,8 @@ shinyAppServer <- function(input, output, session) {
         all_data$clean_data)
 
     if(nrow(filter_PS()$filter_data) > 0) {
-      all_data$clean_data$keep[all_data$clean_data$my_id == filter_PS()$filter_data$my_id] <- filter_PS()$filter_data$keep
-      all_data$clean_data$comment[all_data$clean_data$my_id == filter_PS()$filter_data$my_id] <- filter_PS()$filter_data$comment
-      all_data$clean_data$ShortLipidName[all_data$clean_data$my_id == filter_PS()$filter_data$my_id] <- rename_lipid(lipid_data = all_data$clean_data,
-                                                                                                                     rename_info = filter_PS()$filter_data)
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
+                                                   info = isolate(filter_PS()))
     }
   })
   ###
@@ -922,10 +892,8 @@ shinyAppServer <- function(input, output, session) {
         all_data$clean_data)
 
     if(nrow(filter_OPL()$filter_data) > 0) {
-      all_data$clean_data$keep[all_data$clean_data$my_id == filter_OPL()$filter_data$my_id] <- filter_OPL()$filter_data$keep
-      all_data$clean_data$comment[all_data$clean_data$my_id == filter_OPL()$filter_data$my_id] <- filter_OPL()$filter_data$comment
-      all_data$clean_data$ShortLipidName[all_data$clean_data$my_id == filter_OPL()$filter_data$my_id] <- rename_lipid(lipid_data = all_data$clean_data,
-                                                                                                                      rename_info = filter_OPL()$filter_data)
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
+                                                   info = isolate(filter_OPL()))
     }
   })
   ###
@@ -951,10 +919,8 @@ shinyAppServer <- function(input, output, session) {
         all_data$clean_data)
 
     if(nrow(filter_OGPL()$filter_data) > 0) {
-      all_data$clean_data$keep[all_data$clean_data$my_id == filter_OGPL()$filter_data$my_id] <- filter_OGPL()$filter_data$keep
-      all_data$clean_data$comment[all_data$clean_data$my_id == filter_OGPL()$filter_data$my_id] <- filter_OGPL()$filter_data$comment
-      all_data$clean_data$ShortLipidName[all_data$clean_data$my_id == filter_OGPL()$filter_data$my_id] <- rename_lipid(lipid_data = all_data$clean_data,
-                                                                                                                       rename_info = filter_OGPL()$filter_data)
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
+                                                   info = isolate(filter_OGPL()))
     }
   })
   ###
@@ -980,10 +946,8 @@ shinyAppServer <- function(input, output, session) {
         all_data$clean_data)
 
     if(nrow(filter_PRL()$filter_data) > 0) {
-      all_data$clean_data$keep[all_data$clean_data$my_id == filter_PRL()$filter_data$my_id] <- filter_PRL()$filter_data$keep
-      all_data$clean_data$comment[all_data$clean_data$my_id == filter_PRL()$filter_data$my_id] <- filter_PRL()$filter_data$comment
-      all_data$clean_data$ShortLipidName[all_data$clean_data$my_id == filter_PRL()$filter_data$my_id] <- rename_lipid(lipid_data = all_data$clean_data,
-                                                                                                                      rename_info = filter_PRL()$filter_data)
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
+                                                   info = isolate(filter_PRL()))
     }
   })
   ###
@@ -1009,10 +973,8 @@ shinyAppServer <- function(input, output, session) {
         all_data$clean_data)
 
     if(nrow(filter_AcGL()$filter_data) > 0) {
-      all_data$clean_data$keep[all_data$clean_data$my_id == filter_AcGL()$filter_data$my_id] <- filter_AcGL()$filter_data$keep
-      all_data$clean_data$comment[all_data$clean_data$my_id == filter_AcGL()$filter_data$my_id] <- filter_AcGL()$filter_data$comment
-      all_data$clean_data$ShortLipidName[all_data$clean_data$my_id == filter_AcGL()$filter_data$my_id] <- rename_lipid(lipid_data = all_data$clean_data,
-                                                                                                                       rename_info = filter_AcGL()$filter_data)
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
+                                                   info = isolate(filter_AcGL()))
     }
   })
   ###
@@ -1038,10 +1000,8 @@ shinyAppServer <- function(input, output, session) {
         all_data$clean_data)
 
     if(nrow(filter_Cer()$filter_data) > 0) {
-      all_data$clean_data$keep[all_data$clean_data$my_id == filter_Cer()$filter_data$my_id] <- filter_Cer()$filter_data$keep
-      all_data$clean_data$comment[all_data$clean_data$my_id == filter_Cer()$filter_data$my_id] <- filter_Cer()$filter_data$comment
-      all_data$clean_data$ShortLipidName[all_data$clean_data$my_id == filter_Cer()$filter_data$my_id] <- rename_lipid(lipid_data = all_data$clean_data,
-                                                                                                                      rename_info = filter_Cer()$filter_data)
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
+                                                   info = isolate(filter_Cer()))
     }
   })
   ###
@@ -1067,10 +1027,8 @@ shinyAppServer <- function(input, output, session) {
         all_data$clean_data)
 
     if(nrow(filter_PSL()$filter_data) > 0) {
-      all_data$clean_data$keep[all_data$clean_data$my_id == filter_PSL()$filter_data$my_id] <- filter_PSL()$filter_data$keep
-      all_data$clean_data$comment[all_data$clean_data$my_id == filter_PSL()$filter_data$my_id] <- filter_PSL()$filter_data$comment
-      all_data$clean_data$ShortLipidName[all_data$clean_data$my_id == filter_PSL()$filter_data$my_id] <- rename_lipid(lipid_data = all_data$clean_data,
-                                                                                                                      rename_info = filter_PSL()$filter_data)
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
+                                                   info = isolate(filter_PSL()))
     }
   })
   ###
@@ -1096,10 +1054,8 @@ shinyAppServer <- function(input, output, session) {
         all_data$clean_data)
 
     if(nrow(filter_NPSL()$filter_data) > 0) {
-      all_data$clean_data$keep[all_data$clean_data$my_id == filter_NPSL()$filter_data$my_id] <- filter_NPSL()$filter_data$keep
-      all_data$clean_data$comment[all_data$clean_data$my_id == filter_NPSL()$filter_data$my_id] <- filter_NPSL()$filter_data$comment
-      all_data$clean_data$ShortLipidName[all_data$clean_data$my_id == filter_NPSL()$filter_data$my_id] <- rename_lipid(lipid_data = all_data$clean_data,
-                                                                                                                       rename_info = filter_NPSL()$filter_data)
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
+                                                   info = isolate(filter_NPSL()))
     }
   })
   ###
@@ -1125,10 +1081,8 @@ shinyAppServer <- function(input, output, session) {
         all_data$clean_data)
 
     if(nrow(filter_SB()$filter_data) > 0) {
-      all_data$clean_data$keep[all_data$clean_data$my_id == filter_SB()$filter_data$my_id] <- filter_SB()$filter_data$keep
-      all_data$clean_data$comment[all_data$clean_data$my_id == filter_SB()$filter_data$my_id] <- filter_SB()$filter_data$comment
-      all_data$clean_data$ShortLipidName[all_data$clean_data$my_id == filter_SB()$filter_data$my_id] <- rename_lipid(lipid_data = all_data$clean_data,
-                                                                                                                     rename_info = filter_SB()$filter_data)
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
+                                                   info = isolate(filter_SB()))
     }
   })
   ###
@@ -1154,10 +1108,8 @@ shinyAppServer <- function(input, output, session) {
         all_data$clean_data)
 
     if(nrow(filter_BA()$filter_data) > 0) {
-      all_data$clean_data$keep[all_data$clean_data$my_id == filter_BA()$filter_data$my_id] <- filter_BA()$filter_data$keep
-      all_data$clean_data$comment[all_data$clean_data$my_id == filter_BA()$filter_data$my_id] <- filter_BA()$filter_data$comment
-      all_data$clean_data$ShortLipidName[all_data$clean_data$my_id == filter_BA()$filter_data$my_id] <- rename_lipid(lipid_data = all_data$clean_data,
-                                                                                                                     rename_info = filter_BA()$filter_data)
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
+                                                   info = isolate(filter_BA()))
     }
   })
   ###
@@ -1183,10 +1135,8 @@ shinyAppServer <- function(input, output, session) {
         all_data$clean_data)
 
     if(nrow(filter_SC()$filter_data) > 0) {
-      all_data$clean_data$keep[all_data$clean_data$my_id == filter_SC()$filter_data$my_id] <- filter_SC()$filter_data$keep
-      all_data$clean_data$comment[all_data$clean_data$my_id == filter_SC()$filter_data$my_id] <- filter_SC()$filter_data$comment
-      all_data$clean_data$ShortLipidName[all_data$clean_data$my_id == filter_SC()$filter_data$my_id] <- rename_lipid(lipid_data = all_data$clean_data,
-                                                                                                                     rename_info = filter_SC()$filter_data)
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
+                                                   info = isolate(filter_SC()))
     }
   })
   ###
@@ -1212,10 +1162,8 @@ shinyAppServer <- function(input, output, session) {
         all_data$clean_data)
 
     if(nrow(filter_STC()$filter_data) > 0) {
-      all_data$clean_data$keep[all_data$clean_data$my_id == filter_STC()$filter_data$my_id] <- filter_STC()$filter_data$keep
-      all_data$clean_data$comment[all_data$clean_data$my_id == filter_STC()$filter_data$my_id] <- filter_STC()$filter_data$comment
-      all_data$clean_data$ShortLipidName[all_data$clean_data$my_id == filter_STC()$filter_data$my_id] <- rename_lipid(lipid_data = all_data$clean_data,
-                                                                                                                      rename_info = filter_STC()$filter_data)
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
+                                                   info = isolate(filter_STC()))
     }
   })
   ###
@@ -1241,10 +1189,8 @@ shinyAppServer <- function(input, output, session) {
         all_data$clean_data)
 
     if(nrow(filter_ST()$filter_data) > 0) {
-      all_data$clean_data$keep[all_data$clean_data$my_id == filter_ST()$filter_data$my_id] <- filter_ST()$filter_data$keep
-      all_data$clean_data$comment[all_data$clean_data$my_id == filter_ST()$filter_data$my_id] <- filter_ST()$filter_data$comment
-      all_data$clean_data$ShortLipidName[all_data$clean_data$my_id == filter_ST()$filter_data$my_id] <- rename_lipid(lipid_data = all_data$clean_data,
-                                                                                                                     rename_info = filter_ST()$filter_data)
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
+                                                   info = isolate(filter_ST()))
     }
   })
   ###
@@ -1270,10 +1216,8 @@ shinyAppServer <- function(input, output, session) {
         all_data$clean_data)
 
     if(nrow(filter_OST()$filter_data) > 0) {
-      all_data$clean_data$keep[all_data$clean_data$my_id == filter_OST()$filter_data$my_id] <- filter_OST()$filter_data$keep
-      all_data$clean_data$comment[all_data$clean_data$my_id == filter_OST()$filter_data$my_id] <- filter_OST()$filter_data$comment
-      all_data$clean_data$ShortLipidName[all_data$clean_data$my_id == filter_OST()$filter_data$my_id] <- rename_lipid(lipid_data = all_data$clean_data,
-                                                                                                                      rename_info = filter_OST()$filter_data)
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
+                                                   info = isolate(filter_OST()))
     }
   })
   ###
@@ -1281,23 +1225,32 @@ shinyAppServer <- function(input, output, session) {
 
   ### Show the issues
   output$tbl_issues <- renderTable({
-    req(all_data$clean_data)
+    req(all_data$lipid_data_filter)
 
-    all_data$clean_data %>%
+    all_data$lipid_data_filter %>%
+      select(-.data$sample_type) %>%
+      pivot_wider(id_cols = .data$my_id:.data$carbon_db,
+                  names_from = .data$sample_name,
+                  values_from = .data$area) %>%
       filter(.data$keep == FALSE |
                (.data$keep == TRUE & .data$comment == "rename"),
              .data$comment != "remove_class") %>%
-      select(.data$my_id:.data$polarity, -.data$scale_DotProduct, -.data$scale_RevDotProduct, .data$keep, .data$comment)
+      select(.data$my_id:.data$polarity, -.data$scale_DotProduct, -.data$scale_RevDotProduct, .data$keep, .data$comment) %>%
+      distinct(.data$my_id,
+               .keep_all = TRUE)
   })
 
   output$tbl_issues_class <- renderTable({
-    req(all_data$clean_data)
+    req(all_data$lipid_data_filter)
 
-    all_data$clean_data %>%
-      filter(.data$keep == FALSE,
-             .data$comment == "remove_class") %>%
-      select(.data$LipidClass, .data$class_ion, .data$keep, .data$comment) %>%
-      distinct(.data$class_ion,
+    all_data$lipid_data_filter %>%
+      select(-.data$sample_type) %>%
+      pivot_wider(id_cols = .data$my_id:.data$carbon_db,
+                  names_from = .data$sample_name,
+                  values_from = .data$area) %>%
+      filter(.data$comment == "remove_class") %>%
+      select(.data$my_id:.data$polarity, -.data$scale_DotProduct, -.data$scale_RevDotProduct, .data$keep, .data$comment) %>%
+      distinct(.data$my_id,
                .keep_all = TRUE)
   })
   #### eind issues part
@@ -1306,9 +1259,6 @@ shinyAppServer <- function(input, output, session) {
   # get the file
   xlsx_file <- reactive({
     req(input$meta_data_file)
-    # If no file is selected, don't do anything
-    # validate(need(input$meta_data_file, message = FALSE))
-
     # check if it is an xlsx file
     my_file <- input$meta_data_file
     ext <- file_ext(my_file$datapath)
@@ -1376,8 +1326,8 @@ shinyAppServer <- function(input, output, session) {
     # nothing should happen if the selected column is 'none'
     if(selected_column != "none") {
       all_data$lipid_data_filter <- merge_data(lipid_data = isolate(all_data$lipid_data_filter),
-                                         meta_data = all_data$meta_data(),
-                                         by = selected_column)
+                                               meta_data = all_data$meta_data(),
+                                               by = selected_column)
       all_data$merged_data <- TRUE
     } else {
       all_data$lipid_data_filter <- isolate(all_data$lipid_data_filter)
@@ -1406,17 +1356,20 @@ shinyAppServer <- function(input, output, session) {
   selection = "none")
   #### end meta merge part
 
-  # # keep on eye on if the data gets merged
+  #### Analysis part
   observe({
     req(all_data$lipid_data_filter,
         all_data$samples_selected)
 
     # remove samples for the analysis part
-    all_data$analysis_data <- isolate(all_data$lipid_data_filter) %>%
-      filter(.data$sample_name %in% all_data$samples_selected)
+    if(!is.null(all_data$samples_selected)) {
+      all_data$analysis_data <- isolate(all_data$lipid_data_filter) %>%
+        filter(.data$sample_name %in% all_data$samples_selected)
+    } else {
+      all_data$analysis_data <- isolate(all_data$lipid_data_filter)
+    }
   })
 
-  #### Analysis part
   output$compare_samples <- renderPlotly({
     req(all_data$lipid_data_filter,
         input$select_z_heatmap)
