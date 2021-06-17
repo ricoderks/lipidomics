@@ -70,10 +70,6 @@ shinyAppUI <- fluidPage(
                                  actionButton(inputId = "btn_merge_meta",
                                               label = "Merge")),
                           column(width = 4,
-                                 # checkboxGroupInput(inputId = "select_group_column",
-                                 #              label = "Select column to be used for grouping:",
-                                 #              choices = NULL,
-                                 #              selected = NULL)
                                  uiOutput(outputId = "select_group_column_ui")
                           ),
                           style = "background-color: #E8E8E8"

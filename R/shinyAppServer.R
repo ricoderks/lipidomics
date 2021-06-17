@@ -690,14 +690,14 @@ shinyAppServer <- function(input, output, session) {
   })
   ###
 
-  ### Glycerophosphocholines
+  ### Glycerophospho ethanolamines
   filter_PE <- bubblePlotServer(id = "PE",
                                 lipid_data = reactive(all_data$lipid_data_filter),
                                 pattern = "^(LNA)?(Ether)?L?PE(\\(P\\))?$",
                                 title = input$navbar_selection)
 
   output$PE_UI <- renderUI({
-    req(all_data$lipid_data_filtera)
+    req(all_data$lipid_data_filter)
 
     bubblePlotUI(id = "PE",
                  data = all_data$lipid_data_filter,
