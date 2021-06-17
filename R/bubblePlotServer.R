@@ -11,7 +11,7 @@
 #'
 #' @import shiny
 #' @importFrom magrittr %>%
-#' @importFrom dplyr filter select transmute if_else
+#' @importFrom dplyr filter select transmute if_else slice
 #' @importFrom tidyr unnest separate pivot_wider
 #' @importFrom stringr str_split
 #' @importFrom rlang .data
@@ -77,9 +77,16 @@ bubblePlotServer <- function(id, lipid_data, pattern, title) {
 
       # bubble plot
       output$bubble <- renderPlot({
-        plot_data <-  lipid_data() %>%
-          filter(grepl(x = .data$sample_name,
-                       pattern = "[qQ][cC]pool_004"),
+        # get the sample_name of the first qcpool sample
+        selected_name <- isolate(lipid_data()) %>%
+          filter(.data$sample_type == "qcpool") %>%
+          arrange(.data$sample_name) %>%
+          distinct(.data$sample_name) %>%
+          slice(1) %>%
+          pull(.data$sample_name)
+
+        plot_data <-  isolate(lipid_data()) %>%
+          filter(.data$sample_name == selected_name,
                  grepl(x = .data$LipidClass,
                        pattern = pattern),
                  !(.data$keep == FALSE & .data$comment == "remove_class"),

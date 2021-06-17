@@ -19,9 +19,16 @@ bubblePlotUI <- function(id, data, pattern) {
   ns <- NS(id)
 
   if(nrow(data) > 0) {
+    # get the sample_name of the first qcpool sample
+    selected_name <- data %>%
+      filter(.data$sample_type == "qcpool") %>%
+      arrange(.data$sample_name) %>%
+      distinct(.data$sample_name) %>%
+      slice(1) %>%
+      pull(.data$sample_name)
+
     num_lipid_class <- data %>%
-      filter(grepl(x = .data$sample_name,
-                   pattern = "[qQ][cC]pool_004"),
+      filter(.data$sample_name == selected_name,
              grepl(x = .data$LipidClass,
                    pattern = pattern)) %>%
       distinct(.data$LipidClass) %>%
