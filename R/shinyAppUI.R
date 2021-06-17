@@ -37,8 +37,8 @@ shinyAppUI <- fluidPage(
                                            label = "Negative mode:",
                                            multiple = FALSE,
                                            accept = c(".txt"),
-                                           width = 400),
-                                 style = "background-color: #E8E8E8")
+                                           width = 400)),
+                          style = "background-color: #E8E8E8"
                         ),
                         # create some empty space
                         fluidRow(column = 12,
@@ -53,15 +53,30 @@ shinyAppUI <- fluidPage(
                         ),
                         fluidRow(
                           shinyjs::hidden(uiOutput(outputId = "info_meta")),
-                          column(width = 9,
+                          column(width = 5,
                                  p("Read an Excel file with meta data."),
-                                 splitLayout(fileInput(inputId = "meta_data_file",
-                                                       label = "Meta data file:",
-                                                       multiple = FALSE,
-                                                       accept = c(".xlsx"),
-                                                       width = 400),
-                                             uiOutput(outputId = "merge_ui")),
-                                 style = "background-color: #E8E8E8")
+                                 fileInput(inputId = "meta_data_file",
+                                           label = "Meta data file:",
+                                           multiple = FALSE,
+                                           accept = c(".xlsx"),
+                                           width = 400),
+                                 selectInput(inputId = "select_meta_column",
+                                             label = "Select column for merging:",
+                                             choices = "none",
+                                             selected = "none"),
+                                 # show status on which column the merge was done
+                                 htmlOutput(outputId = "status_merge"),
+                                 # the merge button
+                                 actionButton(inputId = "btn_merge_meta",
+                                              label = "Merge")),
+                          column(width = 4,
+                                 # checkboxGroupInput(inputId = "select_group_column",
+                                 #              label = "Select column to be used for grouping:",
+                                 #              choices = NULL,
+                                 #              selected = NULL)
+                                 uiOutput(outputId = "select_group_column_ui")
+                          ),
+                          style = "background-color: #E8E8E8"
                         )
                       )
              ), # end tabPanel Files

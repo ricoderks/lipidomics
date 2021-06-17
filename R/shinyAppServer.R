@@ -1208,24 +1208,32 @@ shinyAppServer <- function(input, output, session) {
                  ordering = TRUE),
   selection = "none")
 
-  # generate the UI part for column selecting and merging
-  output$merge_ui <- renderUI({
+  # update on which column to merge
+  observe({
     req(all_data$meta_data)
 
     # get the column names of the meta data
     merge_colnames <- colnames(all_data$meta_data())
 
+    # update the select input
+    updateSelectInput(session = session,
+                      inputId = "select_meta_column",
+                      label = "Select column for merging:",
+                      choices = c("none", merge_colnames),
+                      selected = "none")
+  })
+
+  output$select_group_column_ui <- renderUI({
+    req(all_data$meta_data)
+
+    # get the column names of the meta data
+    all_colnames <- colnames(all_data$meta_data())
+
     tagList(
-      # create pull down list for column selection
-      selectInput(inputId = "select_meta_column",
-                  label = "Select column for merging:",
-                  choices = c("none", merge_colnames),
-                  selected = "none"),
-      # show status on which column the merge was done
-      htmlOutput(outputId = "status_merge"),
-      # the merge button
-      actionButton(inputId = "btn_merge_meta",
-                   label = "Merge")
+      checkboxGroupInput(inputId = "select_group_column",
+                         label = "Select column to be used for grouping:",
+                         choices = all_colnames,
+                         selected = NULL)
     )
   })
 
