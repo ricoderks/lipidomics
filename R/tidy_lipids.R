@@ -26,11 +26,11 @@ tidy_lipids <- function(lipid_data) {
     mutate(
       # a column with number of carbons and double bonds is needed for the bubble plots
       carbons = factor(str_extract(string = .data$ShortLipidName,
-                                   pattern = "[0-9]{2}")),
+                                   pattern = "[0-9]{1,2}")),
       carbon_db = str_extract(string = .data$ShortLipidName,
-                              pattern = "[0-9]{2}:[0-9]{1,2}"),
+                              pattern = "[0-9]{1,2}:?[0-9]?"),
       sample_type = factor(tolower(str_extract(string = .data$sample_name,
-                                               pattern = "([bB]lank|[qQ][cC]pool|[sS]ample)"))))#,
+                                               pattern = "([bB]lank|[qQ][cC]pool|[sS]ample)"))))
 
     return(df_long)
 }

@@ -475,7 +475,7 @@ shinyAppServer <- function(input, output, session) {
 
   ### Fatty acids and conjugates
   filter_FA <- bubblePlotServer(id = "FA",
-                                data = reactive(all_data$lipid_data_filter),
+                                lipid_data = reactive(all_data$lipid_data_filter),
                                 pattern = "^(Ox)?FA$",
                                 title = input$navbar_selection)
 
@@ -500,7 +500,7 @@ shinyAppServer <- function(input, output, session) {
 
   ### Fatty amides
   filter_FAM <- bubblePlotServer(id = "FAM",
-                                 data = reactive(all_data$lipid_data_filter),
+                                 lipid_data = reactive(all_data$lipid_data_filter),
                                  pattern = "^(NAGly|NAGlySer|NAOrn|NAE)",
                                  title = input$navbar_selection)
 
@@ -524,7 +524,7 @@ shinyAppServer <- function(input, output, session) {
 
   ### Fatty esters
   filter_FE <- bubblePlotServer(id = "FE",
-                                data = reactive(all_data$lipid_data_filter),
+                                lipid_data = reactive(all_data$lipid_data_filter),
                                 pattern = "^(CAR|FAHFA)",
                                 title = input$navbar_selection)
 
@@ -548,7 +548,7 @@ shinyAppServer <- function(input, output, session) {
 
   ### Ether glycerolipids
   filter_EGL <- bubblePlotServer(id = "EGL",
-                                 data = reactive(all_data$lipid_data_filter),
+                                 lipid_data = reactive(all_data$lipid_data_filter),
                                  pattern = "^(Ether|Ox)[MDT]G$",
                                  title = input$navbar_selection)
 
@@ -572,7 +572,7 @@ shinyAppServer <- function(input, output, session) {
 
   ### glycerolipids
   filter_GL <- bubblePlotServer(id = "GL",
-                                data = reactive(all_data$lipid_data_filter),
+                                lipid_data = reactive(all_data$lipid_data_filter),
                                 pattern = "^[MDT]G$",
                                 title = input$navbar_selection)
 
@@ -596,7 +596,7 @@ shinyAppServer <- function(input, output, session) {
 
   ### Glycosyldiradylglycerols
   filter_GLDG <- bubblePlotServer(id = "GLDG",
-                                  data = reactive(all_data$lipid_data_filter),
+                                  lipid_data = reactive(all_data$lipid_data_filter),
                                   pattern = "^(Ether|EtherS)?[DMS][GQ]DG$",
                                   title = input$navbar_selection)
 
@@ -620,7 +620,7 @@ shinyAppServer <- function(input, output, session) {
 
   ### Other glycerolipids
   filter_OGL <- bubblePlotServer(id = "OGL",
-                                 data = reactive(all_data$lipid_data_filter),
+                                 lipid_data = reactive(all_data$lipid_data_filter),
                                  pattern = "^([AL]?DG(GA|CC|TS/A)|TG_EST)$",
                                  title = input$navbar_selection)
 
@@ -644,7 +644,7 @@ shinyAppServer <- function(input, output, session) {
 
   ### Glycerophosphates
   filter_PA <- bubblePlotServer(id = "PA",
-                                data = reactive(all_data$lipid_data_filter),
+                                lipid_data = reactive(all_data$lipid_data_filter),
                                 pattern = "^L?PA$",
                                 title = input$navbar_selection)
 
@@ -668,7 +668,7 @@ shinyAppServer <- function(input, output, session) {
 
   ### Glycerophosphocholines
   filter_PC <- bubblePlotServer(id = "PC",
-                                data = reactive(all_data$lipid_data_filter),
+                                lipid_data = reactive(all_data$lipid_data_filter),
                                 pattern = "^(Ether)?L?PC$",
                                 title = input$navbar_selection)
 
@@ -692,7 +692,7 @@ shinyAppServer <- function(input, output, session) {
 
   ### Glycerophosphocholines
   filter_PE <- bubblePlotServer(id = "PE",
-                                data = reactive(all_data$lipid_data_filter),
+                                lipid_data = reactive(all_data$lipid_data_filter),
                                 pattern = "^(LNA)?(Ether)?L?PE(\\(P\\))?$",
                                 title = input$navbar_selection)
 
@@ -716,7 +716,7 @@ shinyAppServer <- function(input, output, session) {
 
   ### Glycerophosphoglycerols
   filter_PG <- bubblePlotServer(id = "PG",
-                                data = reactive(all_data$lipid_data_filter),
+                                lipid_data = reactive(all_data$lipid_data_filter),
                                 pattern = "^(H?BMP|(Ether)?L?PG)$",
                                 title = input$navbar_selection)
 
@@ -740,7 +740,7 @@ shinyAppServer <- function(input, output, session) {
 
   ### Glycerophosphoglycerophosphoglycerols (CL)
   filter_CL <- bubblePlotServer(id = "CL",
-                                data = reactive(all_data$lipid_data_filter),
+                                lipid_data = reactive(all_data$lipid_data_filter),
                                 pattern = "^([DM]L)?CL$",
                                 title = input$navbar_selection)
 
@@ -764,7 +764,7 @@ shinyAppServer <- function(input, output, session) {
 
   ### Glycerophosphoinositolglycans
   filter_AcPIM <- bubblePlotServer(id = "AcPIM",
-                                   data = reactive(all_data$lipid_data_filter),
+                                   lipid_data = reactive(all_data$lipid_data_filter),
                                    pattern = "^Ac[2-4]PIM[12]$",
                                    title = input$navbar_selection)
 
@@ -788,7 +788,7 @@ shinyAppServer <- function(input, output, session) {
 
   ### Glycerophosphoglycerols
   filter_PI <- bubblePlotServer(id = "PI",
-                                data = reactive(all_data$lipid_data_filter),
+                                lipid_data = reactive(all_data$lipid_data_filter),
                                 pattern = "^(Ether)?L?PI$",
                                 title = input$navbar_selection)
 
@@ -812,7 +812,7 @@ shinyAppServer <- function(input, output, session) {
 
   ### Glycerophosphoserines
   filter_PS <- bubblePlotServer(id = "PS",
-                                data = reactive(all_data$lipid_data_filter),
+                                lipid_data = reactive(all_data$lipid_data_filter),
                                 pattern = "^(LNA)?(Ether)?L?PS$",
                                 title = input$navbar_selection)
 
@@ -836,7 +836,7 @@ shinyAppServer <- function(input, output, session) {
 
   ### oxidized glycerophospholipids
   filter_OPL <- bubblePlotServer(id = "OPL",
-                                 data = reactive(all_data$lipid_data_filter),
+                                 lipid_data = reactive(all_data$lipid_data_filter),
                                  pattern = "^OxP[ACEGIS]$",
                                  title = input$navbar_selection)
 
@@ -860,7 +860,7 @@ shinyAppServer <- function(input, output, session) {
 
   ### Other Glycerophospholipids
   filter_OGPL <- bubblePlotServer(id = "OGPL",
-                                  data = reactive(all_data$lipid_data_filter),
+                                  lipid_data = reactive(all_data$lipid_data_filter),
                                   pattern = "^P(Et|Me)OH$",
                                   title = input$navbar_selection)
 
@@ -884,7 +884,7 @@ shinyAppServer <- function(input, output, session) {
 
   ### Prenol lipids
   filter_PRL <- bubblePlotServer(id = "PRL",
-                                 data = reactive(all_data$lipid_data_filter),
+                                 lipid_data = reactive(all_data$lipid_data_filter),
                                  pattern = "^(VAE|CoQ|VitaminE)$",
                                  title = input$navbar_selection)
 
@@ -908,7 +908,7 @@ shinyAppServer <- function(input, output, session) {
 
   ### Acidic glycosphingolipids
   filter_AcGL <- bubblePlotServer(id = "AcGL",
-                                  data = reactive(all_data$lipid_data_filter),
+                                  lipid_data = reactive(all_data$lipid_data_filter),
                                   pattern = "^(GM3|SHexCer(\\+O)?)$",
                                   title = input$navbar_selection)
 
@@ -932,7 +932,7 @@ shinyAppServer <- function(input, output, session) {
 
   ### Ceramides
   filter_Cer <- bubblePlotServer(id = "Cer",
-                                 data = reactive(all_data$lipid_data_filter),
+                                 lipid_data = reactive(all_data$lipid_data_filter),
                                  pattern = "^Cer[P_]",
                                  title = input$navbar_selection)
 
@@ -956,7 +956,7 @@ shinyAppServer <- function(input, output, session) {
 
   ### phosphosphingolipids
   filter_PSL <- bubblePlotServer(id = "PSL",
-                                 data = reactive(all_data$lipid_data_filter),
+                                 lipid_data = reactive(all_data$lipid_data_filter),
                                  pattern = "^(ASM|PE_Cer(\\+O)?|PI_Cer(\\+O)?|SM|SM\\+O)",
                                  title = input$navbar_selection)
 
@@ -980,7 +980,7 @@ shinyAppServer <- function(input, output, session) {
 
   ### Neutral glycosphingolipids
   filter_NPSL <- bubblePlotServer(id = "NPSL",
-                                  data = reactive(all_data$lipid_data_filter),
+                                  lipid_data = reactive(all_data$lipid_data_filter),
                                   pattern = "^A?Hex[23]?Cer",
                                   title = input$navbar_selection)
 
@@ -1004,7 +1004,7 @@ shinyAppServer <- function(input, output, session) {
 
   ### Sphingoid bases
   filter_SB <- bubblePlotServer(id = "SB",
-                                data = reactive(all_data$lipid_data_filter),
+                                lipid_data = reactive(all_data$lipid_data_filter),
                                 pattern = "^((Phyto|DH)?Sph|SL(\\+O)?)$",
                                 title = input$navbar_selection)
 
@@ -1028,7 +1028,7 @@ shinyAppServer <- function(input, output, session) {
 
   ### Bile acids and conjugates
   filter_BA <- bubblePlotServer(id = "BA",
-                                data = reactive(all_data$lipid_data_filter),
+                                lipid_data = reactive(all_data$lipid_data_filter),
                                 pattern = "^(BASulfate|BileAcid|DCAE)$",
                                 title = input$navbar_selection)
 
@@ -1052,7 +1052,7 @@ shinyAppServer <- function(input, output, session) {
 
   ### Secosteroids
   filter_SC <- bubblePlotServer(id = "SC",
-                                data = reactive(all_data$lipid_data_filter),
+                                lipid_data = reactive(all_data$lipid_data_filter),
                                 pattern = "^VitaminD$",
                                 title = input$navbar_selection)
 
@@ -1076,7 +1076,7 @@ shinyAppServer <- function(input, output, session) {
 
   ### Steroid conjugates
   filter_STC <- bubblePlotServer(id = "STC",
-                                 data = reactive(all_data$lipid_data_filter),
+                                 lipid_data = reactive(all_data$lipid_data_filter),
                                  pattern = "^SSulfate$",
                                  title = input$navbar_selection)
 
@@ -1100,7 +1100,7 @@ shinyAppServer <- function(input, output, session) {
 
   ### Sterols
   filter_ST <- bubblePlotServer(id = "ST",
-                                data = reactive(all_data$lipid_data_filter),
+                                lipid_data = reactive(all_data$lipid_data_filter),
                                 pattern = "^((BR|CA|SI|ST)?[CS]E|Cholesterol|SHex|ST)$",
                                 title = input$navbar_selection)
 
@@ -1124,7 +1124,7 @@ shinyAppServer <- function(input, output, session) {
 
   ### Other sterol lipids
   filter_OST <- bubblePlotServer(id = "OST",
-                                 data = reactive(all_data$lipid_data_filter),
+                                 lipid_data = reactive(all_data$lipid_data_filter),
                                  pattern = "^AHex(CAS|CS|SIS|BRS|STS)$",
                                  title = input$navbar_selection)
 
