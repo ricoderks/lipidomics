@@ -5,7 +5,7 @@
 #' @param id input id
 #' @param data data which is used to make the plot.
 #' @param pattern regular expression pattern to select the correct lipid classes.
-#' @param lipid_data the wide data frame.
+#' @param lipid_data lipid info
 #' @param title is the title use on top of the indentication page
 #'
 #' @return a part of the server
@@ -13,7 +13,7 @@
 #' @import shiny
 #' @importFrom magrittr %>%
 #' @importFrom dplyr filter select transmute if_else
-#' @importFrom tidyr unnest separate
+#' @importFrom tidyr unnest separate pivot_wider
 #' @importFrom stringr str_split
 #' @importFrom rlang .data
 #' @importFrom ggplot2 ggplot aes geom_point scale_size geom_line geom_text facet_grid labs guides coord_cartesian geom_linerange scale_y_continuous theme_minimal theme element_text
@@ -23,7 +23,7 @@
 #'
 #' @author Rico Derks
 #'
-bubblePlotServer <- function(id, data, pattern, lipid_data, title) {
+bubblePlotServer <- function(id, data, pattern, lipid_data = NULL, title) {
   moduleServer(
     id = id,
     module = function(input, output, session) {
@@ -35,6 +35,16 @@ bubblePlotServer <- function(id, data, pattern, lipid_data, title) {
       toReturn <- reactiveValues(filter_data = tibble(my_id = character(),
                                                       keep = logical(),
                                                       comment = character()))
+
+      lipid_data_wide <- reactive({
+        data_wide <- data() %>%
+          select(-.data$sample_type) %>%
+            pivot_wider(id_cols = .data$my_id:.data$carbon_db,
+                        names_from = .data$sample_name,
+                        values_from = .data$area)
+
+        return(data_wide)
+      })
 
       # show which identification tab is selected
       output$show_tab_id_ui <- renderUI({
@@ -73,7 +83,8 @@ bubblePlotServer <- function(id, data, pattern, lipid_data, title) {
                        pattern = "[qQ][cC]pool_004"),
                  grepl(x = .data$LipidClass,
                        pattern = pattern),
-                 !(.data$keep == FALSE &.data$comment == "remove_class")) %>%
+                 !(.data$keep == FALSE & .data$comment == "remove_class"),
+                 !(.data$keep == FALSE & .data$comment == "large_rsd")) %>%
           ggplot(aes(x = .data$AverageRT,
                      y = .data$AverageMZ,
                      color = .data$carbons)) +
@@ -112,7 +123,7 @@ bubblePlotServer <- function(id, data, pattern, lipid_data, title) {
 
         if(nrow(data$selected_data) == 1) {
           # get the current lipid status
-          lipid_status <- lipid_data() %>%
+          lipid_status <- lipid_data_wide() %>%
             filter(.data$my_id == data$selected_data$my_id) %>%
             pull(comment)
 
@@ -120,15 +131,6 @@ bubblePlotServer <- function(id, data, pattern, lipid_data, title) {
           if(is.na(lipid_status)) {
             lipid_status <- "keep"
           }
-
-          # append_name <- lipid_data() %>%
-          #   filter(.data$my_id == data$selected_data$my_id) %>%
-          #   pull(append_name)
-
-          # if there is no append name this is NA_character_
-          # if(is.na(append_name)) {
-          #   append_name <- ""
-          # }
         }
         if(nrow(data$selected_data) == 1) {
           tagList(
@@ -140,11 +142,6 @@ bubblePlotServer <- function(id, data, pattern, lipid_data, title) {
                                            "Incorrect ret. time" = "wrong_rt",
                                            "Rename" = "rename"),
                                selected = lipid_status)
-                   # conditionalPanel(condition = "input.select_reason == 'rename'",
-                   #                  ns = session$ns,
-                   #                  textInput(inputId = session$ns("rename"),
-                   #                            label = "Append to name:",
-                   #                            value = append_name))
             )
           )
         } else {
@@ -155,7 +152,7 @@ bubblePlotServer <- function(id, data, pattern, lipid_data, title) {
       observeEvent(input$select_reason, {
         req(data$selected_data)
 
-          toReturn$filter_data <- lipid_data() %>%
+          toReturn$filter_data <- lipid_data_wide() %>%
             filter(.data$my_id == data$selected_data$my_id) %>%
             select(.data$my_id, .data$keep, .data$comment) %>%
             mutate(keep = if_else(input$select_reason == "keep" |
@@ -168,28 +165,9 @@ bubblePlotServer <- function(id, data, pattern, lipid_data, title) {
       },
       ignoreInit = TRUE) # doesn't seem to work
 
-      # observeEvent(input$rename, {
-      #   req(data$selected_data)
-      #
-      #   toReturn$filter_data <- lipid_data() %>%
-      #     filter(.data$my_id == data$selected_data$my_id) %>%
-      #     select(.data$my_id, .data$keep, .data$comment) %>%
-      #     mutate(keep = if_else(input$select_reason == "keep" |
-      #                             input$select_reason == "rename",
-      #                           TRUE,
-      #                           FALSE),
-      #            comment = if_else(input$select_reason == "keep",
-      #                              "",
-      #                              input$select_reason),
-      #            append_name = if_else(input$select_reason == "rename",
-      #                                  input$rename,
-      #                                  ""))
-      # },
-      # ignoreInit = TRUE) # doesn't seem to work
-
       # show the row clicked
       output$info <- renderTable({
-        data$selected_data <- nearPoints(df = lipid_data(),
+        data$selected_data <- nearPoints(df = lipid_data_wide(),
                                          coordinfo = input$bubble_clk,
                                          xvar = "AverageRT",
                                          yvar = "AverageMZ",

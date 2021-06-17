@@ -4,6 +4,7 @@
 #'     within all QCpool samples..
 #'
 #' @param qc_data tibble in tidy format
+#' @param rsd rsd threshold to show in the plot
 #'
 #' @return ggplot2 object
 #'
@@ -15,7 +16,7 @@
 #'
 #' @author Rico Derks
 #'
-show_rsd_lipidclass_violin <- function(qc_data) {
+show_rsd_lipidclass_violin <- function(qc_data, rsd) {
   my_colors <- cpm_cols(c("green", "red"))
   names(my_colors) <- c("pos", "neg")
 
@@ -25,7 +26,7 @@ show_rsd_lipidclass_violin <- function(qc_data) {
     geom_violin() +
     geom_jitter(aes(colour = .data$polarity),
                 alpha = 0.5) +
-    geom_hline(aes(yintercept = 0.3),
+    geom_hline(yintercept = rsd,
                colour = "red",
                linetype = 2) +
     scale_colour_manual(values = my_colors) +

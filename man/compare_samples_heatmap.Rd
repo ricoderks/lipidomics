@@ -4,10 +4,12 @@
 \alias{compare_samples_heatmap}
 \title{Create correlation heatmap of all samples}
 \usage{
-compare_samples_heatmap(lipid_data)
+compare_samples_heatmap(lipid_data, z)
 }
 \arguments{
 \item{lipid_data}{tibble with all the lipid data}
+
+\item{z}{what to show as intensity of the heatmap}
 }
 \value{
 plotly object

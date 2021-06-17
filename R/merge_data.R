@@ -24,24 +24,13 @@ merge_data <- function(lipid_data, meta_data = NULL, by = NULL) {
 
   # make the lipid data long and add some extra columns, same as in tidy_lipids
   lipid_data_long <- lipid_data %>%
-    pivot_longer(cols = matches("^([sS]ample|[qQ][cC]pool|[bB]lank).*"),
-                 names_to = "sample_name",
-                 values_to = "area") %>%
     mutate(sample_type = factor(tolower(str_extract(string = .data$sample_name,
-                                               pattern = "([bB]lank|[qQ][cC]pool|[sS]ample)"))))
+                                                    pattern = "([bB]lank|[qQ][cC]pool|[sS]ample)")))) %>%
+    # join the meta data
+    left_join(y = meta_data,
+              by = c("sample_name" = by),
+              suffix = c("", ".y"))
 
-  # if there is no meta data only return the data in long format
-  if(!is.null(meta_data)) {
-    lipid_data_long <- lipid_data_long %>%
-      # join the meta data
-      left_join(y = meta_data,
-                by = c("sample_name" = by),
-                suffix = c("", ".y"))
-  }
-
-  # only select a few columns
-  lipid_data_long <- lipid_data_long%>%
-    select(-c(.data$DotProduct:.data$TotalScore), -.data$MSMSspectrum)
 
   return(lipid_data_long)
 }
