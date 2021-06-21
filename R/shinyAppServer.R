@@ -19,7 +19,7 @@
 #' @importFrom tools file_ext
 #' @importFrom readxl read_xlsx
 #' @importFrom DT renderDT
-#' @importFrom plotly renderPlotly plotlyOutput plot_ly add_markers
+#' @importFrom plotly renderPlotly plotlyOutput plot_ly add_markers event_data event_register
 #' @importFrom shinycssloaders withSpinner
 #'
 #' @author Rico Derks
@@ -48,7 +48,8 @@ shinyAppServer <- function(input, output, session) {
                              class_ion_selected = NULL,
                              num_lipid_classes = NULL,
                              all_samples = NULL,
-                             samples_selected = NULL)
+                             samples_selected = NULL,
+                             pca_score_plot = FALSE)
 
   #### Read the files ####
   # watch the positive mode file
@@ -1206,7 +1207,8 @@ shinyAppServer <- function(input, output, session) {
                  lengthChange = FALSE,
                  dom = "pt",
                  ordering = TRUE),
-  selection = "none")
+  selection = "none",
+  rownames = FALSE)
 
   # update on which column to merge
   observe({
@@ -1279,7 +1281,8 @@ shinyAppServer <- function(input, output, session) {
   options = list(pageLength = 10,
                  lengthChange = FALSE,
                  dom = "pt"),
-  selection = "none")
+  selection = "none",
+  rownames = FALSE)
   #### end meta merge part
 
   #### Analysis part
@@ -1312,12 +1315,16 @@ shinyAppServer <- function(input, output, session) {
     req(all_data$analysis_data,
         input$select_pca_observations,
         input$select_pca_normalization,
-        input$select_num_components)
+        input$select_num_components,
+        input$select_pca_scaling,
+        input$select_pca_transformation)
 
     data_pca <- do_pca(lipid_data = isolate(all_data$analysis_data),
                        observations = input$select_pca_observations,
                        normalization = input$select_pca_normalization,
-                       num_pc = input$select_num_components)
+                       num_pc = input$select_num_components,
+                       scaling = input$select_pca_scaling,
+                       transformation = input$select_pca_transformation)
 
     return(data_pca)
   })
@@ -1326,11 +1333,30 @@ shinyAppServer <- function(input, output, session) {
   output$pca_scores_plot <- renderPlotly({
     req(pca_data,
         input$select_pca_scores_x,
-        input$select_pca_scores_y)
+        input$select_pca_scores_y,
+        input$select_pca_scores_color)
 
-    pca_scores_plot(scores_data = pca_data()$scores,
-                    xaxis = input$select_pca_scores_x,
-                    yaxis = input$select_pca_scores_y)
+    # check if there was a merge
+    if(all_data$merged_data == TRUE & !is.null(input$select_group_column)) {
+      # if so merge als with scores data
+      scores_data <- pca_data()$scores %>%
+        left_join(y = all_data$meta_data(),
+                  by = c("sample_name" = isolate(input$select_meta_column)),
+                  suffix = c("", ".y"))
+    } else {
+      # no merge
+      scores_data <- pca_data()$scores
+    }
+
+    p <- pca_scores_plot(scores_data = scores_data,
+                         xaxis = input$select_pca_scores_x,
+                         yaxis = input$select_pca_scores_y,
+                         color_by = input$select_pca_scores_color)
+
+    event_register(p = p,
+                   event = "plotly_selecting")
+
+    plot(p)
   })
 
   # show the loadings plot
@@ -1344,22 +1370,91 @@ shinyAppServer <- function(input, output, session) {
                       yaxis = input$select_pca_loadings_y)
   })
 
+  # show the explained variance
+  output$pca_explained_var <- renderPlotly({
+    req(pca_data,
+        input$select_num_components)
+
+    pca_explained_var_plot(exp_var_data = pca_data()$explained_var,
+                           input$select_num_components)
+  })
+
   output$pca_data <- renderPrint({
     req(pca_data)
 
     pca_data()
   })
 
+  # check if the number of components are changed
+  # if so update the xaxis and yaxis select inputs
+  observeEvent(input$select_num_components, {
+    req(input$select_num_components,
+        input$select_pca_scores_x,
+        input$select_pca_scores_y,
+        input$select_pca_loadings_x,
+        input$select_pca_loadings_y)
+
+    # scores x-axis
+    updateSelectInput(session = session,
+                      inputId = "select_pca_scores_x",
+                      choices = paste0("PC", 1:input$select_num_components),
+                      selected = "PC1")
+
+    # scores y-axis
+    updateSelectInput(session = session,
+                      inputId = "select_pca_scores_y",
+                      choices = paste0("PC", 1:input$select_num_components),
+                      selected = "PC2")
+
+    # loadings x-axis
+    updateSelectInput(session = session,
+                      inputId = "select_pca_loadings_x",
+                      choices = paste0("PC", 1:input$select_num_components),
+                      selected = "PC1")
+
+    # loadings y-axis
+    updateSelectInput(session = session,
+                      inputId = "select_pca_loadings_y",
+                      choices = paste0("PC", 1:input$select_num_components),
+                      selected = "PC2")
+  })
+
+  # update color selection
+  observeEvent(input$select_group_column, {
+    req(input$select_group_column)
+
+    if(!is.null(input$select_group_column)) {
+      updateSelectInput(session = session,
+                        inputId = "select_pca_scores_color",
+                        label = "Color observations by:",
+                        choices = c("none", input$select_group_column),
+                        selected = "none")
+    }
+  })
 
   output$pca_plot_ui <- renderUI({
     req(pca_data)
 
     tagList(
-      withSpinner(plotlyOutput(outputId = "pca_scores_plot"),
-                  type = 5),
-      withSpinner(plotlyOutput(outputId = "pca_loadings_plot"),
-                  type = 5)
+      splitLayout(cellWidths = c("20%", "40%", "40%"),
+                  withSpinner(plotlyOutput(outputId = "pca_explained_var"),
+                              type = 5),
+                  withSpinner(plotlyOutput(outputId = "pca_scores_plot"),
+                              type = 5),
+                  withSpinner(plotlyOutput(outputId = "pca_loadings_plot"),
+                              type = 5))
     )
+  })
+
+  output$debug_pca_click <- renderPrint({
+    req(pca_data,
+        input$select_pca_scores_x,
+        input$select_pca_scores_y,
+        input$select_pca_scores_color)
+
+    # so far not working
+    my_data <- event_data(event = "plotly_click",
+                          source = "pca_scores_plot")
   })
   ####
 

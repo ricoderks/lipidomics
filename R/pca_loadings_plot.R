@@ -8,7 +8,7 @@
 #'
 #' @return a plotly graph
 #'
-#' @importFrom plotly plot_ly add_markers layout hide_legend
+#' @importFrom plotly plot_ly add_markers layout hide_legend config
 #' @importFrom dplyr mutate
 #' @importFrom stringr str_extract
 #' @importFrom magrittr %>%
@@ -35,7 +35,8 @@ pca_loadings_plot <- function(loadings_data, xaxis = "PC1", yaxis = "PC2") {
     layout(title = "Loadings plot",
            xaxis = list(title = xaxis),
            yaxis = list(title = yaxis)) %>%
-    hide_legend()
+    hide_legend() %>%
+    config(displayModeBar = FALSE)
 
   return(p)
 }

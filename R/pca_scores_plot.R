@@ -5,27 +5,35 @@
 #' @param scores_data tibble containing the scores information
 #' @param xaxis which component to show on the x-axis (default = "PC1")
 #' @param yaxis which component to show on the y-axis (default = "PC2")
+#' @param color_by color the observation by this group
 #'
 #' @return a plotly graph
 #'
-#' @importFrom plotly plot_ly add_markers layout
+#' @importFrom plotly plot_ly add_markers layout config
 #' @importFrom magrittr %>%
 #'
 #' @author Rico Derks
 #'
-pca_scores_plot <- function(scores_data, xaxis = "PC1", yaxis = "PC2") {
+pca_scores_plot <- function(scores_data, xaxis = "PC1", yaxis = "PC2", color_by = "none") {
   scores_data$show_x <- scores_data[[xaxis]]
   scores_data$show_y <- scores_data[[yaxis]]
+  if(color_by == "none") {
+    scores_data$color_by <- scores_data[["sample_type"]]
+  } else {
+    scores_data$color_by <- scores_data[[color_by]]
+  }
+
 
   p <- scores_data %>%
     plot_ly(x = ~show_x,
             y = ~show_y,
             text = ~sample_name) %>%
-    add_markers(color = ~sample_type,
+    add_markers(color = ~color_by,
                 size = 3) %>%
     layout(title = "Scores plot",
            xaxis = list(title = xaxis),
-           yaxis = list(title = yaxis))
+           yaxis = list(title = yaxis)) %>%
+    config(displayModeBar = FALSE)
 
   return(p)
 }
