@@ -20,6 +20,7 @@
 #' @importFrom readxl read_xlsx
 #' @importFrom DT renderDT
 #' @importFrom plotly renderPlotly plotlyOutput plot_ly add_markers
+#' @importFrom shinycssloaders withSpinner
 #'
 #' @author Rico Derks
 
@@ -1310,20 +1311,37 @@ shinyAppServer <- function(input, output, session) {
   pca_data <- reactive({
     req(all_data$analysis_data,
         input$select_pca_observations,
-        input$select_pca_normalization)
+        input$select_pca_normalization,
+        input$select_num_components)
 
     data_pca <- do_pca(lipid_data = isolate(all_data$analysis_data),
                        observations = input$select_pca_observations,
-                       normalization = input$select_pca_normalization)
+                       normalization = input$select_pca_normalization,
+                       num_pc = input$select_num_components)
 
     return(data_pca)
   })
 
   # show the scores plot
   output$pca_scores_plot <- renderPlotly({
-    req(pca_data)
+    req(pca_data,
+        input$select_pca_scores_x,
+        input$select_pca_scores_y)
 
-    pca_scores_plot(scores_data = pca_data()$scores)
+    pca_scores_plot(scores_data = pca_data()$scores,
+                    xaxis = input$select_pca_scores_x,
+                    yaxis = input$select_pca_scores_y)
+  })
+
+  # show the loadings plot
+  output$pca_loadings_plot <- renderPlotly({
+    req(pca_data,
+        input$select_pca_loadings_x,
+        input$select_pca_loadings_y)
+
+    pca_loadings_plot(loadings_data = pca_data()$loadings,
+                      xaxis = input$select_pca_loadings_x,
+                      yaxis = input$select_pca_loadings_y)
   })
 
   output$pca_data <- renderPrint({
@@ -1332,29 +1350,15 @@ shinyAppServer <- function(input, output, session) {
     pca_data()
   })
 
-  output$pca_scores_settings_ui <- renderUI({
-    req(all_data$analysis_data)
-
-    tagList(
-      h4("Settings score plot"),
-      radioButtons(inputId = "select_pca_observations",
-                   label = "Observations:",
-                   choices = c("QCpool and samples (all)" = "all",
-                               "Only samples" = "samples"),
-                   selected = "samples"),
-      radioButtons(inputId = "select_pca_normalization",
-                   label = "Normalization:",
-                   choices = c("Raw data" = "raw",
-                               "Total area normalization" = "tot_area"),
-                   selected = "tot_area")
-    )
-  })
 
   output$pca_plot_ui <- renderUI({
     req(pca_data)
 
     tagList(
-      plotlyOutput(outputId = "pca_scores_plot")
+      withSpinner(plotlyOutput(outputId = "pca_scores_plot"),
+                  type = 5),
+      withSpinner(plotlyOutput(outputId = "pca_loadings_plot"),
+                  type = 5)
     )
   })
   ####

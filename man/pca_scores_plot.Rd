@@ -4,10 +4,14 @@
 \alias{pca_scores_plot}
 \title{Make a PCA scores plot}
 \usage{
-pca_scores_plot(scores_data)
+pca_scores_plot(scores_data, xaxis = "PC1", yaxis = "PC2")
 }
 \arguments{
 \item{scores_data}{tibble containing the scores information}
+
+\item{xaxis}{which component to show on the x-axis (default = "PC1")}
+
+\item{yaxis}{which component to show on the y-axis (default = "PC2")}
 }
 \value{
 a plotly graph

@@ -7,7 +7,8 @@
 do_pca(
   lipid_data,
   observations = c("all", "samples"),
-  normalization = c("raw", "tot_area")
+  normalization = c("raw", "tot_area"),
+  num_pc = 5
 )
 }
 \arguments{
@@ -16,6 +17,8 @@ do_pca(
 \item{observations}{which observations to show}
 
 \item{normalization}{what normalization to use, none (raw data) or total area normalization}
+
+\item{num_pc}{number of prinicpal components to calculate (default is 5)}
 }
 \value{
 a list with scores, loadings and explained variance

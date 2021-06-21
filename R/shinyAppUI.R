@@ -371,14 +371,55 @@ shinyAppUI <- fluidPage(
                         tabPanel(title = "PCA",
                                  fluidPage(
                                    sidebarPanel(
-                                     uiOutput(outputId = "pca_scores_settings_ui")
+                                     h4("Settings PCA"),
+                                     numericInput(inputId = "select_num_components",
+                                                  label = "Set number of components:",
+                                                  value = 5,
+                                                  min = 1,
+                                                  max = 10,
+                                                  step = 1,
+                                                  width = 225),
+                                     radioButtons(inputId = "select_pca_observations",
+                                                  label = "Observations:",
+                                                  choices = c("QCpool and samples (all)" = "all",
+                                                              "Only samples" = "samples"),
+                                                  selected = "samples"),
+                                     radioButtons(inputId = "select_pca_normalization",
+                                                  label = "Normalization:",
+                                                  choices = c("Raw data" = "raw",
+                                                              "Total area normalization" = "tot_area"),
+                                                  selected = "tot_area"),
+                                     h4("Settings scores plot"),
+                                     selectInput(inputId = "select_pca_scores_x",
+                                                 label = "Select x-axis:",
+                                                 choices = paste0("PC", 1:5),
+                                                 selected = "PC1",
+                                                 width = 225),
+                                     selectInput(inputId = "select_pca_scores_y",
+                                                 label = "Select y-axis:",
+                                                 choices = paste0("PC", 1:5),
+                                                 selected = "PC2",
+                                                 width = 225),
+                                     h4("Settings loadings plot"),
+                                     selectInput(inputId = "select_pca_loadings_x",
+                                                 label = "Select x-axis:",
+                                                 choices = paste0("PC", 1:5),
+                                                 selected = "PC1",
+                                                 width = 225),
+                                     selectInput(inputId = "select_pca_loadings_y",
+                                                 label = "Select y-axis:",
+                                                 choices = paste0("PC", 1:5),
+                                                 selected = "PC2",
+                                                 width = 225)
+                                     # uiOutput(outputId = "pca_scores_settings_ui")
                                    ),
                                    mainPanel(
                                      # for debugging
                                      # verbatimTextOutput(outputId = "pca_data"),
                                      uiOutput(outputId = "pca_plot_ui"))
                                  )
-                        ) # end tabpanel PCA
+                        ), # end tabpanel PCA
+                        tabPanel(title = "UMAP")
              ), # end navbarmenu analysis
              # tabPanel About
              navbarMenu(title = "Help",
