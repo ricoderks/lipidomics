@@ -1441,6 +1441,7 @@ shinyAppServer <- function(input, output, session) {
     )
   })
 
+  # create variable plot
   output$pca_var_plot <- renderPlotly({
     req(pca_data,
         input$select_pca_scores_x,
@@ -1455,12 +1456,34 @@ shinyAppServer <- function(input, output, session) {
     if(!is.null(my_data)) {
       # restructure data
       plot_data <- pca_data()$preprocess_data %>%
-        filter(.data$sample_name %in% my_data$customdata) %>%
-        arrange(.data$LipidClass, .data$ShortLipidName)
+        filter(.data$sample_name %in% my_data$customdata)
 
       # make the plot
       pca_variable_plot(var_data = plot_data,
                         sample_name = my_data$customdata)
+    }
+  })
+
+  # create observation plot
+  output$pca_obs_plot <- renderPlotly({
+    req(pca_data,
+        input$select_pca_scores_x,
+        input$select_pca_scores_y,
+        input$select_pca_scores_color)
+
+    # capture the click event
+    # this contains a column with the sample names (column name: customdata)
+    my_data <- event_data(event = "plotly_click",
+                          source = "pca_loadings_plot")
+
+    if(!is.null(my_data)) {
+      # restructure data
+      plot_data <- pca_data()$preprocess_data %>%
+        filter(.data$ShortLipidName %in% my_data$customdata)
+
+      # make the plot
+      pca_observation_plot(obs_data = plot_data,
+                           var_name = my_data$customdata)
     }
   })
   ####
