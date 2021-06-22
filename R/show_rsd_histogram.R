@@ -30,7 +30,7 @@ show_rsd_histogram <- function(qc_data, rsd) {
                colour = "red",
                linetype = 2) +
     scale_fill_manual(values = my_colors) +
-    guides(colour = FALSE,
+    guides(colour = "none",
            fill = guide_legend(title = "Polarity")) +
     labs(x = "Relative standard deviation",
          y = "Count") +

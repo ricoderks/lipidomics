@@ -37,8 +37,8 @@ shinyAppUI <- fluidPage(
                                            label = "Negative mode:",
                                            multiple = FALSE,
                                            accept = c(".txt"),
-                                           width = 400),
-                                 style = "background-color: #E8E8E8")
+                                           width = 400)),
+                          style = "background-color: #E8E8E8"
                         ),
                         # create some empty space
                         fluidRow(column = 12,
@@ -53,15 +53,26 @@ shinyAppUI <- fluidPage(
                         ),
                         fluidRow(
                           shinyjs::hidden(uiOutput(outputId = "info_meta")),
-                          column(width = 9,
+                          column(width = 5,
                                  p("Read an Excel file with meta data."),
-                                 splitLayout(fileInput(inputId = "meta_data_file",
-                                                       label = "Meta data file:",
-                                                       multiple = FALSE,
-                                                       accept = c(".xlsx"),
-                                                       width = 400),
-                                             uiOutput(outputId = "merge_ui")),
-                                 style = "background-color: #E8E8E8")
+                                 fileInput(inputId = "meta_data_file",
+                                           label = "Meta data file:",
+                                           multiple = FALSE,
+                                           accept = c(".xlsx"),
+                                           width = 400),
+                                 selectInput(inputId = "select_meta_column",
+                                             label = "Select column for merging:",
+                                             choices = "none",
+                                             selected = "none"),
+                                 # show status on which column the merge was done
+                                 htmlOutput(outputId = "status_merge"),
+                                 # the merge button
+                                 actionButton(inputId = "btn_merge_meta",
+                                              label = "Merge")),
+                          column(width = 4,
+                                 uiOutput(outputId = "select_group_column_ui")
+                          ),
+                          style = "background-color: #E8E8E8"
                         )
                       )
              ), # end tabPanel Files
@@ -355,7 +366,88 @@ shinyAppUI <- fluidPage(
                                                                                       height = "900px"),
                                                                          type = 5)))
                                  )
-                        ) # end tabpanel compare samples
+                        ), # end tabpanel compare samples
+                        # start tabPanel pca analysis
+                        tabPanel(title = "PCA",
+                                 fluidPage(
+                                   sidebarPanel(width = 3,
+                                     h4("Settings PCA"),
+                                     numericInput(inputId = "select_num_components",
+                                                  label = "Set number of components:",
+                                                  value = 5,
+                                                  min = 1,
+                                                  max = 10,
+                                                  step = 1,
+                                                  width = 225),
+                                     radioButtons(inputId = "select_pca_observations",
+                                                  label = "Observations:",
+                                                  choices = c("QCpool and samples (all)" = "all",
+                                                              "Only samples" = "samples"),
+                                                  selected = "samples"),
+                                     radioButtons(inputId = "select_pca_normalization",
+                                                  label = "Normalization:",
+                                                  choices = c("Raw data" = "raw",
+                                                              "Total area normalization" = "tot_area"),
+                                                  selected = "tot_area"),
+                                     radioButtons(inputId = "select_pca_transformation",
+                                                  label = "Transformation:",
+                                                  choices = c("No transformation" = "none",
+                                                              "Log10 transformation" = "log10"),
+                                                  selected = "none"),
+                                     radioButtons(inputId = "select_pca_scaling",
+                                                  label = "Scaling:",
+                                                  choices = c("No scaling" = "none",
+                                                              "UV scaling" = "uv",
+                                                              "Pareto scaling" = "pareto"),
+                                                  selected = "uv"),
+                                     h4("Settings scores plot"),
+                                     splitLayout(tags$head(tags$style(HTML(".shiny-split-layout > div {overflow: visible;}"))),
+                                                 cellWidths = c("0%", "50%", "50%"),
+                                                 selectInput(inputId = "select_pca_scores_x",
+                                                             label = "Select x-axis:",
+                                                             choices = paste0("PC", 1:5),
+                                                             selected = "PC1",
+                                                             width = 150),
+                                                 selectInput(inputId = "select_pca_scores_y",
+                                                             label = "Select y-axis:",
+                                                             choices = paste0("PC", 1:5),
+                                                             selected = "PC2",
+                                                             width = 150)),
+                                     selectInput(inputId = "select_pca_scores_color",
+                                                 label = "Color observations by:",
+                                                 choices = "none",
+                                                 selected = "none",
+                                                 width = 225),
+                                     h4("Settings loadings plot"),
+                                     splitLayout(cellWidths = c("50%", "50%"),
+                                                 selectInput(inputId = "select_pca_loadings_x",
+                                                             label = "Select x-axis:",
+                                                             choices = paste0("PC", 1:5),
+                                                             selected = "PC1",
+                                                             width = 150),
+                                                 selectInput(inputId = "select_pca_loadings_y",
+                                                             label = "Select y-axis:",
+                                                             choices = paste0("PC", 1:5),
+                                                             selected = "PC2",
+                                                             width = 150))
+                                     # uiOutput(outputId = "pca_scores_settings_ui")
+                                   ),
+                                   mainPanel(width = 9,
+                                     # for debugging
+                                     # verbatimTextOutput(outputId = "pca_data"),
+                                     # uiOutput(outputId = "pca_plot_ui"),
+                                     splitLayout(cellWidths = c("20%", "40%", "40%"),
+                                                 withSpinner(plotlyOutput(outputId = "pca_explained_var"),
+                                                             type = 5),
+                                                 withSpinner(plotlyOutput(outputId = "pca_scores_plot"),
+                                                             type = 5),
+                                                 withSpinner(plotlyOutput(outputId = "pca_loadings_plot"),
+                                                             type = 5)),
+                                     p(""),
+                                     plotlyOutput(outputId = "pca_var_plot"))
+                                 )
+                        ), # end tabpanel PCA
+                        tabPanel(title = "UMAP")
              ), # end navbarmenu analysis
              # tabPanel About
              navbarMenu(title = "Help",

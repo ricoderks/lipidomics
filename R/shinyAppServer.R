@@ -19,7 +19,8 @@
 #' @importFrom tools file_ext
 #' @importFrom readxl read_xlsx
 #' @importFrom DT renderDT
-#' @importFrom plotly renderPlotly plotlyOutput
+#' @importFrom plotly renderPlotly plotlyOutput plot_ly add_markers event_data
+#' @importFrom shinycssloaders withSpinner
 #'
 #' @author Rico Derks
 
@@ -47,7 +48,8 @@ shinyAppServer <- function(input, output, session) {
                              class_ion_selected = NULL,
                              num_lipid_classes = NULL,
                              all_samples = NULL,
-                             samples_selected = NULL)
+                             samples_selected = NULL,
+                             pca_score_plot = FALSE)
 
   #### Read the files ####
   # watch the positive mode file
@@ -127,8 +129,8 @@ shinyAppServer <- function(input, output, session) {
     req(all_data$lipid_data)
 
     all_data$lipid_data %>%
-    # remove a few columns
-    select(-.data$MSMSspectrum, -.data$scale_DotProduct, -.data$scale_RevDotProduct, -.data$keep, -.data$comment)
+      # remove a few columns
+      select(-.data$MSMSspectrum, -.data$scale_DotProduct, -.data$scale_RevDotProduct, -.data$keep, -.data$comment)
   },
   options = list(pageLength = 10,
                  lengthChange = FALSE,
@@ -690,14 +692,14 @@ shinyAppServer <- function(input, output, session) {
   })
   ###
 
-  ### Glycerophosphocholines
+  ### Glycerophospho ethanolamines
   filter_PE <- bubblePlotServer(id = "PE",
                                 lipid_data = reactive(all_data$lipid_data_filter),
                                 pattern = "^(LNA)?(Ether)?L?PE(\\(P\\))?$",
                                 title = input$navbar_selection)
 
   output$PE_UI <- renderUI({
-    req(all_data$lipid_data_filtera)
+    req(all_data$lipid_data_filter)
 
     bubblePlotUI(id = "PE",
                  data = all_data$lipid_data_filter,
@@ -1156,8 +1158,7 @@ shinyAppServer <- function(input, output, session) {
       pivot_wider(id_cols = .data$my_id:.data$carbon_db,
                   names_from = .data$sample_name,
                   values_from = .data$area) %>%
-      filter(.data$keep == FALSE |
-               (.data$keep == TRUE & .data$comment == "rename"),
+      filter(.data$keep == FALSE,
              .data$comment != "remove_class") %>%
       select(.data$my_id:.data$polarity, -.data$scale_DotProduct, -.data$scale_RevDotProduct, .data$keep, .data$comment) %>%
       distinct(.data$my_id,
@@ -1206,26 +1207,35 @@ shinyAppServer <- function(input, output, session) {
                  lengthChange = FALSE,
                  dom = "pt",
                  ordering = TRUE),
-  selection = "none")
+  selection = "none",
+  rownames = FALSE)
 
-  # generate the UI part for column selecting and merging
-  output$merge_ui <- renderUI({
+  # update on which column to merge
+  observe({
     req(all_data$meta_data)
 
     # get the column names of the meta data
     merge_colnames <- colnames(all_data$meta_data())
 
+    # update the select input
+    updateSelectInput(session = session,
+                      inputId = "select_meta_column",
+                      label = "Select column for merging:",
+                      choices = c("none", merge_colnames),
+                      selected = "none")
+  })
+
+  output$select_group_column_ui <- renderUI({
+    req(all_data$meta_data)
+
+    # get the column names of the meta data
+    all_colnames <- colnames(all_data$meta_data())
+
     tagList(
-      # create pull down list for column selection
-      selectInput(inputId = "select_meta_column",
-                  label = "Select column for merging:",
-                  choices = c("none", merge_colnames),
-                  selected = "none"),
-      # show status on which column the merge was done
-      htmlOutput(outputId = "status_merge"),
-      # the merge button
-      actionButton(inputId = "btn_merge_meta",
-                   label = "Merge")
+      checkboxGroupInput(inputId = "select_group_column",
+                         label = "Select column to be used for grouping:",
+                         choices = all_colnames,
+                         selected = NULL)
     )
   })
 
@@ -1271,10 +1281,12 @@ shinyAppServer <- function(input, output, session) {
   options = list(pageLength = 10,
                  lengthChange = FALSE,
                  dom = "pt"),
-  selection = "none")
+  selection = "none",
+  rownames = FALSE)
   #### end meta merge part
 
   #### Analysis part
+  #### compare samples
   observe({
     req(all_data$lipid_data_filter,
         all_data$samples_selected)
@@ -1295,6 +1307,163 @@ shinyAppServer <- function(input, output, session) {
     compare_samples_heatmap(lipid_data = all_data$analysis_data,
                             z = input$select_z_heatmap)
   })
+  ####
+
+  #### PCA
+  # do the PCA analysis
+  pca_data <- reactive({
+    req(all_data$analysis_data,
+        input$select_pca_observations,
+        input$select_pca_normalization,
+        input$select_num_components,
+        input$select_pca_scaling,
+        input$select_pca_transformation)
+
+    data_pca <- do_pca(lipid_data = isolate(all_data$analysis_data),
+                       observations = input$select_pca_observations,
+                       normalization = input$select_pca_normalization,
+                       num_pc = input$select_num_components,
+                       scaling = input$select_pca_scaling,
+                       transformation = input$select_pca_transformation)
+
+    return(data_pca)
+  })
+
+  # show the scores plot
+  output$pca_scores_plot <- renderPlotly({
+    req(pca_data,
+        input$select_pca_scores_x,
+        input$select_pca_scores_y,
+        input$select_pca_scores_color)
+
+    # check if there was a merge
+    if(all_data$merged_data == TRUE & !is.null(input$select_group_column)) {
+      # if so merge als with scores data
+      scores_data <- pca_data()$scores %>%
+        left_join(y = all_data$meta_data(),
+                  by = c("sample_name" = isolate(input$select_meta_column)),
+                  suffix = c("", ".y"))
+    } else {
+      # no merge
+      scores_data <- pca_data()$scores
+    }
+
+    pca_scores_plot(scores_data = scores_data,
+                    xaxis = input$select_pca_scores_x,
+                    yaxis = input$select_pca_scores_y,
+                    color_by = input$select_pca_scores_color)
+  })
+
+  # show the loadings plot
+  output$pca_loadings_plot <- renderPlotly({
+    req(pca_data,
+        input$select_pca_loadings_x,
+        input$select_pca_loadings_y)
+
+    pca_loadings_plot(loadings_data = pca_data()$loadings,
+                      xaxis = input$select_pca_loadings_x,
+                      yaxis = input$select_pca_loadings_y)
+  })
+
+  # show the explained variance
+  output$pca_explained_var <- renderPlotly({
+    req(pca_data,
+        input$select_num_components)
+
+    pca_explained_var_plot(exp_var_data = pca_data()$explained_var,
+                           input$select_num_components)
+  })
+
+  output$pca_data <- renderPrint({
+    req(pca_data)
+
+    pca_data()
+  })
+
+  # check if the number of components are changed
+  # if so update the xaxis and yaxis select inputs
+  observeEvent(input$select_num_components, {
+    req(input$select_num_components,
+        input$select_pca_scores_x,
+        input$select_pca_scores_y,
+        input$select_pca_loadings_x,
+        input$select_pca_loadings_y)
+
+    # scores x-axis
+    updateSelectInput(session = session,
+                      inputId = "select_pca_scores_x",
+                      choices = paste0("PC", 1:input$select_num_components),
+                      selected = "PC1")
+
+    # scores y-axis
+    updateSelectInput(session = session,
+                      inputId = "select_pca_scores_y",
+                      choices = paste0("PC", 1:input$select_num_components),
+                      selected = "PC2")
+
+    # loadings x-axis
+    updateSelectInput(session = session,
+                      inputId = "select_pca_loadings_x",
+                      choices = paste0("PC", 1:input$select_num_components),
+                      selected = "PC1")
+
+    # loadings y-axis
+    updateSelectInput(session = session,
+                      inputId = "select_pca_loadings_y",
+                      choices = paste0("PC", 1:input$select_num_components),
+                      selected = "PC2")
+  })
+
+  # update color selection
+  observeEvent(input$select_group_column, {
+    req(input$select_group_column)
+
+    if(!is.null(input$select_group_column)) {
+      updateSelectInput(session = session,
+                        inputId = "select_pca_scores_color",
+                        label = "Color observations by:",
+                        choices = c("none", input$select_group_column),
+                        selected = "none")
+    }
+  })
+
+  output$pca_plot_ui <- renderUI({
+    req(pca_data)
+
+    tagList(
+      splitLayout(cellWidths = c("20%", "40%", "40%"),
+                  withSpinner(plotlyOutput(outputId = "pca_explained_var"),
+                              type = 5),
+                  withSpinner(plotlyOutput(outputId = "pca_scores_plot"),
+                              type = 5),
+                  withSpinner(plotlyOutput(outputId = "pca_loadings_plot"),
+                              type = 5))
+    )
+  })
+
+  output$pca_var_plot <- renderPlotly({
+    req(pca_data,
+        input$select_pca_scores_x,
+        input$select_pca_scores_y,
+        input$select_pca_scores_color)
+
+    # capture the click event
+    # this contains a column with the sample names (column name: customdata)
+    my_data <- event_data(event = "plotly_click",
+                          source = "pca_scores_plot")
+
+    if(!is.null(my_data)) {
+      # restructure data
+      plot_data <- pca_data()$preprocess_data %>%
+        filter(.data$sample_name %in% my_data$customdata) %>%
+        arrange(.data$LipidClass, .data$ShortLipidName)
+
+      # make the plot
+      pca_variable_plot(var_data = plot_data,
+                        sample_name = my_data$customdata)
+    }
+  })
+  ####
 
   #### end analysis part
 

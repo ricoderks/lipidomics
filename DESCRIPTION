@@ -1,7 +1,7 @@
 Package: lipidomics
 Type: Package
 Title: Lipidomics workflow
-Version: 0.3.1
+Version: 0.4.0
 Author: Rico Derks
 Maintainer: Rico Derks <r.j.e.derks@lumc.nl>
 Description: Lipidomics workflow to proces the result files (export alignment)
@@ -16,6 +16,7 @@ Imports:
     ggplot2,
     ggrepel,
     grDevices,
+    janitor,
     magrittr,
     methods,
     pheatmap,
@@ -23,6 +24,7 @@ Imports:
     purrr,
     readr,
     readxl,
+    recipes,
     rlang,
     scales,
     sessioninfo,
