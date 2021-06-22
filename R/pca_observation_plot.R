@@ -4,6 +4,7 @@
 #'
 #' @param obs_data tibble containing the varaible information
 #' @param var_name character vector of length 1 with the name of the variable
+#' @param color_by color the observation by what
 #'
 #' @return a plotly graph
 #'
@@ -14,12 +15,18 @@
 #'
 #' @author Rico Derks
 #'
-pca_observation_plot <- function(obs_data, var_name) {
+pca_observation_plot <- function(obs_data, var_name, color_by = "none") {
+  if(color_by != "none") {
+    obs_data$color_group <- obs_data[[color_by]]
+  } else {
+    obs_data$color_group <- color_by
+  }
 
   # make the plot
   p <- obs_data %>%
     plot_ly(x = ~sample_name,
-            y = ~value) %>%
+            y = ~value,
+            color = ~color_group) %>%
     add_bars() %>%
     layout(title = list(text = paste("Observation plot for", var_name),
                         x = 0)) %>%

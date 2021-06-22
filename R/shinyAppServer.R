@@ -1228,15 +1228,18 @@ shinyAppServer <- function(input, output, session) {
   output$select_group_column_ui <- renderUI({
     req(all_data$meta_data)
 
-    # get the column names of the meta data
-    all_colnames <- colnames(all_data$meta_data())
+    if(all_data$merged_data == TRUE) {
+      # get the column names of the meta data
+      all_colnames <- colnames(all_data$meta_data())
+      all_colnames <- all_colnames[!(all_colnames %in% input$select_meta_column)]
 
-    tagList(
-      checkboxGroupInput(inputId = "select_group_column",
-                         label = "Select column to be used for grouping:",
-                         choices = all_colnames,
-                         selected = NULL)
-    )
+      tagList(
+        checkboxGroupInput(inputId = "select_group_column",
+                           label = "Select column to be used for grouping:",
+                           choices = all_colnames,
+                           selected = NULL)
+      )
+    }
   })
 
   # show status on which column the merge was done
@@ -1368,10 +1371,10 @@ shinyAppServer <- function(input, output, session) {
   # show the explained variance
   output$pca_explained_var <- renderPlotly({
     req(pca_data)
-        # input$select_num_components)
+    # input$select_num_components)
 
     pca_explained_var_plot(exp_var_data = pca_data()$explained_var)
-                           # input$select_num_components)
+    # input$select_num_components)
   })
 
   output$pca_data <- renderPrint({
@@ -1438,13 +1441,34 @@ shinyAppServer <- function(input, output, session) {
                           source = "pca_loadings_plot")
 
     if(!is.null(my_data)) {
-      # restructure data
-      plot_data <- pca_data()$preprocess_data %>%
-        filter(.data$ShortLipidName %in% my_data$customdata)
+      # check if there was a merge
+      if(all_data$merged_data == TRUE & !is.null(input$select_group_column)) {
+        # if so merge als with scores data
+        plot_data <- pca_data()$preprocess_data %>%
+          filter(.data$ShortLipidName %in% my_data$customdata) %>%
+          left_join(y = all_data$meta_data(),
+                    by = c("sample_name" = isolate(input$select_meta_column)),
+                    suffix = c("", ".y"))
 
-      # make the plot
-      pca_observation_plot(obs_data = plot_data,
-                           var_name = my_data$customdata)
+        # make the plot
+        pca_observation_plot(obs_data = plot_data,
+                             var_name = my_data$customdata,
+                             color_by = input$select_pca_scores_color)
+      } else {
+        # no merge
+        plot_data <- pca_data()$preprocess_data %>%
+          filter(.data$ShortLipidName %in% my_data$customdata)
+
+        # make the plot
+        pca_observation_plot(obs_data = plot_data,
+                             var_name = my_data$customdata)
+      }
+
+      # restructure data
+      # plot_data <- pca_data()$preprocess_data %>%
+      #   filter(.data$ShortLipidName %in% my_data$customdata)
+
+
     }
   })
   ####
