@@ -26,7 +26,8 @@ do_pca <- function(lipid_data, observations = c("all", "samples"), normalization
   # initialize result list
   pca_data <- list(scores = NULL,
                    loadings = NULL,
-                   explained_var = NULL)
+                   explained_var = NULL,
+                   preprocess_data = NULL)
 
   # select which samples to show
   if(observations == "all") {
@@ -75,6 +76,17 @@ do_pca <- function(lipid_data, observations = c("all", "samples"), normalization
          "pareto" = lipid_data_wide <- lipid_data_wide %>%
            mutate(across(where(is.numeric), ~ .x / sqrt(sd(.x))))
   )
+
+  # return the preprocessed data
+  pca_data$preprocess_data <- lipid_data_wide %>%
+    pivot_longer(cols = -c(.data$sample_name, .data$sample_type),
+                 names_to = "lipid",
+                 values_to = "value") %>%
+    left_join(y = lipid_data %>%
+                select(.data$ShortLipidName, .data$LipidClass) %>%
+                distinct(.data$ShortLipidName, .keep_all = TRUE) %>%
+                mutate(clean_lipid_names = make_clean_names(.data$ShortLipidName)),
+              by = c("lipid" = "clean_lipid_names"))
 
   # set up the recipe, preprocessing etc.
   pca_rec <- recipe(~.,

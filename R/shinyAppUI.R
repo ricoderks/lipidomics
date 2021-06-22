@@ -443,7 +443,8 @@ shinyAppUI <- fluidPage(
                                                              type = 5),
                                                  withSpinner(plotlyOutput(outputId = "pca_loadings_plot"),
                                                              type = 5)),
-                                     verbatimTextOutput(outputId = "debug_pca_click"))
+                                     p(""),
+                                     plotlyOutput(outputId = "pca_var_plot"))
                                  )
                         ), # end tabpanel PCA
                         tabPanel(title = "UMAP")

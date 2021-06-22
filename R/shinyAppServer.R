@@ -1441,17 +1441,27 @@ shinyAppServer <- function(input, output, session) {
     )
   })
 
-  output$debug_pca_click <- renderPrint({
+  output$pca_var_plot <- renderPlotly({
     req(pca_data,
         input$select_pca_scores_x,
         input$select_pca_scores_y,
         input$select_pca_scores_color)
 
     # capture the click event
+    # this contains a column with the sample names (column name: customdata)
     my_data <- event_data(event = "plotly_click",
                           source = "pca_scores_plot")
-    # this contains a column with the sample names (column name: customdata)
-    my_data
+
+    if(!is.null(my_data)) {
+      # restructure data
+      plot_data <- pca_data()$preprocess_data %>%
+        filter(.data$sample_name %in% my_data$customdata) %>%
+        arrange(.data$LipidClass, .data$ShortLipidName)
+
+      # make the plot
+      pca_variable_plot(var_data = plot_data,
+                        sample_name = my_data$customdata)
+    }
   })
   ####
 
