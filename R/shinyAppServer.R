@@ -1380,40 +1380,6 @@ shinyAppServer <- function(input, output, session) {
     pca_data()
   })
 
-  # check if the number of components are changed
-  # if so update the xaxis and yaxis select inputs
-  # observeEvent(input$select_num_components, {
-  #   req(input$select_num_components,
-  #       input$select_pca_scores_x,
-  #       input$select_pca_scores_y,
-  #       input$select_pca_loadings_x,
-  #       input$select_pca_loadings_y)
-  #
-  #   # scores x-axis
-  #   updateSelectInput(session = session,
-  #                     inputId = "select_pca_scores_x",
-  #                     choices = paste0("PC", 1:input$select_num_components),
-  #                     selected = "PC1")
-  #
-  #   # scores y-axis
-  #   updateSelectInput(session = session,
-  #                     inputId = "select_pca_scores_y",
-  #                     choices = paste0("PC", 1:input$select_num_components),
-  #                     selected = "PC2")
-  #
-  #   # loadings x-axis
-  #   updateSelectInput(session = session,
-  #                     inputId = "select_pca_loadings_x",
-  #                     choices = paste0("PC", 1:input$select_num_components),
-  #                     selected = "PC1")
-  #
-  #   # loadings y-axis
-  #   updateSelectInput(session = session,
-  #                     inputId = "select_pca_loadings_y",
-  #                     choices = paste0("PC", 1:input$select_num_components),
-  #                     selected = "PC2")
-  # })
-
   # update color selection
   observeEvent(input$select_group_column, {
     req(input$select_group_column)

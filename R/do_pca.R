@@ -38,7 +38,7 @@ do_pca <- function(lipid_data, observations = c("all", "samples"), normalization
 
   # need to make the data wide
   # samples as rows and lipids as columns
-  lipid_data_wide <- lipid_data %>%
+  lipid_data_prep <- lipid_data %>%
     filter(.data$keep == TRUE) %>%
     # select which sample type to keep
     filter(.data$sample_type %in% select_obs) %>%
@@ -46,47 +46,40 @@ do_pca <- function(lipid_data, observations = c("all", "samples"), normalization
     group_by(.data$sample_name) %>%
     mutate(norm_area = .data$area / sum(.data$area)) %>%
     ungroup() %>%
-    # select what to use for PCA
+    # select which normalization to use for PCA
     mutate(value = case_when(
       normalization == "raw" ~ .data$area,
       normalization == "tot_area" ~ .data$norm_area
     )) %>%
-    # make wide
+    # do transformations and select which transformation to keep
+    mutate(value = case_when(
+      transformation == "none" ~ .data$value,
+      transformation == "log10" ~ log10(.data$value + 1) # the +1 is correct for any zero's
+    )) %>%
+    # do the centering and scaling per variable
+    group_by(.data$my_id) %>%
+    mutate(value = .data$value - mean(.data$value),
+           uv_value = .data$value / sd(.data$value),
+           par_value = .data$value / sqrt(sd(.data$value))) %>%
+    ungroup() %>%
+    # select which scaling to use
+    mutate(value = case_when(
+      scaling == "none" ~ .data$value,
+      scaling == "uv" ~ .data$uv_value,
+      scaling == "pareto" ~ .data$par_value
+    ))
+
+  # return the preprocessed data
+  pca_data$preprocess_data <- lipid_data_prep %>%
+    select(.data$sample_name, .data$ShortLipidName, .data$LipidClass, .data$value)
+
+  # make wide
+  lipid_data_wide <- lipid_data_prep %>%
     select(.data$sample_name, .data$sample_type, .data$ShortLipidName, .data$value) %>%
     pivot_wider(names_from = .data$ShortLipidName,
                 values_from = .data$value) %>%
+    # this is slow
     clean_names()
-
-  # transformation
-  switch(transformation,
-         "none" = lipid_data_wide <- lipid_data_wide,
-         "log10" = lipid_data_wide <- lipid_data_wide %>%
-           mutate(across(where(is.numeric), ~ log10(.x + 1))) # the +1 is to avoid problems with 0's
-  )
-
-  # center
-  lipid_data_wide <- lipid_data_wide %>%
-    mutate(across(where(is.numeric), ~ .x - mean(.x)))
-
-  # scale
-  switch(scaling,
-         "none" = lipid_data_wide <- lipid_data_wide,
-         "uv" = lipid_data_wide <- lipid_data_wide %>%
-           mutate(across(where(is.numeric), ~ .x / sd(.x))),
-         "pareto" = lipid_data_wide <- lipid_data_wide %>%
-           mutate(across(where(is.numeric), ~ .x / sqrt(sd(.x))))
-  )
-
-  # return the preprocessed data
-  pca_data$preprocess_data <- lipid_data_wide %>%
-    pivot_longer(cols = -c(.data$sample_name, .data$sample_type),
-                 names_to = "lipid",
-                 values_to = "value") %>%
-    left_join(y = lipid_data %>%
-                select(.data$ShortLipidName, .data$LipidClass) %>%
-                distinct(.data$ShortLipidName, .keep_all = TRUE) %>%
-                mutate(clean_lipid_names = make_clean_names(.data$ShortLipidName)),
-              by = c("lipid" = "clean_lipid_names"))
 
   # set up the recipe, preprocessing etc.
   pca_rec <- recipe(~.,
@@ -97,6 +90,7 @@ do_pca <- function(lipid_data, observations = c("all", "samples"), normalization
     step_pca(all_predictors(),
              num_comp = 5)
 
+  # do the pca
   pca_prep <- prep(pca_rec)
 
   # get the explained variance
