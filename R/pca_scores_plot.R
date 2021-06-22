@@ -15,8 +15,11 @@
 #' @author Rico Derks
 #'
 pca_scores_plot <- function(scores_data, xaxis = "PC1", yaxis = "PC2", color_by = "none") {
+  # select what to show on the axis
   scores_data$show_x <- scores_data[[xaxis]]
   scores_data$show_y <- scores_data[[yaxis]]
+
+  # is there coloring
   if(color_by == "none") {
     scores_data$color_by <- scores_data[["sample_type"]]
   } else {

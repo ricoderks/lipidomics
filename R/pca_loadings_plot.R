@@ -30,13 +30,16 @@ pca_loadings_plot <- function(loadings_data, xaxis = "PC1", yaxis = "PC2") {
             y = ~show_y,
             color = ~LipidClass,
             colors = rainbow(n = num_colors),
-            text = ~paste0(ShortLipidName, "<br>", LipidClass)) %>%
+            text = ~paste0(ShortLipidName, "<br>", LipidClass),
+            customdata = loadings_data$ShortLipidName,
+            source = "pca_loadings_plot") %>%
     add_markers(size = 3) %>%
     layout(title = list(text = "Loadings plot",
                         x = 0),
            xaxis = list(title = xaxis),
            yaxis = list(title = yaxis)) %>%
-    hide_legend()
+    hide_legend() %>%
+    event_register(event = "plotly_click")
 
   return(p)
 }
