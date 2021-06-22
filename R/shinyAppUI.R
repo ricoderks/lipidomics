@@ -372,13 +372,13 @@ shinyAppUI <- fluidPage(
                                  fluidPage(
                                    sidebarPanel(width = 3,
                                                 h4("Settings PCA"),
-                                                numericInput(inputId = "select_num_components",
-                                                             label = "Set number of components:",
-                                                             value = 5,
-                                                             min = 1,
-                                                             max = 10,
-                                                             step = 1,
-                                                             width = 225),
+                                                # numericInput(inputId = "select_num_components",
+                                                #              label = "Set number of components:",
+                                                #              value = 5,
+                                                #              min = 1,
+                                                #              max = 10,
+                                                #              step = 1,
+                                                #              width = 225),
                                                 radioButtons(inputId = "select_pca_observations",
                                                              label = "Observations:",
                                                              choices = c("QCpool and samples (all)" = "all",
@@ -442,8 +442,10 @@ shinyAppUI <- fluidPage(
                                                                      type = 5)),
                                              p(""),
                                              splitLayout(cellWidths = c("65%", "35%"),
-                                                         plotlyOutput(outputId = "pca_var_plot"),
-                                                         plotlyOutput(outputId = "pca_obs_plot"))
+                                                         withSpinner(plotlyOutput(outputId = "pca_var_plot"),
+                                                                     type = 5),
+                                                         withSpinner(plotlyOutput(outputId = "pca_obs_plot"),
+                                                                     type = 5))
                                    )
                                  )
                         ), # end tabpanel PCA

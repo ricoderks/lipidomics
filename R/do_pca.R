@@ -95,7 +95,7 @@ do_pca <- function(lipid_data, observations = c("all", "samples"), normalization
     update_role(.data$sample_name, .data$sample_type,
                 new_role = "id") %>%
     step_pca(all_predictors(),
-             num_comp = num_pc)
+             num_comp = 5)
 
   pca_prep <- prep(pca_rec)
 

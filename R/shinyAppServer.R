@@ -1315,14 +1315,14 @@ shinyAppServer <- function(input, output, session) {
     req(all_data$analysis_data,
         input$select_pca_observations,
         input$select_pca_normalization,
-        input$select_num_components,
+        # input$select_num_components,
         input$select_pca_scaling,
         input$select_pca_transformation)
 
     data_pca <- do_pca(lipid_data = isolate(all_data$analysis_data),
                        observations = input$select_pca_observations,
                        normalization = input$select_pca_normalization,
-                       num_pc = input$select_num_components,
+                       # num_pc = input$select_num_components,
                        scaling = input$select_pca_scaling,
                        transformation = input$select_pca_transformation)
 
@@ -1367,11 +1367,11 @@ shinyAppServer <- function(input, output, session) {
 
   # show the explained variance
   output$pca_explained_var <- renderPlotly({
-    req(pca_data,
-        input$select_num_components)
+    req(pca_data)
+        # input$select_num_components)
 
-    pca_explained_var_plot(exp_var_data = pca_data()$explained_var,
-                           input$select_num_components)
+    pca_explained_var_plot(exp_var_data = pca_data()$explained_var)
+                           # input$select_num_components)
   })
 
   output$pca_data <- renderPrint({
@@ -1382,37 +1382,37 @@ shinyAppServer <- function(input, output, session) {
 
   # check if the number of components are changed
   # if so update the xaxis and yaxis select inputs
-  observeEvent(input$select_num_components, {
-    req(input$select_num_components,
-        input$select_pca_scores_x,
-        input$select_pca_scores_y,
-        input$select_pca_loadings_x,
-        input$select_pca_loadings_y)
-
-    # scores x-axis
-    updateSelectInput(session = session,
-                      inputId = "select_pca_scores_x",
-                      choices = paste0("PC", 1:input$select_num_components),
-                      selected = "PC1")
-
-    # scores y-axis
-    updateSelectInput(session = session,
-                      inputId = "select_pca_scores_y",
-                      choices = paste0("PC", 1:input$select_num_components),
-                      selected = "PC2")
-
-    # loadings x-axis
-    updateSelectInput(session = session,
-                      inputId = "select_pca_loadings_x",
-                      choices = paste0("PC", 1:input$select_num_components),
-                      selected = "PC1")
-
-    # loadings y-axis
-    updateSelectInput(session = session,
-                      inputId = "select_pca_loadings_y",
-                      choices = paste0("PC", 1:input$select_num_components),
-                      selected = "PC2")
-  })
+  # observeEvent(input$select_num_components, {
+  #   req(input$select_num_components,
+  #       input$select_pca_scores_x,
+  #       input$select_pca_scores_y,
+  #       input$select_pca_loadings_x,
+  #       input$select_pca_loadings_y)
+  #
+  #   # scores x-axis
+  #   updateSelectInput(session = session,
+  #                     inputId = "select_pca_scores_x",
+  #                     choices = paste0("PC", 1:input$select_num_components),
+  #                     selected = "PC1")
+  #
+  #   # scores y-axis
+  #   updateSelectInput(session = session,
+  #                     inputId = "select_pca_scores_y",
+  #                     choices = paste0("PC", 1:input$select_num_components),
+  #                     selected = "PC2")
+  #
+  #   # loadings x-axis
+  #   updateSelectInput(session = session,
+  #                     inputId = "select_pca_loadings_x",
+  #                     choices = paste0("PC", 1:input$select_num_components),
+  #                     selected = "PC1")
+  #
+  #   # loadings y-axis
+  #   updateSelectInput(session = session,
+  #                     inputId = "select_pca_loadings_y",
+  #                     choices = paste0("PC", 1:input$select_num_components),
+  #                     selected = "PC2")
+  # })
 
   # update color selection
   observeEvent(input$select_group_column, {
@@ -1443,10 +1443,7 @@ shinyAppServer <- function(input, output, session) {
 
   # create variable plot
   output$pca_var_plot <- renderPlotly({
-    req(pca_data,
-        input$select_pca_scores_x,
-        input$select_pca_scores_y,
-        input$select_pca_scores_color)
+    req(pca_data)
 
     # capture the click event
     # this contains a column with the sample names (column name: customdata)
@@ -1467,8 +1464,6 @@ shinyAppServer <- function(input, output, session) {
   # create observation plot
   output$pca_obs_plot <- renderPlotly({
     req(pca_data,
-        input$select_pca_scores_x,
-        input$select_pca_scores_y,
         input$select_pca_scores_color)
 
     # capture the click event
