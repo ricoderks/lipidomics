@@ -9,7 +9,7 @@
 #'
 #' @return a plotly graph
 #'
-#' @importFrom plotly plot_ly add_markers layout config
+#' @importFrom plotly plot_ly add_markers layout config event_register
 #' @importFrom magrittr %>%
 #'
 #' @author Rico Derks
@@ -23,17 +23,20 @@ pca_scores_plot <- function(scores_data, xaxis = "PC1", yaxis = "PC2", color_by 
     scores_data$color_by <- scores_data[[color_by]]
   }
 
-
   p <- scores_data %>%
     plot_ly(x = ~show_x,
             y = ~show_y,
-            text = ~sample_name) %>%
+            text = ~sample_name,
+            customdata = scores_data$sample_name,
+            source = "pca_scores_plot") %>%
     add_markers(color = ~color_by,
                 size = 3) %>%
-    layout(title = "Scores plot",
+    layout(title = list(text = "Scores plot",
+                        x = 0),
            xaxis = list(title = xaxis),
            yaxis = list(title = yaxis)) %>%
-    config(displayModeBar = FALSE)
+    # config(displayModeBar = FALSE) %>%
+    event_register(event = "plotly_click")
 
   return(p)
 }

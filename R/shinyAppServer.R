@@ -19,7 +19,7 @@
 #' @importFrom tools file_ext
 #' @importFrom readxl read_xlsx
 #' @importFrom DT renderDT
-#' @importFrom plotly renderPlotly plotlyOutput plot_ly add_markers event_data event_register
+#' @importFrom plotly renderPlotly plotlyOutput plot_ly add_markers event_data
 #' @importFrom shinycssloaders withSpinner
 #'
 #' @author Rico Derks
@@ -1348,15 +1348,10 @@ shinyAppServer <- function(input, output, session) {
       scores_data <- pca_data()$scores
     }
 
-    p <- pca_scores_plot(scores_data = scores_data,
-                         xaxis = input$select_pca_scores_x,
-                         yaxis = input$select_pca_scores_y,
-                         color_by = input$select_pca_scores_color)
-
-    event_register(p = p,
-                   event = "plotly_selecting")
-
-    plot(p)
+    pca_scores_plot(scores_data = scores_data,
+                    xaxis = input$select_pca_scores_x,
+                    yaxis = input$select_pca_scores_y,
+                    color_by = input$select_pca_scores_color)
   })
 
   # show the loadings plot
@@ -1452,9 +1447,11 @@ shinyAppServer <- function(input, output, session) {
         input$select_pca_scores_y,
         input$select_pca_scores_color)
 
-    # so far not working
+    # capture the click event
     my_data <- event_data(event = "plotly_click",
                           source = "pca_scores_plot")
+    # this contains a column with the sample names (column name: customdata)
+    my_data
   })
   ####
 

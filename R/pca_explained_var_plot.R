@@ -20,7 +20,8 @@ pca_explained_var_plot <- function(exp_var_data, num_pc = 5) {
     plot_ly(x = ~component,
             y = ~cum_exp_var) %>%
     add_bars() %>%
-    layout(title = "Explained variance",
+    layout(title = list(text = "Explained variance",
+                        x = 0),
            xaxis = list(title = "Principal components"),
            yaxis = list(title = "Cum. explained variance [%]")) %>%
     config(displayModeBar = FALSE)

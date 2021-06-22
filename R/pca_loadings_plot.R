@@ -32,11 +32,11 @@ pca_loadings_plot <- function(loadings_data, xaxis = "PC1", yaxis = "PC2") {
             colors = rainbow(n = num_colors),
             text = ~paste0(ShortLipidName, "<br>", LipidClass)) %>%
     add_markers(size = 3) %>%
-    layout(title = "Loadings plot",
+    layout(title = list(text = "Loadings plot",
+                        x = 0),
            xaxis = list(title = xaxis),
            yaxis = list(title = yaxis)) %>%
-    hide_legend() %>%
-    config(displayModeBar = FALSE)
+    hide_legend()
 
   return(p)
 }
