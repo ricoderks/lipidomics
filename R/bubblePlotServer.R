@@ -110,8 +110,8 @@ bubblePlotServer <- function(id, lipid_data, pattern, title) {
                        scales = "free") +
             labs(x = "Retention time [minutes]",
                  y = expression(italic("m/z"))) +
-            guides(color = FALSE,
-                   size = FALSE) +
+            guides(color = "none",
+                   size = "none") +
             coord_cartesian(xlim = ranges$x,
                             ylim = ranges$y) +
             theme_cpm() +
