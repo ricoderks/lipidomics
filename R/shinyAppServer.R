@@ -21,6 +21,7 @@
 #' @importFrom DT renderDT
 #' @importFrom plotly renderPlotly plotlyOutput plot_ly add_markers event_data
 #' @importFrom shinycssloaders withSpinner
+#' @importFrom openxlsx write.xlsx
 #'
 #' @author Rico Derks
 
@@ -379,46 +380,6 @@ shinyAppServer <- function(input, output, session) {
     all_data$samples_selected <- input$select_samples
   })
 
-  # observeEvent({
-  #   input$rsd_cutoff
-  #   input$dotprod_cutoff
-  #   input$revdotprod_cutoff
-  # }, {
-  #   req(
-  #     input$rsd_cutoff,
-  #     input$dotprod_cutoff,
-  #     input$revdotprod_cutoff,
-  #     all_data$qc_results)
-  #
-  #   tmp_filter <- all_data$lipid_data_filter
-  #
-  #   # which lipids have a low RSD
-  #   keep_lipids_rsd <- all_data$qc_results %>%
-  #     filter(.data$rsd_area <= input$rsd_cutoff) %>%
-  #     distinct(.data$my_id) %>%
-  #     pull(.data$my_id)
-  #
-  #   # which lipids have a high dotproduct and revdotproduct
-  #   keep_lipids_msms <- tmp_filter %>%
-  #     filter(!(.data$DotProduct <= input$dotprod_cutoff &
-  #                .data$RevDotProduct <= input$revdotprod_cutoff &
-  #                .data$comment != "large_rsd")) %>%
-  #     distinct(.data$my_id) %>%
-  #     pull(.data$my_id)
-  #
-  #   all_data$lipid_data_filter <- tmp_filter %>%
-  #     mutate(
-  #       keep = case_when(
-  #         !(.data$my_id %in% keep_lipids_rsd) ~ FALSE,
-  #         !(.data$my_id %in% keep_lipids_msms) ~ FALSE,
-  #         TRUE ~ TRUE),
-  #       comment = case_when(
-  #         !(.data$my_id %in% keep_lipids_rsd) ~ "large_rsd",
-  #         !(.data$my_id %in% keep_lipids_msms) ~ "no_match",
-  #         TRUE ~ "")
-  #     )
-  # })
-
   # filter the identification data
   observeEvent({
     input$select_PL_class
@@ -474,15 +435,30 @@ shinyAppServer <- function(input, output, session) {
       pull(.data$my_id)
 
     # which lipids have a low RSD
+    if(is.null(input$rsd_cutoff)) {
+      rsd_cutoff <- 0.3
+    } else {
+      rsd_cutoff <- input$rsd_cutoff
+    }
+
     keep_lipids_rsd <- all_data$qc_results %>%
-      filter(.data$rsd_area <= input$rsd_cutoff) %>%
+      filter(.data$rsd_area <= rsd_cutoff) %>%
       distinct(.data$my_id) %>%
       pull(.data$my_id)
 
+    if(is.null(input$dotprod_cutoff) |
+       is.null(input$revdotprod_cutoff)) {
+      dotprod_cutoff <- 50
+      revdotprod_cutoff <- 50
+    } else {
+      dotprod_cutoff <- input$dotprod_cutoff
+      revdotprod_cutoff <- input$revdotprod_cutoff
+    }
+
     # which lipids have a high dotproduct and revdotproduct
     keep_lipids_msms <- tmp_filter %>%
-      filter(!(.data$DotProduct <= input$dotprod_cutoff &
-                 .data$RevDotProduct <= input$revdotprod_cutoff &
+      filter(!(.data$DotProduct <= dotprod_cutoff &
+                 .data$RevDotProduct <= revdotprod_cutoff &
                  .data$comment != "large_rsd")) %>%
       distinct(.data$my_id) %>%
       pull(.data$my_id)
@@ -500,7 +476,6 @@ shinyAppServer <- function(input, output, session) {
           !(.data$my_id %in% keep_lipids_class) ~ "remove_class",
           TRUE ~ "")
       )
-
   })
 
   ### Fatty acids and conjugates
@@ -522,8 +497,8 @@ shinyAppServer <- function(input, output, session) {
         all_data$lipid_data_filter)
 
     if(nrow(filter_FA()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_FA()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_FA())
     }
   })
   ###
@@ -546,8 +521,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_FAM)
 
     if(nrow(filter_FAM()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_FAM()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_FAM())
     }
   })
   ###
@@ -570,8 +545,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_FE)
 
     if(nrow(filter_FE()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_FE()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_FE())
     }
   })
   ###
@@ -594,8 +569,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_EGL)
 
     if(nrow(filter_EGL()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_EGL()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_EGL())
     }
   })
   ###
@@ -618,8 +593,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_GL)
 
     if(nrow(filter_GL()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_GL()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_GL())
     }
   })
   ###
@@ -642,8 +617,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_GLDG)
 
     if(nrow(filter_GLDG()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_GLDG()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_GLDG())
     }
   })
   ###
@@ -666,8 +641,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_OGL)
 
     if(nrow(filter_OGL()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_OGL()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_OGL())
     }
   })
   ###
@@ -690,8 +665,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_PA)
 
     if(nrow(filter_PA()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_PA()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_PA())
     }
   })
   ###
@@ -714,8 +689,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_PC)
 
     if(nrow(filter_PC()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_PC()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_PC())
     }
   })
   ###
@@ -738,8 +713,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_PE)
 
     if(nrow(filter_PE()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_PE()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_PE())
     }
   })
   ###
@@ -762,8 +737,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_PG)
 
     if(nrow(filter_PE()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_PG()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_PG())
     }
   })
   ###
@@ -786,8 +761,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_CL)
 
     if(nrow(filter_CL()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_CL()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_CL())
     }
   })
   ###
@@ -810,8 +785,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_AcPIM)
 
     if(nrow(filter_AcPIM()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_AcPIM()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_AcPIM())
     }
   })
   ###
@@ -834,8 +809,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_PI)
 
     if(nrow(filter_PI()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_PI()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_PI())
     }
   })
   ###
@@ -858,8 +833,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_PS)
 
     if(nrow(filter_PS()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_PS()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_PS())
     }
   })
   ###
@@ -882,8 +857,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_OPL)
 
     if(nrow(filter_OPL()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_OPL()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_OPL())
     }
   })
   ###
@@ -906,8 +881,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_OGPL)
 
     if(nrow(filter_OGPL()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_OGPL()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_OGPL())
     }
   })
   ###
@@ -930,8 +905,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_PRL)
 
     if(nrow(filter_PRL()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_PRL()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_PRL())
     }
   })
   ###
@@ -954,8 +929,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_AcGL)
 
     if(nrow(filter_AcGL()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_AcGL()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_AcGL())
     }
   })
   ###
@@ -978,8 +953,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_Cer)
 
     if(nrow(filter_Cer()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_Cer()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_Cer())
     }
   })
   ###
@@ -1002,8 +977,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_PSL)
 
     if(nrow(filter_PSL()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_PSL()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_PSL())
     }
   })
   ###
@@ -1026,8 +1001,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_NPSL)
 
     if(nrow(filter_NPSL()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_NPSL()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_NPSL())
     }
   })
   ###
@@ -1050,8 +1025,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_SB)
 
     if(nrow(filter_SB()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_SB()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_SB())
     }
   })
   ###
@@ -1074,8 +1049,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_BA)
 
     if(nrow(filter_BA()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_BA()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_BA())
     }
   })
   ###
@@ -1098,8 +1073,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_SC)
 
     if(nrow(filter_SC()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_SC()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_SC())
     }
   })
   ###
@@ -1122,8 +1097,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_STC)
 
     if(nrow(filter_STC()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_STC()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_STC())
     }
   })
   ###
@@ -1146,8 +1121,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_ST)
 
     if(nrow(filter_ST()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_ST()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_ST())
     }
   })
   ###
@@ -1170,8 +1145,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_OST)
 
     if(nrow(filter_OST()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_OST()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_OST())
     }
   })
   ###
@@ -1317,7 +1292,7 @@ shinyAppServer <- function(input, output, session) {
   #### end meta merge part
 
   #### Analysis part
-  #### compare samples
+
   observe({
     req(all_data$lipid_data_filter,
         all_data$samples_selected)
@@ -1331,6 +1306,7 @@ shinyAppServer <- function(input, output, session) {
     }
   })
 
+  #### compare samples
   output$compare_samples <- renderPlotly({
     req(all_data$lipid_data_filter,
         input$select_z_heatmap)
@@ -1502,6 +1478,22 @@ shinyAppServer <- function(input, output, session) {
   ####
 
   #### end analysis part
+
+  #### Export
+  output$download_lipid_xlsx <- downloadHandler(
+    filename = function() {
+      # create a filename
+      paste("Lipid_list_", Sys.Date(), ".xlsx", sep="")
+    },
+    content = function(file) {
+      req(all_data$analysis_data)
+
+      write.xlsx(x = all_data$analysis_data,
+                 file = file)
+    }
+  )
+
+  #### End Export
 
   #### About / Help  section ####
   output$about_session <- renderPrint({

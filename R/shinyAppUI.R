@@ -445,7 +445,10 @@ shinyAppUI <- fluidPage(
                         tabPanel(title = "UMAP")
              ), # end navbarmenu analysis
              tabPanel(title = "Export",
-                      p("Here, several export options will be shown!")),
+                      p("Here, several export options will be shown!"),
+                      downloadButton(outputId = "download_lipid_xlsx",
+                                     label = "Download lipid list (xlsx)")
+             ),
              # tabPanel About
              navbarMenu(title = "Help",
                         tabPanel(title = "Lipids",

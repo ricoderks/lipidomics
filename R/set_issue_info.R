@@ -12,11 +12,10 @@
 #' @author Rico Derks
 #'
 set_issue_info <- function(lipid_data, info) {
-
-  lipid_data$keep[lipid_data$my_id == info$filter_data$my_id] <- info$filter_data$keep
-  lipid_data$comment[lipid_data$my_id == info$filter_data$my_id] <- info$filter_data$comment
-  # lipid_data$ShortLipidName[lipid_data$my_id == info$my_id] <- rename_lipid(lipid_data = all_data$clean_data,
-  #                                                                           rename_info = info)
+  for(a in 1:nrow(info$filter_data)) {
+    lipid_data$keep[lipid_data$my_id == info$filter_data$my_id[a]] <- info$filter_data$keep[a]
+    lipid_data$comment[lipid_data$my_id == info$filter_data$my_id[a]] <- info$filter_data$comment[a]
+  }
 
   return(lipid_data)
 }
