@@ -433,8 +433,12 @@ shinyAppServer <- function(input, output, session) {
     input$select_PRL_class
     input$select_SA_class
     input$select_STL_class
+    input$rsd_cutoff
+    input$dotprod_cutoff
+    input$revdotprod_cutoff
   }, {
-    req(all_data$lipid_data_filter)
+    req(all_data$lipid_data_filter,
+        all_data$qc_results)
 
     # get all the selected classes
     class_ion_selected <- c(input$select_PL_class,
@@ -455,11 +459,11 @@ shinyAppServer <- function(input, output, session) {
       all_data$class_ion_selected <- class_ion_selected
     }
 
-    # # how many lipid classes are selected
-    # all_data$num_lipid_classes <- length(unique(sapply(all_data$class_ion_selected, function(x) {
-    #   unlist(strsplit(x = x,
-    #                   split = " - "))[1]
-    # })))
+    # how many lipid classes are selected
+    all_data$num_lipid_classes <- length(unique(sapply(all_data$class_ion_selected, function(x) {
+      unlist(strsplit(x = x,
+                      split = " - "))[1]
+    })))
 
     tmp_filter <- isolate(all_data$lipid_data_filter)
 
@@ -469,14 +473,34 @@ shinyAppServer <- function(input, output, session) {
       distinct(.data$my_id) %>%
       pull(.data$my_id)
 
-    # this is needed to remove a class completely
+    # which lipids have a low RSD
+    keep_lipids_rsd <- all_data$qc_results %>%
+      filter(.data$rsd_area <= input$rsd_cutoff) %>%
+      distinct(.data$my_id) %>%
+      pull(.data$my_id)
+
+    # which lipids have a high dotproduct and revdotproduct
+    keep_lipids_msms <- tmp_filter %>%
+      filter(!(.data$DotProduct <= input$dotprod_cutoff &
+                 .data$RevDotProduct <= input$revdotprod_cutoff &
+                 .data$comment != "large_rsd")) %>%
+      distinct(.data$my_id) %>%
+      pull(.data$my_id)
+
     all_data$lipid_data_filter <- tmp_filter %>%
-      mutate(keep = if_else(!(.data$my_id %in% keep_lipids_class),
-                            FALSE,
-                            .data$keep),
-             comment = if_else(!(.data$my_id %in% keep_lipids_class),
-                               "remove_class",
-                               .data$comment))
+      mutate(
+        keep = case_when(
+          !(.data$my_id %in% keep_lipids_rsd) ~ FALSE,
+          !(.data$my_id %in% keep_lipids_msms) ~ FALSE,
+          !(.data$my_id %in% keep_lipids_class) ~ FALSE,
+          TRUE ~ TRUE),
+        comment = case_when(
+          !(.data$my_id %in% keep_lipids_rsd) ~ "large_rsd",
+          !(.data$my_id %in% keep_lipids_msms) ~ "no_match",
+          !(.data$my_id %in% keep_lipids_class) ~ "remove_class",
+          TRUE ~ "")
+      )
+
   })
 
   ### Fatty acids and conjugates
