@@ -1467,12 +1467,6 @@ shinyAppServer <- function(input, output, session) {
         pca_observation_plot(obs_data = plot_data,
                              var_name = my_data$customdata)
       }
-
-      # restructure data
-      # plot_data <- pca_data()$preprocess_data %>%
-      #   filter(.data$ShortLipidName %in% my_data$customdata)
-
-
     }
   })
   ####
@@ -1487,8 +1481,14 @@ shinyAppServer <- function(input, output, session) {
     },
     content = function(file) {
       req(all_data$analysis_data)
+      # export needs to be in wide format
+      export_wide <- all_data$analysis_data %>%
+        filter(.data$sample_type != "blank") %>%
+        pivot_wider(id_cols = c(.data$my_id, .data$LongLipidName, .data$ShortLipidName, .data$LipidClass),
+                    names_from = .data$sample_name,
+                    values_from = .data$area)
 
-      write.xlsx(x = all_data$analysis_data,
+      write.xlsx(x = export_wide,
                  file = file)
     }
   )
