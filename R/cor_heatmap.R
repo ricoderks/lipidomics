@@ -2,38 +2,33 @@
 #'
 #' @description Create a correlation heatmap of all samples..
 #'
-#' @param df tibble in tidy format
+#' @param lipid_data tibble with all the lipid data
 #'
-#' @return pheatmap object
+#' @return plotly object
 #'
 #' @importFrom magrittr %>%
 #' @importFrom dplyr select matches
 #' @importFrom stringr str_extract
 #' @importFrom rlang .data
-#' @importFrom pheatmap pheatmap
+#' @importFrom plotly plot_ly colorbar
 #' @importFrom stats cor
-#'
+#' @importFrom grDevices colorRamp
 #'
 #' @author Rico Derks
 #'
-cor_heatmap <- function(df) {
-  df_m <- df %>%
+cor_heatmap <- function(lipid_data) {
+  df_m <- lipid_data %>%
     select(matches("([qQ][cC]pool|[sS]ample)"))
 
+  # calculate the correlation
   cormat <- cor(df_m)
 
-  # Define which pheno data columns should be highlighted in the plot
-  ann <- data.frame(sample_type = str_extract(string = colnames(df_m),
-                                              pattern = "([qQ][cC]pool|[sS]ample)"))
-  rownames(ann) <- colnames(df_m)
-
-  # show heatmap
-  p <- pheatmap(cormat,
-           annotation = ann,
-           cluster_cols = FALSE,
-           cluster_rows = FALSE,
-           fontsize_row = 8,
-           fontsize_col = 6)
+  p <- plot_ly(x = colnames(df_m),
+              y = colnames(df_m),
+              z = cormat,
+              type = "heatmap",
+              colors = colorRamp(c("blue", "red"))) %>%
+    colorbar(limits = c(-1, 1))
 
   return(p)
 }

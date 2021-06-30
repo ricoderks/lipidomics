@@ -348,13 +348,12 @@ shinyAppServer <- function(input, output, session) {
   output$create_corplot <- renderPlotly({
     req(all_data$lipid_data)
 
-    cor_heatmap2(lipid_data = all_data$lipid_data)
+    cor_heatmap(lipid_data = all_data$lipid_data)
   })
 
   # create UI for correlation plot
   output$corplot <- renderUI({
-    req(all_data$lipid_data_long,
-        all_data$num_lipid_classes)
+    req(all_data$lipid_data_long)
 
     # get the number of samples
     num_samples <- all_data$lipid_data_long %>%

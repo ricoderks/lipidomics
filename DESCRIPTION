@@ -21,7 +21,6 @@ Imports:
     magrittr,
     methods,
     openxlsx,
-    pheatmap,
     plotly,
     purrr,
     readr,
