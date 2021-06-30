@@ -10,17 +10,19 @@
 #' @importFrom shinyjs toggle
 #' @importFrom sessioninfo session_info
 #' @importFrom tibble tibble
-#' @importFrom dplyr filter mutate select pull distinct case_when
+#' @importFrom dplyr filter mutate select pull distinct case_when relocate bind_rows across
 #' @importFrom rlang .data
 #' @importFrom purrr map
 #' @importFrom magrittr %>%
 #' @importFrom tidyr unnest pivot_wider
+#' @importFrom tidyselect last_col everything matches
 #' @importFrom utils head
 #' @importFrom tools file_ext
 #' @importFrom readxl read_xlsx
 #' @importFrom DT renderDT
 #' @importFrom plotly renderPlotly plotlyOutput plot_ly add_markers event_data
 #' @importFrom shinycssloaders withSpinner
+#' @importFrom openxlsx write.xlsx
 #'
 #' @author Rico Derks
 
@@ -50,6 +52,22 @@ shinyAppServer <- function(input, output, session) {
                              all_samples = NULL,
                              samples_selected = NULL,
                              pca_score_plot = FALSE)
+
+  default_class_ion <- c("ADGGA - [M-H]-", "AHexBRS - [M+HCOO]-", "AHexCAS - [M+HCOO]-", "AHexCS - [M+HCOO]-", "AHexSIS - [M+HCOO]-", "ASM - [M+H]+", "BASulfate - [M-H]-",
+                         "BileAcid - [M-H]-", "BMP - [M+NH4]+", "CAR - [M+H]+", "CE - [M+NH4]+", "Cer_ADS - [M+HCOO]-", "Cer_AP - [M+HCOO]-",
+                         "Cer_AS - [M+HCOO]-", "Cer_BS - [M+HCOO]-", "Cer_HS - [M+H]+", "Cer_NDS - [M+HCOO]-",
+                         "Cer_NP - [M+HCOO]-", "Cer_NS - [M+HCOO]-", "CerP - [M+H]+",
+                         "CL - [M+NH4]+", "CoQ - [M+H]+", "DCAE - [M+NH4]+", "DG - [M+NH4]+", "DGGA - [M-H]-", "EtherDG - [M+NH4]+",
+                         "EtherLPC - [M+HCOO]-", "EtherLPE - [M-H]-", "EtherMGDG - [M+NH4]+", "EtherPC - [M+HCOO]-",
+                         "EtherPE - [M-H]-", "EtherPG - [M-H]-", "EtherPI - [M-H]-", "EtherTG - [M+NH4]+", "FA - [M-H]-", "FAHFA - [M-H]-",
+                         "HBMP - [M-H]-", "Hex2Cer - [M+HCOO]-", "HexCer_EOS - [M-H]-", "HexCer_HS - [M+HCOO]-", "HexCer_NS - [M+HCOO]-",
+                         "LPA - [M-H]-", "LPC - [M+HCOO]-", "LPE - [M-H]-", "LPI - [M-H]-",
+                         "LPS - [M-H]-", "MG - [M+NH4]+", "MGDG - [M+HCOO]-", "MLCL - [M-H]-", "NAE - [M+H]+", "NAGly - [M+H]+", "NAGlySer - [M-H]-",
+                         "NAOrn - [M+H]+", "OxFA - [M-H]-", "OxPC - [M+HCOO]-", "OxPE - [M-H]-", "OxPG - [M-H]-", "OxPI - [M-H]-", "OxTG - [M+NH4]+",
+                         "PA - [M-H]-", "PC - [M+HCOO]-", "PE - [M-H]-", "PE_Cer - [M-H]-", "PEtOH - [M-H]-",
+                         "PG - [M-H]-", "PI - [M-H]-",  "PI_Cer - [M+H]+", "PMeOH - [M-H]-",
+                         "PS - [M-H]-", "SHexCer - [M-H]-", "SL - [M-H]-", "SM - [M+H]+", "Sph - [M+H]+",
+                         "SQDG - [M-H]-", "SSulfate - [M-H]-", "ST - [M+H-H2O]+", "ST - [M+H]+", "TG - [M+NH4]+", "TG_EST - [M+NH4]+", "VAE - [M+H]+")
 
   #### Read the files ####
   # watch the positive mode file
@@ -85,7 +103,7 @@ shinyAppServer <- function(input, output, session) {
       pull(.data$class_ion)
 
     # store them
-    all_data$class_ion_selected <- all_data$class_ion
+    all_data$class_ion_selected <- all_data$class_ion[all_data$class_ion %in% default_class_ion]
 
     # get all sample name
     all_data$all_samples <- all_data$lipid_data_long %>%
@@ -96,6 +114,13 @@ shinyAppServer <- function(input, output, session) {
 
     # calculate the RSD values
     all_data$qc_results <- calc_rsd(lipid_data = all_data$lipid_data_long)
+
+    # tag lipid class/ion which should be removed
+    # find the id's to keep
+    keep_lipids_class <- all_data$lipid_data %>%
+      filter(.data$class_ion %in% all_data$class_ion_selected) %>%
+      distinct(.data$my_id) %>%
+      pull(.data$my_id)
 
     # tag lipids which have a too high RSD value
     # find the lipids to keep
@@ -116,10 +141,12 @@ shinyAppServer <- function(input, output, session) {
         keep = case_when(
           !(.data$my_id %in% keep_lipids_rsd) ~ FALSE,
           !(.data$my_id %in% keep_lipids_msms) ~ FALSE,
+          !(.data$my_id %in% keep_lipids_class) ~ FALSE,
           TRUE ~ TRUE),
         comment = case_when(
           !(.data$my_id %in% keep_lipids_rsd) ~ "large_rsd",
           !(.data$my_id %in% keep_lipids_msms) ~ "no_match",
+          !(.data$my_id %in% keep_lipids_class) ~ "remove_class",
           TRUE ~ "")
       )
   })
@@ -246,57 +273,57 @@ shinyAppServer <- function(input, output, session) {
              checkboxGroupInput(inputId = "select_PL_class",
                                 label = "Glycerophospholipids:",
                                 choices = all_data$class_ion[grepl(x = all_data$class_ion, pattern = pattern_PL)],
-                                selected = all_data$class_ion[grepl(x = all_data$class_ion, pattern = pattern_PL)])
+                                selected = all_data$class_ion_selected[grepl(x = all_data$class_ion_selected, pattern = pattern_PL)])
       ),
       column(width = my_col_width,
              checkboxGroupInput(inputId = "select_Cer_class",
                                 label = "Ceramides:",
                                 choices = all_data$class_ion[grepl(x = all_data$class_ion, pattern = pattern_Cer)],
-                                selected = all_data$class_ion[grepl(x = all_data$class_ion, pattern = pattern_Cer)]),
+                                selected = all_data$class_ion_selected[grepl(x = all_data$class_ion_selected, pattern = pattern_Cer)]),
              checkboxGroupInput(inputId = "select_HexCer_class",
                                 label = "Neutral glycosphingolipids:",
                                 choices = all_data$class_ion[grepl(x = all_data$class_ion, pattern = pattern_HexCer)],
-                                selected = all_data$class_ion[grepl(x = all_data$class_ion, pattern = pattern_HexCer)])
+                                selected = all_data$class_ion_selected[grepl(x = all_data$class_ion_selected, pattern = pattern_HexCer)])
       ),
       column(width = my_col_width,
              checkboxGroupInput(inputId = "select_FA_class",
                                 label = "Fatty acyls:",
                                 choices = all_data$class_ion[grepl(x = all_data$class_ion, pattern = pattern_FA)],
-                                selected = all_data$class_ion[grepl(x = all_data$class_ion, pattern = pattern_FA)]),
+                                selected = all_data$class_ion_selected[grepl(x = all_data$class_ion_selected, pattern = pattern_FA)]),
              checkboxGroupInput(inputId = "select_PSL_class",
                                 label = "Phosphosphingolipids:",
                                 choices = all_data$class_ion[grepl(x = all_data$class_ion, pattern = pattern_PSL)],
-                                selected = all_data$class_ion[grepl(x = all_data$class_ion, pattern = pattern_PSL)]),
+                                selected = all_data$class_ion_selected[grepl(x = all_data$class_ion_selected, pattern = pattern_PSL)]),
              checkboxGroupInput(inputId = "select_SB_class",
                                 label = "Sphingoid bases:",
                                 choices = all_data$class_ion[grepl(x = all_data$class_ion, pattern = pattern_SB)],
-                                selected = all_data$class_ion[grepl(x = all_data$class_ion, pattern = pattern_SB)]),
+                                selected = all_data$class_ion_selected[grepl(x = all_data$class_ion_selected, pattern = pattern_SB)]),
              checkboxGroupInput(inputId = "select_SA_class",
                                 label = "Acidic glycosphingolipids:",
                                 choices = all_data$class_ion[grepl(x = all_data$class_ion, pattern = pattern_SA)],
-                                selected = all_data$class_ion[grepl(x = all_data$class_ion, pattern = pattern_SA)]),
+                                selected = all_data$class_ion_selected[grepl(x = all_data$class_ion_selected, pattern = pattern_SA)]),
              checkboxGroupInput(inputId = "select_GL_class",
                                 label = "Glcyerolipids:",
                                 choices = all_data$class_ion[grepl(x = all_data$class_ion, pattern = pattern_GL)],
-                                selected = all_data$class_ion[grepl(x = all_data$class_ion, pattern = pattern_GL)]),
+                                selected = all_data$class_ion_selected[grepl(x = all_data$class_ion_selected, pattern = pattern_GL)]),
              checkboxGroupInput(inputId = "select_CL_class",
                                 label = "Cardiolipins:",
                                 choices = all_data$class_ion[grepl(x = all_data$class_ion, pattern = pattern_CL)],
-                                selected = all_data$class_ion[grepl(x = all_data$class_ion, pattern = pattern_CL)])
+                                selected = all_data$class_ion_selected[grepl(x = all_data$class_ion_selected, pattern = pattern_CL)])
       ),
       column(width = my_col_width,
              checkboxGroupInput(inputId = "select_STL_class",
                                 label = "Sterol lipids:",
                                 choices = all_data$class_ion[grepl(x = all_data$class_ion, pattern = pattern_STL)],
-                                selected = all_data$class_ion[grepl(x = all_data$class_ion, pattern = pattern_STL)]),
+                                selected = all_data$class_ion_selected[grepl(x = all_data$class_ion_selected, pattern = pattern_STL)]),
              checkboxGroupInput(inputId = "select_ACPIM_class",
                                 label = "Glycerophosphoinositolglycans:",
                                 choices = all_data$class_ion[grepl(x = all_data$class_ion, pattern = pattern_ACPIM)],
-                                selected = all_data$class_ion[grepl(x = all_data$class_ion, pattern = pattern_ACPIM)]),
+                                selected = all_data$class_ion_selected[grepl(x = all_data$class_ion_selected, pattern = pattern_ACPIM)]),
              checkboxGroupInput(inputId = "select_PRL_class",
                                 label = "Prenol lipids:",
                                 choices = all_data$class_ion[grepl(x = all_data$class_ion, pattern = pattern_PRL)],
-                                selected = all_data$class_ion[grepl(x = all_data$class_ion, pattern = pattern_PRL)])
+                                selected = all_data$class_ion_selected[grepl(x = all_data$class_ion_selected, pattern = pattern_PRL)])
       )
     )
   })
@@ -347,13 +374,12 @@ shinyAppServer <- function(input, output, session) {
   output$create_corplot <- renderPlotly({
     req(all_data$lipid_data)
 
-    cor_heatmap2(lipid_data = all_data$lipid_data)
+    cor_heatmap(lipid_data = all_data$lipid_data)
   })
 
   # create UI for correlation plot
   output$corplot <- renderUI({
-    req(all_data$lipid_data_long,
-        all_data$num_lipid_classes)
+    req(all_data$lipid_data_long)
 
     # get the number of samples
     num_samples <- all_data$lipid_data_long %>%
@@ -397,10 +423,9 @@ shinyAppServer <- function(input, output, session) {
     input$dotprod_cutoff
     input$revdotprod_cutoff
   }, {
-    req(input$rsd_cutoff,
-        input$dotprod_cutoff,
-        input$revdotprod_cutoff,
+    req(all_data$lipid_data_filter,
         all_data$qc_results)
+
     # get all the selected classes
     class_ion_selected <- c(input$select_PL_class,
                             input$select_GL_class,
@@ -428,52 +453,55 @@ shinyAppServer <- function(input, output, session) {
 
     tmp_filter <- isolate(all_data$lipid_data_filter)
 
-    # which lipids have a low RSD
-    keep_lipids_rsd <- all_data$qc_results %>%
-      filter(.data$rsd_area <= input$rsd_cutoff) %>%
+    # get the id's to keep lipids which lipid class is selected
+    keep_lipids_class <- tmp_filter %>%
+      filter(.data$class_ion %in% class_ion_selected) %>%
       distinct(.data$my_id) %>%
       pull(.data$my_id)
 
+    # which lipids have a low RSD
+    if(is.null(input$rsd_cutoff)) {
+      rsd_cutoff <- 0.3
+    } else {
+      rsd_cutoff <- input$rsd_cutoff
+    }
+
+    keep_lipids_rsd <- all_data$qc_results %>%
+      filter(.data$rsd_area <= rsd_cutoff) %>%
+      distinct(.data$my_id) %>%
+      pull(.data$my_id)
+
+    if(is.null(input$dotprod_cutoff) |
+       is.null(input$revdotprod_cutoff)) {
+      dotprod_cutoff <- 50
+      revdotprod_cutoff <- 50
+    } else {
+      dotprod_cutoff <- input$dotprod_cutoff
+      revdotprod_cutoff <- input$revdotprod_cutoff
+    }
+
     # which lipids have a high dotproduct and revdotproduct
     keep_lipids_msms <- tmp_filter %>%
-      filter(!(.data$DotProduct <= input$dotprod_cutoff &
-                 .data$RevDotProduct <= input$revdotprod_cutoff &
+      filter(!(.data$DotProduct <= dotprod_cutoff &
+                 .data$RevDotProduct <= revdotprod_cutoff &
                  .data$comment != "large_rsd")) %>%
       distinct(.data$my_id) %>%
       pull(.data$my_id)
 
-    # get the id's to keep lipids which lipid class is selected
-    keep_lipids_class <- tmp_filter %>%
-      filter(.data$class_ion %in% all_data$class_ion_selected) %>%
-      distinct(.data$my_id) %>%
-      pull(.data$my_id)
-
-    tmp_filter <- tmp_filter %>%
+    all_data$lipid_data_filter <- tmp_filter %>%
       mutate(
         keep = case_when(
           !(.data$my_id %in% keep_lipids_rsd) ~ FALSE,
           !(.data$my_id %in% keep_lipids_msms) ~ FALSE,
-          # !(.data$class_ion %in% all_data$class_ion_selected) ~ FALSE,
-          # !(.data$my_id %in% keep_lipids_class) ~ FALSE,
+          !(.data$my_id %in% keep_lipids_class) ~ FALSE,
           TRUE ~ TRUE),
         comment = case_when(
           !(.data$my_id %in% keep_lipids_rsd) ~ "large_rsd",
           !(.data$my_id %in% keep_lipids_msms) ~ "no_match",
-          # !(.data$class_ion %in% all_data$class_ion_selected) ~ "remove_class",
-          # !(.data$my_id %in% keep_lipids_class) ~ "remove_class",
+          !(.data$my_id %in% keep_lipids_class) ~ "remove_class",
           TRUE ~ "")
       )
-
-    # this is needed to remove a class completely
-    all_data$lipid_data_filter <- tmp_filter %>%
-      mutate(keep = if_else(!(.data$my_id %in% keep_lipids_class),
-                            FALSE,
-                            .data$keep),
-             comment = if_else(!(.data$my_id %in% keep_lipids_class),
-                               "remove_class",
-                               .data$comment))
-  },
-  ignoreInit = TRUE)
+  })
 
   ### Fatty acids and conjugates
   filter_FA <- bubblePlotServer(id = "FA",
@@ -494,8 +522,8 @@ shinyAppServer <- function(input, output, session) {
         all_data$lipid_data_filter)
 
     if(nrow(filter_FA()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_FA()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_FA())
     }
   })
   ###
@@ -518,8 +546,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_FAM)
 
     if(nrow(filter_FAM()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_FAM()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_FAM())
     }
   })
   ###
@@ -542,8 +570,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_FE)
 
     if(nrow(filter_FE()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_FE()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_FE())
     }
   })
   ###
@@ -566,8 +594,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_EGL)
 
     if(nrow(filter_EGL()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_EGL()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_EGL())
     }
   })
   ###
@@ -590,8 +618,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_GL)
 
     if(nrow(filter_GL()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_GL()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_GL())
     }
   })
   ###
@@ -614,8 +642,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_GLDG)
 
     if(nrow(filter_GLDG()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_GLDG()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_GLDG())
     }
   })
   ###
@@ -638,8 +666,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_OGL)
 
     if(nrow(filter_OGL()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_OGL()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_OGL())
     }
   })
   ###
@@ -662,8 +690,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_PA)
 
     if(nrow(filter_PA()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_PA()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_PA())
     }
   })
   ###
@@ -686,8 +714,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_PC)
 
     if(nrow(filter_PC()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_PC()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_PC())
     }
   })
   ###
@@ -710,8 +738,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_PE)
 
     if(nrow(filter_PE()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_PE()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_PE())
     }
   })
   ###
@@ -734,8 +762,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_PG)
 
     if(nrow(filter_PE()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_PG()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_PG())
     }
   })
   ###
@@ -758,8 +786,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_CL)
 
     if(nrow(filter_CL()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_CL()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_CL())
     }
   })
   ###
@@ -782,8 +810,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_AcPIM)
 
     if(nrow(filter_AcPIM()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_AcPIM()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_AcPIM())
     }
   })
   ###
@@ -806,8 +834,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_PI)
 
     if(nrow(filter_PI()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_PI()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_PI())
     }
   })
   ###
@@ -830,8 +858,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_PS)
 
     if(nrow(filter_PS()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_PS()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_PS())
     }
   })
   ###
@@ -854,8 +882,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_OPL)
 
     if(nrow(filter_OPL()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_OPL()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_OPL())
     }
   })
   ###
@@ -878,8 +906,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_OGPL)
 
     if(nrow(filter_OGPL()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_OGPL()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_OGPL())
     }
   })
   ###
@@ -902,8 +930,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_PRL)
 
     if(nrow(filter_PRL()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_PRL()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_PRL())
     }
   })
   ###
@@ -926,8 +954,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_AcGL)
 
     if(nrow(filter_AcGL()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_AcGL()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_AcGL())
     }
   })
   ###
@@ -950,8 +978,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_Cer)
 
     if(nrow(filter_Cer()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_Cer()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_Cer())
     }
   })
   ###
@@ -974,8 +1002,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_PSL)
 
     if(nrow(filter_PSL()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_PSL()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_PSL())
     }
   })
   ###
@@ -998,8 +1026,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_NPSL)
 
     if(nrow(filter_NPSL()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_NPSL()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_NPSL())
     }
   })
   ###
@@ -1022,8 +1050,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_SB)
 
     if(nrow(filter_SB()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_SB()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_SB())
     }
   })
   ###
@@ -1046,8 +1074,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_BA)
 
     if(nrow(filter_BA()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_BA()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_BA())
     }
   })
   ###
@@ -1070,8 +1098,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_SC)
 
     if(nrow(filter_SC()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_SC()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_SC())
     }
   })
   ###
@@ -1094,8 +1122,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_STC)
 
     if(nrow(filter_STC()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_STC()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_STC())
     }
   })
   ###
@@ -1118,8 +1146,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_ST)
 
     if(nrow(filter_ST()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_ST()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_ST())
     }
   })
   ###
@@ -1142,8 +1170,8 @@ shinyAppServer <- function(input, output, session) {
     req(filter_OST)
 
     if(nrow(filter_OST()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
-                                                   info = isolate(filter_OST()))
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+                                                   info = filter_OST())
     }
   })
   ###
@@ -1228,15 +1256,18 @@ shinyAppServer <- function(input, output, session) {
   output$select_group_column_ui <- renderUI({
     req(all_data$meta_data)
 
-    # get the column names of the meta data
-    all_colnames <- colnames(all_data$meta_data())
+    if(all_data$merged_data == TRUE) {
+      # get the column names of the meta data
+      all_colnames <- colnames(all_data$meta_data())
+      all_colnames <- all_colnames[!(all_colnames %in% input$select_meta_column)]
 
-    tagList(
-      checkboxGroupInput(inputId = "select_group_column",
-                         label = "Select column to be used for grouping:",
-                         choices = all_colnames,
-                         selected = NULL)
-    )
+      tagList(
+        checkboxGroupInput(inputId = "select_group_column",
+                           label = "Select column to be used for grouping:",
+                           choices = all_colnames,
+                           selected = NULL)
+      )
+    }
   })
 
   # show status on which column the merge was done
@@ -1286,7 +1317,7 @@ shinyAppServer <- function(input, output, session) {
   #### end meta merge part
 
   #### Analysis part
-  #### compare samples
+
   observe({
     req(all_data$lipid_data_filter,
         all_data$samples_selected)
@@ -1300,12 +1331,37 @@ shinyAppServer <- function(input, output, session) {
     }
   })
 
+  # update color selection
+  observeEvent(input$select_group_column, {
+    req(input$select_group_column)
+
+    if(!is.null(input$select_group_column)) {
+      updateSelectInput(session = session,
+                        inputId = "select_heatmap_group",
+                        label = "Group color:",
+                        choices = c("none", input$select_group_column),
+                        selected = "none")
+    }
+  })
+
+  #### compare samples
   output$compare_samples <- renderPlotly({
     req(all_data$lipid_data_filter,
         input$select_z_heatmap)
 
-    compare_samples_heatmap(lipid_data = all_data$analysis_data,
-                            z = input$select_z_heatmap)
+    # no merge
+    if(input$select_heatmap_group == "none") {
+      compare_samples_heatmap(lipid_data = all_data$analysis_data,
+                              cent_scale = input$heatmap_zscore,
+                              z = input$select_z_heatmap,
+                              clust = input$heatmap_use_clust)
+    } else {
+      compare_samples_heatmap(lipid_data = all_data$analysis_data,
+                              cent_scale = input$heatmap_zscore,
+                              z = input$select_z_heatmap,
+                              clust = input$heatmap_use_clust,
+                              sample_group = input$select_heatmap_group)
+      }
   })
   ####
 
@@ -1315,14 +1371,14 @@ shinyAppServer <- function(input, output, session) {
     req(all_data$analysis_data,
         input$select_pca_observations,
         input$select_pca_normalization,
-        input$select_num_components,
+        # input$select_num_components,
         input$select_pca_scaling,
         input$select_pca_transformation)
 
     data_pca <- do_pca(lipid_data = isolate(all_data$analysis_data),
                        observations = input$select_pca_observations,
                        normalization = input$select_pca_normalization,
-                       num_pc = input$select_num_components,
+                       # num_pc = input$select_num_components,
                        scaling = input$select_pca_scaling,
                        transformation = input$select_pca_transformation)
 
@@ -1367,51 +1423,17 @@ shinyAppServer <- function(input, output, session) {
 
   # show the explained variance
   output$pca_explained_var <- renderPlotly({
-    req(pca_data,
-        input$select_num_components)
+    req(pca_data)
+    # input$select_num_components)
 
-    pca_explained_var_plot(exp_var_data = pca_data()$explained_var,
-                           input$select_num_components)
+    pca_explained_var_plot(exp_var_data = pca_data()$explained_var)
+    # input$select_num_components)
   })
 
   output$pca_data <- renderPrint({
     req(pca_data)
 
     pca_data()
-  })
-
-  # check if the number of components are changed
-  # if so update the xaxis and yaxis select inputs
-  observeEvent(input$select_num_components, {
-    req(input$select_num_components,
-        input$select_pca_scores_x,
-        input$select_pca_scores_y,
-        input$select_pca_loadings_x,
-        input$select_pca_loadings_y)
-
-    # scores x-axis
-    updateSelectInput(session = session,
-                      inputId = "select_pca_scores_x",
-                      choices = paste0("PC", 1:input$select_num_components),
-                      selected = "PC1")
-
-    # scores y-axis
-    updateSelectInput(session = session,
-                      inputId = "select_pca_scores_y",
-                      choices = paste0("PC", 1:input$select_num_components),
-                      selected = "PC2")
-
-    # loadings x-axis
-    updateSelectInput(session = session,
-                      inputId = "select_pca_loadings_x",
-                      choices = paste0("PC", 1:input$select_num_components),
-                      selected = "PC1")
-
-    # loadings y-axis
-    updateSelectInput(session = session,
-                      inputId = "select_pca_loadings_y",
-                      choices = paste0("PC", 1:input$select_num_components),
-                      selected = "PC2")
   })
 
   # update color selection
@@ -1443,10 +1465,7 @@ shinyAppServer <- function(input, output, session) {
 
   # create variable plot
   output$pca_var_plot <- renderPlotly({
-    req(pca_data,
-        input$select_pca_scores_x,
-        input$select_pca_scores_y,
-        input$select_pca_scores_color)
+    req(pca_data)
 
     # capture the click event
     # this contains a column with the sample names (column name: customdata)
@@ -1467,8 +1486,6 @@ shinyAppServer <- function(input, output, session) {
   # create observation plot
   output$pca_obs_plot <- renderPlotly({
     req(pca_data,
-        input$select_pca_scores_x,
-        input$select_pca_scores_y,
         input$select_pca_scores_color)
 
     # capture the click event
@@ -1477,18 +1494,83 @@ shinyAppServer <- function(input, output, session) {
                           source = "pca_loadings_plot")
 
     if(!is.null(my_data)) {
-      # restructure data
-      plot_data <- pca_data()$preprocess_data %>%
-        filter(.data$ShortLipidName %in% my_data$customdata)
+      # check if there was a merge
+      if(all_data$merged_data == TRUE & !is.null(input$select_group_column)) {
+        # if so merge als with scores data
+        plot_data <- pca_data()$preprocess_data %>%
+          filter(.data$ShortLipidName %in% my_data$customdata) %>%
+          left_join(y = all_data$meta_data(),
+                    by = c("sample_name" = isolate(input$select_meta_column)),
+                    suffix = c("", ".y"))
 
-      # make the plot
-      pca_observation_plot(obs_data = plot_data,
-                           var_name = my_data$customdata)
+        # make the plot
+        pca_observation_plot(obs_data = plot_data,
+                             var_name = my_data$customdata,
+                             color_by = input$select_pca_scores_color)
+      } else {
+        # no merge
+        plot_data <- pca_data()$preprocess_data %>%
+          filter(.data$ShortLipidName %in% my_data$customdata)
+
+        # make the plot
+        pca_observation_plot(obs_data = plot_data,
+                             var_name = my_data$customdata)
+      }
     }
   })
   ####
 
   #### end analysis part
+
+  #### Export
+  output$download_lipid_xlsx <- downloadHandler(
+    filename = function() {
+      # create a filename
+      paste("Lipid_list_", Sys.Date(), ".xlsx", sep="")
+    },
+    content = function(file) {
+      req(all_data$analysis_data)
+      # export needs to be in wide format
+      export_wide <- all_data$analysis_data %>%
+        filter(.data$sample_type != "blank",
+               .data$keep == TRUE) %>%
+        pivot_wider(id_cols = c(.data$my_id, .data$LongLipidName, .data$ShortLipidName, .data$LipidClass),
+                    names_from = .data$sample_name,
+                    values_from = .data$area) %>%
+        mutate(across(everything(), as.character))
+
+      if(all_data$merged_data == TRUE) {
+        t_meta <- all_data$analysis_data %>%
+          # remove blanks
+          filter(.data$sample_type != "blank") %>%
+          # select the columns
+          select(.data$sample_name, .data$sample_type:last_col()) %>%
+          select(-matches("\\.y")) %>%
+          # sort by filename
+          arrange(.data$sample_name) %>%
+          distinct(.data$sample_name,
+                   .keep_all = TRUE) %>%
+          # everything needs to be character in order to transpose
+          mutate(across(everything(), as.character)) %>%
+          pivot_longer(-.data$sample_name) %>%
+          pivot_wider(names_from = .data$sample_name,
+                      values_from = .data$value) %>%
+          rename(my_id = .data$name) %>%
+          mutate(LongLipidName = NA_character_,
+                 ShortLipidName = NA_character_,
+                 LipidClass = NA_character_)
+
+        export_wide <- bind_rows(t_meta, export_wide) %>%
+          #  sort the columns in the correct order
+          relocate(c(.data$LipidClass, .data$ShortLipidName, .data$LongLipidName), .after = .data$my_id)
+      }
+
+      write.xlsx(x = export_wide,
+                 file = file)
+    }
+  )
+
+  #### End Export
 
   #### About / Help  section ####
   output$about_session <- renderPrint({

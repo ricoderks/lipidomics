@@ -4,12 +4,14 @@
 \alias{pca_observation_plot}
 \title{Make a PCA observation plot}
 \usage{
-pca_observation_plot(obs_data, var_name)
+pca_observation_plot(obs_data, var_name, color_by = "none")
 }
 \arguments{
 \item{obs_data}{tibble containing the varaible information}
 
 \item{var_name}{character vector of length 1 with the name of the variable}
+
+\item{color_by}{color the observation by what}
 }
 \value{
 a plotly graph

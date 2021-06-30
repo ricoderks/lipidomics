@@ -353,18 +353,27 @@ shinyAppUI <- fluidPage(
                         # start tabpanel compare samples
                         tabPanel(title = "Compare samples",
                                  fluidPage(
-                                   fluidRow(
-                                     column(width = 1,
-                                            radioButtons(inputId = "select_z_heatmap",
-                                                         label = "Select intensity scale:",
-                                                         choices = c("Raw" = "raw",
-                                                                     "z-score" = "zscore",
-                                                                     "Total area norm." = "totnorm"),
-                                                         selected = "zscore")),
-                                     column(width = 11,
-                                            shinycssloaders::withSpinner(plotlyOutput(outputId = "compare_samples",
-                                                                                      height = "900px"),
-                                                                         type = 5)))
+                                   sidebarPanel(width = 2,
+                                                radioButtons(inputId = "select_z_heatmap",
+                                                             label = "Normalisation:",
+                                                             choices = c("Raw" = "raw",
+                                                                         "Total area norm." = "totnorm"),
+                                                             selected = "raw"),
+                                                p(""),
+                                                checkboxInput(inputId = "heatmap_zscore",
+                                                              label = "Centering/scaling",
+                                                              value = TRUE),
+                                                checkboxInput(inputId = "heatmap_use_clust",
+                                                              label = "Apply clustering"),
+                                                selectInput(inputId = "select_heatmap_group",
+                                                            label = "Group color:",
+                                                            choices = "none",
+                                                            selected = "none",
+                                                            width = 225)),
+                                   mainPanel(width = 10,
+                                             shinycssloaders::withSpinner(plotlyOutput(outputId = "compare_samples",
+                                                                                       height = "900px"),
+                                                                          type = 5))
                                  )
                         ), # end tabpanel compare samples
                         # start tabPanel pca analysis
@@ -372,13 +381,6 @@ shinyAppUI <- fluidPage(
                                  fluidPage(
                                    sidebarPanel(width = 3,
                                                 h4("Settings PCA"),
-                                                numericInput(inputId = "select_num_components",
-                                                             label = "Set number of components:",
-                                                             value = 5,
-                                                             min = 1,
-                                                             max = 10,
-                                                             step = 1,
-                                                             width = 225),
                                                 radioButtons(inputId = "select_pca_observations",
                                                              label = "Observations:",
                                                              choices = c("QCpool and samples (all)" = "all",
@@ -442,13 +444,20 @@ shinyAppUI <- fluidPage(
                                                                      type = 5)),
                                              p(""),
                                              splitLayout(cellWidths = c("65%", "35%"),
-                                                         plotlyOutput(outputId = "pca_var_plot"),
-                                                         plotlyOutput(outputId = "pca_obs_plot"))
+                                                         withSpinner(plotlyOutput(outputId = "pca_var_plot"),
+                                                                     type = 5),
+                                                         withSpinner(plotlyOutput(outputId = "pca_obs_plot"),
+                                                                     type = 5))
                                    )
                                  )
                         ), # end tabpanel PCA
                         tabPanel(title = "UMAP")
              ), # end navbarmenu analysis
+             tabPanel(title = "Export",
+                      p("Here, several export options will be shown!"),
+                      downloadButton(outputId = "download_lipid_xlsx",
+                                     label = "Download lipid list (xlsx)")
+             ),
              # tabPanel About
              navbarMenu(title = "Help",
                         tabPanel(title = "Lipids",
