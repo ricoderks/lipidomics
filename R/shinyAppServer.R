@@ -10,11 +10,12 @@
 #' @importFrom shinyjs toggle
 #' @importFrom sessioninfo session_info
 #' @importFrom tibble tibble
-#' @importFrom dplyr filter mutate select pull distinct case_when
+#' @importFrom dplyr filter mutate select pull distinct case_when relocate bind_rows across
 #' @importFrom rlang .data
 #' @importFrom purrr map
 #' @importFrom magrittr %>%
 #' @importFrom tidyr unnest pivot_wider
+#' @importFrom tidyselect last_col everything matches
 #' @importFrom utils head
 #' @importFrom tools file_ext
 #' @importFrom readxl read_xlsx
@@ -1535,7 +1536,34 @@ shinyAppServer <- function(input, output, session) {
                .data$keep == TRUE) %>%
         pivot_wider(id_cols = c(.data$my_id, .data$LongLipidName, .data$ShortLipidName, .data$LipidClass),
                     names_from = .data$sample_name,
-                    values_from = .data$area)
+                    values_from = .data$area) %>%
+        mutate(across(everything(), as.character))
+
+      if(all_data$merged_data == TRUE) {
+        t_meta <- all_data$analysis_data %>%
+          # remove blanks
+          filter(.data$sample_type != "blank") %>%
+          # select the columns
+          select(.data$sample_name, .data$sample_type:last_col()) %>%
+          select(-matches("\\.y")) %>%
+          # sort by filename
+          arrange(.data$sample_name) %>%
+          distinct(.data$sample_name,
+                   .keep_all = TRUE) %>%
+          # everything needs to be character in order to transpose
+          mutate(across(everything(), as.character)) %>%
+          pivot_longer(-.data$sample_name) %>%
+          pivot_wider(names_from = .data$sample_name,
+                      values_from = .data$value) %>%
+          rename(my_id = .data$name) %>%
+          mutate(LongLipidName = NA_character_,
+                 ShortLipidName = NA_character_,
+                 LipidClass = NA_character_)
+
+        export_wide <- bind_rows(t_meta, export_wide) %>%
+          #  sort the columns in the correct order
+          relocate(c(.data$LipidClass, .data$ShortLipidName, .data$LongLipidName), .after = .data$my_id)
+      }
 
       write.xlsx(x = export_wide,
                  file = file)

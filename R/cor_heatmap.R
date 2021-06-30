@@ -7,7 +7,8 @@
 #' @return plotly object
 #'
 #' @importFrom magrittr %>%
-#' @importFrom dplyr select matches
+#' @importFrom dplyr select
+#' @importFrom tidyselect matches
 #' @importFrom stringr str_extract
 #' @importFrom rlang .data
 #' @importFrom plotly plot_ly colorbar

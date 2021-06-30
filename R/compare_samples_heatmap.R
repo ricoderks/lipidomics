@@ -14,6 +14,7 @@
 #' @importFrom dplyr filter group_by mutate ungroup case_when desc
 #' @importFrom rlang .data
 #' @importFrom tidyr pivot_wider
+#' @importFrom tidyselect matches
 #' @importFrom plotly plot_ly add_heatmap layout
 #' @importFrom heatmaply heatmaply
 #' @importFrom tibble column_to_rownames

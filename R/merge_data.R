@@ -12,7 +12,6 @@
 #' @return Returns a merged data frame in tidy format
 #'
 #' @importFrom dplyr mutate left_join if_else
-#' @importFrom tidyselect matches
 #' @importFrom tidyr pivot_longer
 #' @importFrom stringr str_extract str_replace
 #' @importFrom magrittr %>%
