@@ -1306,13 +1306,37 @@ shinyAppServer <- function(input, output, session) {
     }
   })
 
+  # update color selection
+  observeEvent(input$select_group_column, {
+    req(input$select_group_column)
+
+    if(!is.null(input$select_group_column)) {
+      updateSelectInput(session = session,
+                        inputId = "select_heatmap_group",
+                        label = "Group color:",
+                        choices = c("none", input$select_group_column),
+                        selected = "none")
+    }
+  })
+
   #### compare samples
   output$compare_samples <- renderPlotly({
     req(all_data$lipid_data_filter,
         input$select_z_heatmap)
 
-    compare_samples_heatmap(lipid_data = all_data$analysis_data,
-                            z = input$select_z_heatmap)
+    # no merge
+    if(input$select_heatmap_group == "none") {
+      compare_samples_heatmap(lipid_data = all_data$analysis_data,
+                              cent_scale = input$heatmap_zscore,
+                              z = input$select_z_heatmap,
+                              clust = input$heatmap_use_clust)
+    } else {
+      compare_samples_heatmap(lipid_data = all_data$analysis_data,
+                              cent_scale = input$heatmap_zscore,
+                              z = input$select_z_heatmap,
+                              clust = input$heatmap_use_clust,
+                              sample_group = input$select_heatmap_group)
+      }
   })
   ####
 

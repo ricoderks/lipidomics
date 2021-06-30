@@ -4,12 +4,24 @@
 \alias{compare_samples_heatmap}
 \title{Create correlation heatmap of all samples}
 \usage{
-compare_samples_heatmap(lipid_data, z)
+compare_samples_heatmap(
+  lipid_data,
+  cent_scale,
+  z,
+  clust = FALSE,
+  sample_group = NULL
+)
 }
 \arguments{
 \item{lipid_data}{tibble with all the lipid data}
 
+\item{cent_scale}{logical, apply center and scaling}
+
 \item{z}{what to show as intensity of the heatmap}
+
+\item{clust}{apply clustering yes/no, default is no}
+
+\item{sample_group}{dataframe with grouping information}
 }
 \value{
 plotly object
