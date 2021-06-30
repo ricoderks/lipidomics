@@ -11,10 +11,10 @@
 #' @importFrom sessioninfo session_info
 #' @importFrom tibble tibble
 #' @importFrom dplyr filter mutate select pull distinct case_when relocate bind_rows across
-#' @importFrom rlang .data
+#' @importFrom rlang .data sym !!
 #' @importFrom purrr map
 #' @importFrom magrittr %>%
-#' @importFrom tidyr unnest pivot_wider
+#' @importFrom tidyr unnest pivot_wider nest
 #' @importFrom tidyselect last_col everything matches
 #' @importFrom utils head
 #' @importFrom tools file_ext
@@ -23,6 +23,7 @@
 #' @importFrom plotly renderPlotly plotlyOutput plot_ly add_markers event_data
 #' @importFrom shinycssloaders withSpinner
 #' @importFrom openxlsx write.xlsx
+#' @importFrom broom tidy
 #'
 #' @author Rico Derks
 
@@ -1331,6 +1332,7 @@ shinyAppServer <- function(input, output, session) {
     }
   })
 
+  #### heatmap
   # update color selection
   observeEvent(input$select_group_column, {
     req(input$select_group_column)
@@ -1344,7 +1346,6 @@ shinyAppServer <- function(input, output, session) {
     }
   })
 
-  #### compare samples
   output$compare_samples <- renderPlotly({
     req(all_data$lipid_data_filter,
         input$select_z_heatmap)
@@ -1361,9 +1362,91 @@ shinyAppServer <- function(input, output, session) {
                               z = input$select_z_heatmap,
                               clust = input$heatmap_use_clust,
                               sample_group = input$select_heatmap_group)
-      }
+    }
   })
-  ####
+  #### end heatmap
+
+  #### compare samples
+  # create some ui output
+  output$test_group_selection <- renderUI({
+    req(all_data$analysis_data)
+
+    if(all_data$merged_data == TRUE & !is.null(input$select_group_column)) {
+      tagList(
+        selectInput(inputId = "test_select_group",
+                    label = "Select a group:",
+                    choices = c("none", input$select_group_column),
+                    selected = "none"),
+        uiOutput(outputId = "test_vs_groups")
+      )
+    }
+  })
+
+  output$test_vs_groups <- renderUI({
+    tagList(
+      selectInput(inputId = "test_group1",
+                  label = "Group 1:",
+                  choices = "none"),
+      HTML("<center>vs</center>"),
+      selectInput(inputId = "test_group2",
+                  label = "Group 2:",
+                  choices = "none")
+    )
+  })
+
+  observeEvent(input$test_select_group, {
+    req(all_data$meta_data)
+
+    if(input$test_select_group != "none") {
+      # get the groups
+      group_options <- all_data$meta_data() %>%
+        mutate(across(everything(), as.character)) %>%
+        select(matches(paste0("^", input$test_select_group, "$"))) %>%
+        pull() %>%
+        unique()
+
+      # remove NA
+      group_options <- group_options[!is.na(group_options)]
+
+      updateSelectInput(inputId = "test_group1",
+                        label = "Group 1:",
+                        choices = c("none", group_options))
+
+      updateSelectInput(inputId = "test_group2",
+                        label = "Group 2:",
+                        choices = c("none", group_options))
+    }
+  })
+
+  observeEvent({
+    input$test_group1
+    input$test_group2
+  }, {
+    # check if something is selected and not the same thing
+    if(input$test_group1 != "none" &
+       input$test_group2 != "none" &
+       input$test_group1 != input$test_group2) {
+      # get the column name
+      my_column <- input$test_select_group
+
+      tmp <- all_data$analysis_data %>%
+        rename(my_group_info = !!sym(my_column)) %>%
+        filter(.data$my_group_info == input$test_group1 |
+                 .data$my_group_info == input$test_group2) %>%
+        select(.data$my_id, .data$ShortLipidName, .data$LipidClass, .data$sample_name, .data$my_group_info, .data$area) %>%
+        nest(test_data = c(.data$sample_name, .data$my_group_info, .data$area)) %>%
+        mutate(model_ttest = map(.x = .data$test_data,
+                                 .f = ~ broom::tidy(t.test(area ~ my_group_info,
+                                                           data = .x))),
+               model_mwtest = map(.x = .data$test_data,
+                                  .f = ~ broom::tidy(wilcox.test(area ~ my_group_info,
+                                                                 data = .x))))
+
+      print(tmp$model_ttest[[1]])
+    }
+  })
+
+  #### end compare samples
 
   #### PCA
   # do the PCA analysis

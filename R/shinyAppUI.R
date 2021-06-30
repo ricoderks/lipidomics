@@ -350,8 +350,8 @@ shinyAppUI <- fluidPage(
              ), # end tabpanel issues
              # start navbarMenu analysis
              navbarMenu(title = "Analysis",
-                        # start tabpanel compare samples
-                        tabPanel(title = "Compare samples",
+                        # start tabpanel heatmap
+                        tabPanel(title = "Heatmap",
                                  fluidPage(
                                    sidebarPanel(width = 2,
                                                 radioButtons(inputId = "select_z_heatmap",
@@ -374,6 +374,25 @@ shinyAppUI <- fluidPage(
                                              shinycssloaders::withSpinner(plotlyOutput(outputId = "compare_samples",
                                                                                        height = "900px"),
                                                                           type = 5))
+                                 )
+                        ), # end tabpanel heatmap
+                        # start compare samples
+                        tabPanel(title = "Compare samples",
+                                 fluidPage(
+                                   sidebarPanel(width = 3,
+                                                radioButtons(inputId = "select_test",
+                                                             label = "Test:",
+                                                             choices = c("t-test" = "ttest",
+                                                                         "Mann-Whitney U test" = "mwtest"),
+                                                             selected = "ttest"),
+                                                uiOutput(outputId = "test_group_selection")
+                                   ),
+                                   mainPanel(width = 9,
+                                             p("After merge do some group comparissons")
+                                             # shinycssloaders::withSpinner(plotlyOutput(outputId = "volcano_plot",
+                                             #                                           height = "900px"),
+                                             #                              type = 5)
+                                   )
                                  )
                         ), # end tabpanel compare samples
                         # start tabPanel pca analysis
