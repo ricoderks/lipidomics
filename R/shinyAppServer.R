@@ -1365,16 +1365,35 @@ shinyAppServer <- function(input, output, session) {
   #### end heatmap
 
   #### compare samples
+  test_result <- reactive({
+    req(all_data$analysis_data,
+        input$test_group1,
+        input$test_group2,
+        input$select_test,
+        input$select_test_normalization,
+        input$select_test_transformation)
+
+    results_test <- do_stat_test(lipid_data = isolate(all_data$analysis_data),
+                                 group = input$test_select_group,
+                                 group1_name = input$test_group1,
+                                 group2_name = input$test_group2,
+                                 normalization = input$select_test_normalization,
+                                 transformation = input$select_test_transformation,
+                                 test = input$select_test)
+
+    return(results_test)
+  })
+
   # create some ui output
   output$test_group_selection <- renderUI({
-    req(all_data$analysis_data)
+    req(all_data$meta_data)
 
     if(all_data$merged_data == TRUE & !is.null(input$select_group_column)) {
       tagList(
         selectInput(inputId = "test_select_group",
                     label = "Select a group:",
-                    choices = c("none", input$select_group_column),
-                    selected = "none"),
+                    choices = input$select_group_column,
+                    selected = input$select_group_column[1]),
         uiOutput(outputId = "test_vs_groups")
       )
     }
@@ -1408,38 +1427,15 @@ shinyAppServer <- function(input, output, session) {
 
       updateSelectInput(inputId = "test_group1",
                         label = "Group 1:",
-                        choices = c("none", group_options))
+                        choices = group_options,
+                        selected = group_options[1])
 
       updateSelectInput(inputId = "test_group2",
                         label = "Group 2:",
-                        choices = c("none", group_options))
+                        choices = group_options,
+                        selected = group_options[2])
     }
   })
-
-  test_result <- eventReactive({
-    input$test_group1
-    input$test_group2
-    input$select_test
-    input$select_test_normalization
-    input$select_test_transformation
-  }, {
-    req(all_data$analysis_data,
-        input$test_group1,
-        input$test_group2,
-        input$select_test,
-        input$select_test_normalization,
-        input$select_test_transformation)
-
-      results_test <- do_stat_test(lipid_data = isolate(all_data$analysis_data),
-                                   group = input$test_select_group,
-                                   group1_name = input$test_group1,
-                                   group2_name = input$test_group2,
-                                   normalization = input$select_test_normalization,
-                                   transformation = input$select_test_transformation,
-                                   test = input$select_test)
-
-      return(results_test)
-    })
 
   output$volcano_plot <- renderPlotly({
     req(test_result)

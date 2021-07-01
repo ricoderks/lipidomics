@@ -403,7 +403,7 @@ shinyAppUI <- fluidPage(
                                    mainPanel(width = 10,
                                              column(width = 6,
                                                     shinycssloaders::withSpinner(plotlyOutput(outputId = "volcano_plot",
-                                                                                              height = "900px"),
+                                                                                              height = "800px"),
                                                                                  type = 5)),
                                              column(width = 6,
                                                     shinycssloaders::withSpinner(plotlyOutput(outputId = "test_boxplot"),

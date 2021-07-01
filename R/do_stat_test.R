@@ -28,6 +28,7 @@ do_stat_test <- function(lipid_data, group, group1_name, group2_name, normalizat
      group2_name != "none" &
      group1_name != group2_name) {
     prep_test_data <- lipid_data %>%
+      filter(.data$keep == TRUE) %>%
       rename(my_group_info = !!sym(group)) %>%
       filter(.data$my_group_info == group1_name |
                .data$my_group_info == group2_name) %>%
