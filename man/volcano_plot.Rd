@@ -4,10 +4,12 @@
 \alias{volcano_plot}
 \title{Create volcano plot}
 \usage{
-volcano_plot(lipid_data)
+volcano_plot(lipid_data, pvalue_adjust = FALSE)
 }
 \arguments{
 \item{lipid_data}{tibble with all the lipid data and test data}
+
+\item{pvalue_adjust}{show the corrected p value, default is FALSE}
 }
 \value{
 plotly object

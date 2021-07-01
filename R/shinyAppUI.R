@@ -385,6 +385,9 @@ shinyAppUI <- fluidPage(
                                                              choices = c("t-test" = "ttest",
                                                                          "Mann-Whitney U test" = "mwtest"),
                                                              selected = "ttest"),
+                                                checkboxInput(inputId = "test_cor_pvalue",
+                                                             label = "Show corrected p-value",
+                                                             value = FALSE),
                                                 uiOutput(outputId = "test_group_selection")
                                    ),
                                    mainPanel(width = 9,

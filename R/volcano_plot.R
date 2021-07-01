@@ -3,21 +3,35 @@
 #' @description Create volcano plot.
 #'
 #' @param lipid_data tibble with all the lipid data and test data
+#' @param pvalue_adjust show the corrected p value, default is FALSE
 #'
 #' @return plotly object
 #'
 #' @importFrom magrittr %>%
+#' @importFrom dplyr mutate case_when
+#' @importFrom rlang .data
 #' @importFrom plotly plot_ly add_markers layout
 #'
 #' @author Rico Derks
 #'
-volcano_plot <- function(lipid_data) {
+volcano_plot <- function(lipid_data, pvalue_adjust = FALSE) {
+  # create y-axis title
+  y_title <- ifelse(pvalue_adjust == FALSE,
+                    "-log10(p value)",
+                    "-log10(cor. p value)")
+
+  # create the plot
   p <- lipid_data %>%
+    mutate(show_p = case_when(
+      pvalue_adjust == FALSE ~ .data$p_log10,
+      pvalue_adjust == TRUE ~ .data$p_log10_adj
+    )) %>%
     plot_ly(x = ~fc_log2,
-            y = ~p_log10) %>%
-    add_markers() %>%
-    layout(xaxis = list(zeroline = FALSE),
-           #yaxis = list(zeroline = FALSE),
+            y = ~show_p) %>%
+    add_markers(color = ~LipidClass) %>%
+    layout(xaxis = list(zeroline = FALSE,
+                        title = "log2(fold change"),
+           yaxis = list(title = y_title),
            shapes = list(vline(-1),
                          vline(1),
                          hline(-log10(0.05))))

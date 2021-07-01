@@ -12,7 +12,7 @@
 #' @importFrom tibble tibble
 #' @importFrom dplyr filter mutate select pull distinct case_when relocate bind_rows across
 #' @importFrom rlang .data sym !!
-#' @importFrom purrr map
+#' @importFrom purrr map map_dbl
 #' @importFrom magrittr %>%
 #' @importFrom tidyr unnest pivot_wider nest
 #' @importFrom tidyselect last_col everything matches
@@ -1420,7 +1420,12 @@ shinyAppServer <- function(input, output, session) {
   test_result <- eventReactive({
     input$test_group1
     input$test_group2
+    input$select_test
   }, {
+    req(input$test_group1,
+        input$test_group2,
+        input$select_test)
+
     # check if something is selected and not the same thing
     if(input$test_group1 != "none" &
        input$test_group2 != "none" &
@@ -1434,15 +1439,16 @@ shinyAppServer <- function(input, output, session) {
         filter(.data$my_group_info == input$test_group1 |
                  .data$my_group_info == input$test_group2) %>%
         select(.data$my_id, .data$ShortLipidName, .data$LipidClass, .data$sample_name, .data$my_group_info, .data$area) %>%
-        nest(test_data = c(.data$sample_name, .data$my_group_info, .data$area))
+        nest(test_data = c(.data$sample_name, .data$my_group_info, .data$area)) %>%
+        mutate(fc = map_dbl(.x = .data$test_data,
+                            .f = ~ mean(.x$area[.x$my_group_info == input$test_group1]) / mean(.x$area[.x$my_group_info == input$test_group2])),
+               fc_log2 = log2(.data$fc))
 
-      if(input$select_test == "ttest") {
-        # do the t-test
-        results_test <- do_ttest(lipid_data = prep_test_data)
-      }
-      # model_mwtest = map(.x = .data$test_data,
-      #                    .f = ~ broom::tidy(wilcox.test(area ~ my_group_info,
-      #                                                   data = .x))))
+      # what test to do
+      results_test <- switch(input$select_test,
+                             "ttest" = do_ttest(lipid_data = prep_test_data),
+                             "mwtest" = do_mwtest(lipid_data = prep_test_data))
+
       return(results_test)
     } else {
       return(NULL)
@@ -1453,7 +1459,8 @@ shinyAppServer <- function(input, output, session) {
     req(test_result)
 
     if(!is.null(test_result())) {
-      volcano_plot(lipid_data = test_result())
+      volcano_plot(lipid_data = test_result(),
+                   pvalue_adjust = input$test_cor_pvalue)
     }
   })
 

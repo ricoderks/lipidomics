@@ -1,10 +1,10 @@
-#' @title Do a t-test on all lipids
+#' @title Do a Mann-Whitney U test on all lipids
 #'
-#' @description Do a t-test on all lipids.
+#' @description Do a Mann-Whitney U test on all lipids
 #'
 #' @param lipid_data tibble in tidy format, already nested
 #'
-#' @details A t-test will be done for each lipid. Also the p-value will be corrected
+#' @details A Mann-Whitney U test will be done for each lipid. Also the p-value will be corrected
 #'     for multiple testing.
 #'
 #' @return a tibble with the results and the following columns
@@ -14,7 +14,8 @@
 #'     fc the fold change estimate1/estimate2
 #'
 #' @import tidyselect
-#' @importFrom dplyr mutate
+#' @importFrom dplyr mutate group_by summarise pull
+#' @importFrom tidyr pivot_wider
 #' @importFrom magrittr %>%
 #' @importFrom rlang .data
 #' @importFrom purrr map map_dbl
@@ -23,13 +24,11 @@
 #'
 #' @author Rico Derks
 #'
-do_ttest <- function(lipid_data) {
+do_mwtest <- function(lipid_data) {
   results <- lipid_data %>%
     mutate(model_test = map(.x = .data$test_data,
-                            .f = ~ broom::tidy(t.test(formula = area ~ my_group_info,
-                                                      data = .x)) %>%
-                              # calculate the fold change
-                              mutate(fc = estimate1 / estimate2)),
+                            .f = ~ broom::tidy(wilcox.test(formula = area ~ my_group_info,
+                                                           data = .x))),
            pvalue = map_dbl(.x = .data$model_test,
                             .f = ~ .x$p.value),
            pvalue_adj = p.adjust(.data$pvalue,
