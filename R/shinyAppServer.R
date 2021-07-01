@@ -23,7 +23,6 @@
 #' @importFrom plotly renderPlotly plotlyOutput plot_ly add_markers event_data
 #' @importFrom shinycssloaders withSpinner
 #' @importFrom openxlsx write.xlsx
-#' @importFrom broom tidy
 #'
 #' @author Rico Derks
 
@@ -1418,7 +1417,7 @@ shinyAppServer <- function(input, output, session) {
     }
   })
 
-  observeEvent({
+  test_result <- eventReactive({
     input$test_group1
     input$test_group2
   }, {
@@ -1429,20 +1428,32 @@ shinyAppServer <- function(input, output, session) {
       # get the column name
       my_column <- input$test_select_group
 
-      tmp <- all_data$analysis_data %>%
+      # prepare the data for the testing
+      prep_test_data <- all_data$analysis_data %>%
         rename(my_group_info = !!sym(my_column)) %>%
         filter(.data$my_group_info == input$test_group1 |
                  .data$my_group_info == input$test_group2) %>%
         select(.data$my_id, .data$ShortLipidName, .data$LipidClass, .data$sample_name, .data$my_group_info, .data$area) %>%
-        nest(test_data = c(.data$sample_name, .data$my_group_info, .data$area)) %>%
-        mutate(model_ttest = map(.x = .data$test_data,
-                                 .f = ~ broom::tidy(t.test(area ~ my_group_info,
-                                                           data = .x))),
-               model_mwtest = map(.x = .data$test_data,
-                                  .f = ~ broom::tidy(wilcox.test(area ~ my_group_info,
-                                                                 data = .x))))
+        nest(test_data = c(.data$sample_name, .data$my_group_info, .data$area))
 
-      print(tmp$model_ttest[[1]])
+      if(input$select_test == "ttest") {
+        # do the t-test
+        results_test <- do_ttest(lipid_data = prep_test_data)
+      }
+      # model_mwtest = map(.x = .data$test_data,
+      #                    .f = ~ broom::tidy(wilcox.test(area ~ my_group_info,
+      #                                                   data = .x))))
+      return(results_test)
+    } else {
+      return(NULL)
+    }
+  })
+
+  output$volcano_plot <- renderPlotly({
+    req(test_result)
+
+    if(!is.null(test_result())) {
+      volcano_plot(lipid_data = test_result())
     }
   })
 

@@ -388,10 +388,9 @@ shinyAppUI <- fluidPage(
                                                 uiOutput(outputId = "test_group_selection")
                                    ),
                                    mainPanel(width = 9,
-                                             p("After merge do some group comparissons")
-                                             # shinycssloaders::withSpinner(plotlyOutput(outputId = "volcano_plot",
-                                             #                                           height = "900px"),
-                                             #                              type = 5)
+                                             shinycssloaders::withSpinner(plotlyOutput(outputId = "volcano_plot",
+                                                                                       height = "500"),
+                                                                          type = 5)
                                    )
                                  )
                         ), # end tabpanel compare samples
