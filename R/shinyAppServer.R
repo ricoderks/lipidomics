@@ -117,19 +117,19 @@ shinyAppServer <- function(input, output, session) {
 
     # tag lipid class/ion which should be removed
     # find the id's to keep
-    keep_lipids_class <- all_data$lipid_data %>%
-      filter(.data$class_ion %in% all_data$class_ion_selected) %>%
+    keep_class <- all_data$lipid_data %>%
+      filter(.data$class_ion %in% default_class_ion) %>%
       distinct(.data$my_id) %>%
       pull(.data$my_id)
 
     # tag lipids which have a too high RSD value
     # find the lipids to keep
-    keep_lipids_rsd <- all_data$qc_results %>%
+    keep_rsd <- all_data$qc_results %>%
       filter(.data$rsd_area <= 0.3) %>%
       distinct(.data$my_id) %>%
       pull(.data$my_id)
 
-    keep_lipids_msms <- all_data$lipid_data %>%
+    keep_msms <- all_data$lipid_data %>%
       filter(!(.data$DotProduct <= 50 &
                  .data$RevDotProduct <= 50 &
                  .data$keep == TRUE)) %>%
@@ -139,14 +139,14 @@ shinyAppServer <- function(input, output, session) {
     all_data$lipid_data_filter <- all_data$lipid_data_long %>%
       mutate(
         keep = case_when(
-          !(.data$my_id %in% keep_lipids_rsd) ~ FALSE,
-          !(.data$my_id %in% keep_lipids_msms) ~ FALSE,
-          !(.data$my_id %in% keep_lipids_class) ~ FALSE,
+          !(.data$my_id %in% keep_rsd) ~ FALSE,
+          !(.data$my_id %in% keep_msms) ~ FALSE,
+          !(.data$my_id %in% keep_class) ~ FALSE,
           TRUE ~ TRUE),
         comment = case_when(
-          !(.data$my_id %in% keep_lipids_rsd) ~ "large_rsd",
-          !(.data$my_id %in% keep_lipids_msms) ~ "no_match",
-          !(.data$my_id %in% keep_lipids_class) ~ "remove_class",
+          !(.data$my_id %in% keep_rsd) ~ "large_rsd",
+          !(.data$my_id %in% keep_msms) ~ "no_match",
+          !(.data$my_id %in% keep_class) ~ "remove_class",
           TRUE ~ "")
       )
   })
@@ -455,7 +455,7 @@ shinyAppServer <- function(input, output, session) {
 
     # get the id's to keep lipids which lipid class is selected
     keep_lipids_class <- tmp_filter %>%
-      filter(.data$class_ion %in% class_ion_selected) %>%
+      filter(.data$class_ion %in% all_data$class_ion_selected) %>%
       distinct(.data$my_id) %>%
       pull(.data$my_id)
 
@@ -1319,8 +1319,7 @@ shinyAppServer <- function(input, output, session) {
   #### Analysis part
 
   observe({
-    req(all_data$lipid_data_filter,
-        all_data$samples_selected)
+    req(all_data$lipid_data_filter)
 
     # remove samples for the analysis part
     if(!is.null(all_data$samples_selected)) {
@@ -1424,60 +1423,23 @@ shinyAppServer <- function(input, output, session) {
     input$select_test_normalization
     input$select_test_transformation
   }, {
-    req(input$test_group1,
+    req(all_data$analysis_data,
+        input$test_group1,
         input$test_group2,
         input$select_test,
         input$select_test_normalization,
         input$select_test_transformation)
 
-    # check if something is selected and not the same thing
-    if(input$test_group1 != "none" &
-       input$test_group2 != "none" &
-       input$test_group1 != input$test_group2) {
-      # get the column name
-      my_column <- input$test_select_group
-      # get the normalization
-      normalization <- input$select_test_normalization
-      # get the transformation
-      transformation <- input$select_test_transformation
-
-      # prepare the data for the testing
-      prep_test_data <- all_data$analysis_data %>%
-        rename(my_group_info = !!sym(my_column)) %>%
-        filter(.data$my_group_info == input$test_group1 |
-                 .data$my_group_info == input$test_group2) %>%
-        select(.data$my_id, .data$ShortLipidName, .data$LipidClass, .data$sample_name, .data$my_group_info, .data$area) %>%
-        # total area normalisation
-        group_by(.data$sample_name) %>%
-        mutate(norm_area = .data$area / sum(.data$area)) %>%
-        ungroup() %>%
-        # select which normalization to use for PCA
-        mutate(value = case_when(
-          normalization == "raw" ~ .data$area,
-          normalization == "tot_area" ~ .data$norm_area
-        )) %>%
-        # do transformations and select which transformation to keep
-        mutate(value = case_when(
-          transformation == "none" ~ .data$value,
-          transformation == "log10" ~ log10(.data$value + 1) # the +1 is correct for any zero's
-        )) %>%
-        # remove the 2 area columns
-        select(-.data$area, -.data$norm_area) %>%
-        nest(test_data = c(.data$sample_name, .data$my_group_info, .data$value)) %>%
-        mutate(fc = map_dbl(.x = .data$test_data,
-                            .f = ~ mean(.x$value[.x$my_group_info == input$test_group1]) / mean(.x$value[.x$my_group_info == input$test_group2])),
-               fc_log2 = log2(.data$fc))
-
-      # what test to do
-      results_test <- switch(input$select_test,
-                             "ttest" = do_ttest(lipid_data = prep_test_data),
-                             "mwtest" = do_mwtest(lipid_data = prep_test_data))
+      results_test <- do_stat_test(lipid_data = isolate(all_data$analysis_data),
+                                   group = input$test_select_group,
+                                   group1_name = input$test_group1,
+                                   group2_name = input$test_group2,
+                                   normalization = input$select_test_normalization,
+                                   transformation = input$select_test_transformation,
+                                   test = input$select_test)
 
       return(results_test)
-    } else {
-      return(NULL)
-    }
-  })
+    })
 
   output$volcano_plot <- renderPlotly({
     req(test_result)
@@ -1522,14 +1484,12 @@ shinyAppServer <- function(input, output, session) {
     req(all_data$analysis_data,
         input$select_pca_observations,
         input$select_pca_normalization,
-        # input$select_num_components,
         input$select_pca_scaling,
         input$select_pca_transformation)
 
     data_pca <- do_pca(lipid_data = isolate(all_data$analysis_data),
                        observations = input$select_pca_observations,
                        normalization = input$select_pca_normalization,
-                       # num_pc = input$select_num_components,
                        scaling = input$select_pca_scaling,
                        transformation = input$select_pca_transformation)
 
@@ -1739,4 +1699,4 @@ shinyAppServer <- function(input, output, session) {
   #   req(filter_result)
   #   filter_result()$filter_data
   # })
-}
+  }
