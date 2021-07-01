@@ -379,21 +379,25 @@ shinyAppUI <- fluidPage(
                         # start compare samples
                         tabPanel(title = "Compare samples",
                                  fluidPage(
-                                   sidebarPanel(width = 3,
+                                   sidebarPanel(width = 2,
                                                 radioButtons(inputId = "select_test",
                                                              label = "Test:",
                                                              choices = c("t-test" = "ttest",
                                                                          "Mann-Whitney U test" = "mwtest"),
                                                              selected = "ttest"),
                                                 checkboxInput(inputId = "test_cor_pvalue",
-                                                             label = "Show corrected p-value",
-                                                             value = FALSE),
+                                                              label = "Show corrected p-value",
+                                                              value = FALSE),
                                                 uiOutput(outputId = "test_group_selection")
                                    ),
-                                   mainPanel(width = 9,
-                                             shinycssloaders::withSpinner(plotlyOutput(outputId = "volcano_plot",
-                                                                                       height = "500"),
-                                                                          type = 5)
+                                   mainPanel(width = 10,
+                                             column(width = 6,
+                                                    shinycssloaders::withSpinner(plotlyOutput(outputId = "volcano_plot",
+                                                                                              height = "900px"),
+                                                                                 type = 5)),
+                                             column(width = 6,
+                                                    shinycssloaders::withSpinner(plotlyOutput(outputId = "test_boxplot"),
+                                                                                 type = 5))
                                    )
                                  )
                         ), # end tabpanel compare samples

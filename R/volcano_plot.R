@@ -29,9 +29,10 @@ volcano_plot <- function(lipid_data, pvalue_adjust = FALSE) {
     )) %>%
     plot_ly(x = ~fc_log2,
             y = ~show_p,
+            text = ~ShortLipidName,
             colors = rainbow(n = 100),
             customdata = lipid_data$ShortLipidName,
-            source = "volcano_plot") %>%
+            source = "volcano_plot_click") %>%
     add_markers(color = ~LipidClass,
                 size = 3) %>%
     layout(xaxis = list(zeroline = FALSE,
@@ -40,8 +41,7 @@ volcano_plot <- function(lipid_data, pvalue_adjust = FALSE) {
            shapes = list(vline(-1),
                          vline(1),
                          hline(-log10(0.05))),
-           legend = list(orientation = "h",
-                         size = 1)) %>%
+           legend = list(orientation = "h")) %>%
     event_register(event = "plotly_click")
 
   return(p)

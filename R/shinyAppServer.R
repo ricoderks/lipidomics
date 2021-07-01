@@ -1464,6 +1464,31 @@ shinyAppServer <- function(input, output, session) {
     }
   })
 
+  output$test_boxplot <- renderPlotly({
+    req(test_result)
+
+    if(!is.null(test_result())) {
+      # capture the click event
+      # this contains a column with the shortlipidname (column name: customdata)
+      my_data <- event_data(event = "plotly_click",
+                            source = "volcano_plot_click")
+
+      if(!is.null(my_data)) {
+        # restructure data
+        plot_data <- test_result() %>%
+          filter(.data$ShortLipidName %in% my_data$customdata) %>%
+          select(.data$test_data) %>%
+          unnest(.data$test_data)
+
+        # show the boxplot
+        box_plot(lipid_data = plot_data,
+                 title = paste0("Lipid: ", my_data$customdata))
+      }
+    }
+
+
+  })
+
   #### end compare samples
 
   #### PCA
