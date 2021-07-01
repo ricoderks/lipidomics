@@ -11,10 +11,10 @@
 #' @importFrom sessioninfo session_info
 #' @importFrom tibble tibble
 #' @importFrom dplyr filter mutate select pull distinct case_when relocate bind_rows across
-#' @importFrom rlang .data
-#' @importFrom purrr map
+#' @importFrom rlang .data sym !!
+#' @importFrom purrr map map_dbl
 #' @importFrom magrittr %>%
-#' @importFrom tidyr unnest pivot_wider
+#' @importFrom tidyr unnest pivot_wider nest
 #' @importFrom tidyselect last_col everything matches
 #' @importFrom utils head
 #' @importFrom tools file_ext
@@ -1331,6 +1331,7 @@ shinyAppServer <- function(input, output, session) {
     }
   })
 
+  #### heatmap
   # update color selection
   observeEvent(input$select_group_column, {
     req(input$select_group_column)
@@ -1344,7 +1345,6 @@ shinyAppServer <- function(input, output, session) {
     }
   })
 
-  #### compare samples
   output$compare_samples <- renderPlotly({
     req(all_data$lipid_data_filter,
         input$select_z_heatmap)
@@ -1361,9 +1361,160 @@ shinyAppServer <- function(input, output, session) {
                               z = input$select_z_heatmap,
                               clust = input$heatmap_use_clust,
                               sample_group = input$select_heatmap_group)
-      }
+    }
   })
-  ####
+  #### end heatmap
+
+  #### compare samples
+  # create some ui output
+  output$test_group_selection <- renderUI({
+    req(all_data$analysis_data)
+
+    if(all_data$merged_data == TRUE & !is.null(input$select_group_column)) {
+      tagList(
+        selectInput(inputId = "test_select_group",
+                    label = "Select a group:",
+                    choices = c("none", input$select_group_column),
+                    selected = "none"),
+        uiOutput(outputId = "test_vs_groups")
+      )
+    }
+  })
+
+  output$test_vs_groups <- renderUI({
+    tagList(
+      selectInput(inputId = "test_group1",
+                  label = "Group 1:",
+                  choices = "none"),
+      HTML("<center>vs</center>"),
+      selectInput(inputId = "test_group2",
+                  label = "Group 2:",
+                  choices = "none")
+    )
+  })
+
+  observeEvent(input$test_select_group, {
+    req(all_data$meta_data)
+
+    if(input$test_select_group != "none") {
+      # get the groups
+      group_options <- all_data$meta_data() %>%
+        mutate(across(everything(), as.character)) %>%
+        select(matches(paste0("^", input$test_select_group, "$"))) %>%
+        pull() %>%
+        unique()
+
+      # remove NA
+      group_options <- group_options[!is.na(group_options)]
+
+      updateSelectInput(inputId = "test_group1",
+                        label = "Group 1:",
+                        choices = c("none", group_options))
+
+      updateSelectInput(inputId = "test_group2",
+                        label = "Group 2:",
+                        choices = c("none", group_options))
+    }
+  })
+
+  test_result <- eventReactive({
+    input$test_group1
+    input$test_group2
+    input$select_test
+    input$select_test_normalization
+    input$select_test_transformation
+  }, {
+    req(input$test_group1,
+        input$test_group2,
+        input$select_test,
+        input$select_test_normalization,
+        input$select_test_transformation)
+
+    # check if something is selected and not the same thing
+    if(input$test_group1 != "none" &
+       input$test_group2 != "none" &
+       input$test_group1 != input$test_group2) {
+      # get the column name
+      my_column <- input$test_select_group
+      # get the normalization
+      normalization <- input$select_test_normalization
+      # get the transformation
+      transformation <- input$select_test_transformation
+
+      # prepare the data for the testing
+      prep_test_data <- all_data$analysis_data %>%
+        rename(my_group_info = !!sym(my_column)) %>%
+        filter(.data$my_group_info == input$test_group1 |
+                 .data$my_group_info == input$test_group2) %>%
+        select(.data$my_id, .data$ShortLipidName, .data$LipidClass, .data$sample_name, .data$my_group_info, .data$area) %>%
+        # total area normalisation
+        group_by(.data$sample_name) %>%
+        mutate(norm_area = .data$area / sum(.data$area)) %>%
+        ungroup() %>%
+        # select which normalization to use for PCA
+        mutate(value = case_when(
+          normalization == "raw" ~ .data$area,
+          normalization == "tot_area" ~ .data$norm_area
+        )) %>%
+        # do transformations and select which transformation to keep
+        mutate(value = case_when(
+          transformation == "none" ~ .data$value,
+          transformation == "log10" ~ log10(.data$value + 1) # the +1 is correct for any zero's
+        )) %>%
+        # remove the 2 area columns
+        select(-.data$area, -.data$norm_area) %>%
+        nest(test_data = c(.data$sample_name, .data$my_group_info, .data$value)) %>%
+        mutate(fc = map_dbl(.x = .data$test_data,
+                            .f = ~ mean(.x$value[.x$my_group_info == input$test_group1]) / mean(.x$value[.x$my_group_info == input$test_group2])),
+               fc_log2 = log2(.data$fc))
+
+      # what test to do
+      results_test <- switch(input$select_test,
+                             "ttest" = do_ttest(lipid_data = prep_test_data),
+                             "mwtest" = do_mwtest(lipid_data = prep_test_data))
+
+      return(results_test)
+    } else {
+      return(NULL)
+    }
+  })
+
+  output$volcano_plot <- renderPlotly({
+    req(test_result)
+
+    if(!is.null(test_result())) {
+      volcano_plot(lipid_data = test_result(),
+                   pvalue_adjust = input$test_cor_pvalue,
+                   title = paste0(input$test_group1, " vs ", input$test_group2))
+    }
+  })
+
+  output$test_boxplot <- renderPlotly({
+    req(test_result)
+
+    if(!is.null(test_result())) {
+      # capture the click event
+      # this contains a column with the shortlipidname (column name: customdata)
+      my_data <- event_data(event = "plotly_click",
+                            source = "volcano_plot_click")
+
+      if(!is.null(my_data)) {
+        # restructure data
+        plot_data <- test_result() %>%
+          filter(.data$ShortLipidName %in% my_data$customdata) %>%
+          select(.data$test_data) %>%
+          unnest(.data$test_data)
+
+        # show the boxplot
+        box_plot(lipid_data = plot_data,
+                 title = paste0("Lipid: ", my_data$customdata))
+      }
+    }
+
+
+  })
+
+  #### end compare samples
 
   #### PCA
   # do the PCA analysis

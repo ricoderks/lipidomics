@@ -29,7 +29,8 @@ pca_observation_plot <- function(obs_data, var_name, color_by = "none") {
             color = ~color_group) %>%
     add_bars() %>%
     layout(title = list(text = paste("Observation plot for", var_name),
-                        x = 0)) %>%
+                        x = 0),
+           xaxis = list(title = "Sample name")) %>%
     hide_legend() %>%
     config(displayModeBar = FALSE)
 

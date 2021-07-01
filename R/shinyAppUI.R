@@ -350,8 +350,8 @@ shinyAppUI <- fluidPage(
              ), # end tabpanel issues
              # start navbarMenu analysis
              navbarMenu(title = "Analysis",
-                        # start tabpanel compare samples
-                        tabPanel(title = "Compare samples",
+                        # start tabpanel heatmap
+                        tabPanel(title = "Heatmap",
                                  fluidPage(
                                    sidebarPanel(width = 2,
                                                 radioButtons(inputId = "select_z_heatmap",
@@ -374,6 +374,41 @@ shinyAppUI <- fluidPage(
                                              shinycssloaders::withSpinner(plotlyOutput(outputId = "compare_samples",
                                                                                        height = "900px"),
                                                                           type = 5))
+                                 )
+                        ), # end tabpanel heatmap
+                        # start compare samples
+                        tabPanel(title = "Compare samples",
+                                 fluidPage(
+                                   sidebarPanel(width = 2,
+                                                radioButtons(inputId = "select_test",
+                                                             label = "Test:",
+                                                             choices = c("t-test" = "ttest",
+                                                                         "Mann-Whitney U test" = "mwtest"),
+                                                             selected = "ttest"),
+                                                radioButtons(inputId = "select_test_normalization",
+                                                             label = "Normalization:",
+                                                             choices = c("Raw data" = "raw",
+                                                                         "Total area normalization" = "tot_area"),
+                                                             selected = "tot_area"),
+                                                radioButtons(inputId = "select_test_transformation",
+                                                             label = "Transformation:",
+                                                             choices = c("No transformation" = "none",
+                                                                         "Log10 transformation" = "log10"),
+                                                             selected = "none"),
+                                                checkboxInput(inputId = "test_cor_pvalue",
+                                                              label = "Show corrected p-value",
+                                                              value = FALSE),
+                                                uiOutput(outputId = "test_group_selection")
+                                   ),
+                                   mainPanel(width = 10,
+                                             column(width = 6,
+                                                    shinycssloaders::withSpinner(plotlyOutput(outputId = "volcano_plot",
+                                                                                              height = "900px"),
+                                                                                 type = 5)),
+                                             column(width = 6,
+                                                    shinycssloaders::withSpinner(plotlyOutput(outputId = "test_boxplot"),
+                                                                                 type = 5))
+                                   )
                                  )
                         ), # end tabpanel compare samples
                         # start tabPanel pca analysis
