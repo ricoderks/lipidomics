@@ -37,7 +37,8 @@ pca_scores_plot <- function(scores_data, xaxis = "PC1", yaxis = "PC2", color_by 
     layout(title = list(text = "Scores plot",
                         x = 0),
            xaxis = list(title = xaxis),
-           yaxis = list(title = yaxis)) %>%
+           yaxis = list(title = yaxis),
+           legend = list(orientation = "h")) %>%
     # config(displayModeBar = FALSE) %>%
     event_register(event = "plotly_click")
 

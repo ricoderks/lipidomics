@@ -10,7 +10,8 @@
 #' @importFrom magrittr %>%
 #' @importFrom dplyr mutate case_when
 #' @importFrom rlang .data
-#' @importFrom plotly plot_ly add_markers layout
+#' @importFrom plotly plot_ly add_markers layout event_register
+#' @importFrom grDevices rainbow
 #'
 #' @author Rico Derks
 #'
@@ -27,14 +28,21 @@ volcano_plot <- function(lipid_data, pvalue_adjust = FALSE) {
       pvalue_adjust == TRUE ~ .data$p_log10_adj
     )) %>%
     plot_ly(x = ~fc_log2,
-            y = ~show_p) %>%
-    add_markers(color = ~LipidClass) %>%
+            y = ~show_p,
+            colors = rainbow(n = 100),
+            customdata = lipid_data$ShortLipidName,
+            source = "volcano_plot") %>%
+    add_markers(color = ~LipidClass,
+                size = 3) %>%
     layout(xaxis = list(zeroline = FALSE,
                         title = "log2(fold change"),
            yaxis = list(title = y_title),
            shapes = list(vline(-1),
                          vline(1),
-                         hline(-log10(0.05))))
+                         hline(-log10(0.05))),
+           legend = list(orientation = "h",
+                         size = 1)) %>%
+    event_register(event = "plotly_click")
 
   return(p)
 }

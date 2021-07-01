@@ -32,7 +32,8 @@ pca_variable_plot <- function(var_data, sample_name) {
                    categoryorder = "array",
                    categoryarray =  ~order_x)) %>%
     layout(title = list(text = paste("Variable plot", sample_name),
-                        x = 0)) %>%
+                        x = 0),
+           xaxis = list(title = "Lipid")) %>%
     hide_legend()
 
   return(p)
