@@ -19,7 +19,7 @@ box_plot <- function(lipid_data, title = "") {
   # create the plot
   p <- lipid_data %>%
     plot_ly(x = ~my_group_info,
-            y = ~area,
+            y = ~value,
             text = ~sample_name,
             color = ~my_group_info,
             type = "box",
@@ -28,7 +28,8 @@ box_plot <- function(lipid_data, title = "") {
             pointpos = 0) %>%
     layout(title = list(text = title,
                         x = 0),
-           yaxis = list(title = "Value"),
+           yaxis = list(title = "Value",
+                        exponentformat = "E"),
            xaxis = list(title = "Group")) %>%
     hide_legend()
 

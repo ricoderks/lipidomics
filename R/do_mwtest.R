@@ -27,7 +27,7 @@
 do_mwtest <- function(lipid_data) {
   results <- lipid_data %>%
     mutate(model_test = map(.x = .data$test_data,
-                            .f = ~ broom::tidy(wilcox.test(formula = area ~ my_group_info,
+                            .f = ~ broom::tidy(wilcox.test(formula = value ~ my_group_info,
                                                            data = .x))),
            pvalue = map_dbl(.x = .data$model_test,
                             .f = ~ .x$p.value),

@@ -1421,10 +1421,14 @@ shinyAppServer <- function(input, output, session) {
     input$test_group1
     input$test_group2
     input$select_test
+    input$select_test_normalization
+    input$select_test_transformation
   }, {
     req(input$test_group1,
         input$test_group2,
-        input$select_test)
+        input$select_test,
+        input$select_test_normalization,
+        input$select_test_transformation)
 
     # check if something is selected and not the same thing
     if(input$test_group1 != "none" &
@@ -1432,6 +1436,10 @@ shinyAppServer <- function(input, output, session) {
        input$test_group1 != input$test_group2) {
       # get the column name
       my_column <- input$test_select_group
+      # get the normalization
+      normalization <- input$select_test_normalization
+      # get the transformation
+      transformation <- input$select_test_transformation
 
       # prepare the data for the testing
       prep_test_data <- all_data$analysis_data %>%
@@ -1439,9 +1447,25 @@ shinyAppServer <- function(input, output, session) {
         filter(.data$my_group_info == input$test_group1 |
                  .data$my_group_info == input$test_group2) %>%
         select(.data$my_id, .data$ShortLipidName, .data$LipidClass, .data$sample_name, .data$my_group_info, .data$area) %>%
-        nest(test_data = c(.data$sample_name, .data$my_group_info, .data$area)) %>%
+        # total area normalisation
+        group_by(.data$sample_name) %>%
+        mutate(norm_area = .data$area / sum(.data$area)) %>%
+        ungroup() %>%
+        # select which normalization to use for PCA
+        mutate(value = case_when(
+          normalization == "raw" ~ .data$area,
+          normalization == "tot_area" ~ .data$norm_area
+        )) %>%
+        # do transformations and select which transformation to keep
+        mutate(value = case_when(
+          transformation == "none" ~ .data$value,
+          transformation == "log10" ~ log10(.data$value + 1) # the +1 is correct for any zero's
+        )) %>%
+        # remove the 2 area columns
+        select(-.data$area, -.data$norm_area) %>%
+        nest(test_data = c(.data$sample_name, .data$my_group_info, .data$value)) %>%
         mutate(fc = map_dbl(.x = .data$test_data,
-                            .f = ~ mean(.x$area[.x$my_group_info == input$test_group1]) / mean(.x$area[.x$my_group_info == input$test_group2])),
+                            .f = ~ mean(.x$value[.x$my_group_info == input$test_group1]) / mean(.x$value[.x$my_group_info == input$test_group2])),
                fc_log2 = log2(.data$fc))
 
       # what test to do
@@ -1460,7 +1484,8 @@ shinyAppServer <- function(input, output, session) {
 
     if(!is.null(test_result())) {
       volcano_plot(lipid_data = test_result(),
-                   pvalue_adjust = input$test_cor_pvalue)
+                   pvalue_adjust = input$test_cor_pvalue,
+                   title = paste0(input$test_group1, " vs ", input$test_group2))
     }
   })
 

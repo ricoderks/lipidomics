@@ -26,7 +26,7 @@
 do_ttest <- function(lipid_data) {
   results <- lipid_data %>%
     mutate(model_test = map(.x = .data$test_data,
-                            .f = ~ broom::tidy(t.test(formula = area ~ my_group_info,
+                            .f = ~ broom::tidy(t.test(formula = value ~ my_group_info,
                                                       data = .x)) %>%
                               # calculate the fold change
                               mutate(fc = estimate1 / estimate2)),

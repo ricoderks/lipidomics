@@ -4,6 +4,7 @@
 #'
 #' @param lipid_data tibble with all the lipid data and test data
 #' @param pvalue_adjust show the corrected p value, default is FALSE
+#' @param title title of the plot
 #'
 #' @return plotly object
 #'
@@ -15,7 +16,7 @@
 #'
 #' @author Rico Derks
 #'
-volcano_plot <- function(lipid_data, pvalue_adjust = FALSE) {
+volcano_plot <- function(lipid_data, pvalue_adjust = FALSE, title = "") {
   # create y-axis title
   y_title <- ifelse(pvalue_adjust == FALSE,
                     "-log10(p value)",
@@ -36,12 +37,14 @@ volcano_plot <- function(lipid_data, pvalue_adjust = FALSE) {
     add_markers(color = ~LipidClass,
                 size = 3) %>%
     layout(xaxis = list(zeroline = FALSE,
-                        title = "log2(fold change"),
+                        title = "log2(fold change)"),
            yaxis = list(title = y_title),
            shapes = list(vline(-1),
                          vline(1),
                          hline(-log10(0.05))),
-           legend = list(orientation = "h")) %>%
+           legend = list(orientation = "h"),
+           title = list(text = title,
+                        x = 0)) %>%
     event_register(event = "plotly_click")
 
   return(p)
