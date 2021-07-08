@@ -343,9 +343,9 @@ shinyAppUI <- fluidPage(
              tabPanel(title = "Issues",
                       fluidPage(
                         fluidRow(column = 12,
-                                 tableOutput(outputId = "tbl_issues_class")),
+                                 DT::DTOutput(outputId = "tbl_issues_class")),
                         fluidRow(column = 12,
-                                 tableOutput(outputId = "tbl_issues"))
+                                 DT::DTOutput(outputId = "tbl_issues"))
                       )
              ), # end tabpanel issues
              # start navbarMenu analysis
