@@ -526,7 +526,7 @@ shinyAppServer <- function(input, output, session) {
         all_data$lipid_data_filter)
 
     if(nrow(filter_FA()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
                                                    info = filter_FA())
     }
   })
@@ -550,7 +550,7 @@ shinyAppServer <- function(input, output, session) {
     req(filter_FAM)
 
     if(nrow(filter_FAM()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
                                                    info = filter_FAM())
     }
   })
@@ -574,7 +574,7 @@ shinyAppServer <- function(input, output, session) {
     req(filter_FE)
 
     if(nrow(filter_FE()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
                                                    info = filter_FE())
     }
   })
@@ -598,7 +598,7 @@ shinyAppServer <- function(input, output, session) {
     req(filter_EGL)
 
     if(nrow(filter_EGL()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
                                                    info = filter_EGL())
     }
   })
@@ -622,7 +622,7 @@ shinyAppServer <- function(input, output, session) {
     req(filter_GL)
 
     if(nrow(filter_GL()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
                                                    info = filter_GL())
     }
   })
@@ -646,7 +646,7 @@ shinyAppServer <- function(input, output, session) {
     req(filter_GLDG)
 
     if(nrow(filter_GLDG()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
                                                    info = filter_GLDG())
     }
   })
@@ -670,7 +670,7 @@ shinyAppServer <- function(input, output, session) {
     req(filter_OGL)
 
     if(nrow(filter_OGL()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
                                                    info = filter_OGL())
     }
   })
@@ -694,7 +694,7 @@ shinyAppServer <- function(input, output, session) {
     req(filter_PA)
 
     if(nrow(filter_PA()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
                                                    info = filter_PA())
     }
   })
@@ -718,7 +718,7 @@ shinyAppServer <- function(input, output, session) {
     req(filter_PC)
 
     if(nrow(filter_PC()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
                                                    info = filter_PC())
     }
   })
@@ -742,7 +742,7 @@ shinyAppServer <- function(input, output, session) {
     req(filter_PE)
 
     if(nrow(filter_PE()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
                                                    info = filter_PE())
     }
   })
@@ -766,7 +766,7 @@ shinyAppServer <- function(input, output, session) {
     req(filter_PG)
 
     if(nrow(filter_PE()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
                                                    info = filter_PG())
     }
   })
@@ -790,7 +790,7 @@ shinyAppServer <- function(input, output, session) {
     req(filter_CL)
 
     if(nrow(filter_CL()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
                                                    info = filter_CL())
     }
   })
@@ -814,7 +814,7 @@ shinyAppServer <- function(input, output, session) {
     req(filter_AcPIM)
 
     if(nrow(filter_AcPIM()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
                                                    info = filter_AcPIM())
     }
   })
@@ -838,7 +838,7 @@ shinyAppServer <- function(input, output, session) {
     req(filter_PI)
 
     if(nrow(filter_PI()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
                                                    info = filter_PI())
     }
   })
@@ -862,7 +862,7 @@ shinyAppServer <- function(input, output, session) {
     req(filter_PS)
 
     if(nrow(filter_PS()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
                                                    info = filter_PS())
     }
   })
@@ -886,7 +886,7 @@ shinyAppServer <- function(input, output, session) {
     req(filter_OPL)
 
     if(nrow(filter_OPL()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
                                                    info = filter_OPL())
     }
   })
@@ -910,7 +910,7 @@ shinyAppServer <- function(input, output, session) {
     req(filter_OGPL)
 
     if(nrow(filter_OGPL()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
                                                    info = filter_OGPL())
     }
   })
@@ -934,7 +934,7 @@ shinyAppServer <- function(input, output, session) {
     req(filter_PRL)
 
     if(nrow(filter_PRL()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
                                                    info = filter_PRL())
     }
   })
@@ -958,7 +958,7 @@ shinyAppServer <- function(input, output, session) {
     req(filter_AcGL)
 
     if(nrow(filter_AcGL()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
                                                    info = filter_AcGL())
     }
   })
@@ -982,7 +982,7 @@ shinyAppServer <- function(input, output, session) {
     req(filter_Cer)
 
     if(nrow(filter_Cer()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
                                                    info = filter_Cer())
     }
   })
@@ -1006,7 +1006,7 @@ shinyAppServer <- function(input, output, session) {
     req(filter_PSL)
 
     if(nrow(filter_PSL()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
                                                    info = filter_PSL())
     }
   })
@@ -1030,7 +1030,7 @@ shinyAppServer <- function(input, output, session) {
     req(filter_NPSL)
 
     if(nrow(filter_NPSL()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
                                                    info = filter_NPSL())
     }
   })
@@ -1054,7 +1054,7 @@ shinyAppServer <- function(input, output, session) {
     req(filter_SB)
 
     if(nrow(filter_SB()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
                                                    info = filter_SB())
     }
   })
@@ -1078,7 +1078,7 @@ shinyAppServer <- function(input, output, session) {
     req(filter_BA)
 
     if(nrow(filter_BA()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
                                                    info = filter_BA())
     }
   })
@@ -1102,7 +1102,7 @@ shinyAppServer <- function(input, output, session) {
     req(filter_SC)
 
     if(nrow(filter_SC()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
                                                    info = filter_SC())
     }
   })
@@ -1126,7 +1126,7 @@ shinyAppServer <- function(input, output, session) {
     req(filter_STC)
 
     if(nrow(filter_STC()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
                                                    info = filter_STC())
     }
   })
@@ -1150,7 +1150,7 @@ shinyAppServer <- function(input, output, session) {
     req(filter_ST)
 
     if(nrow(filter_ST()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
                                                    info = filter_ST())
     }
   })
@@ -1174,7 +1174,7 @@ shinyAppServer <- function(input, output, session) {
     req(filter_OST)
 
     if(nrow(filter_OST()$filter_data) > 0) {
-      all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
+      all_data$lipid_data_filter <- set_issue_info(lipid_data = isolate(all_data$lipid_data_filter),
                                                    info = filter_OST())
     }
   })
@@ -1182,7 +1182,7 @@ shinyAppServer <- function(input, output, session) {
   ####
 
   ### Show the issues
-  output$tbl_issues <- renderTable({
+  output$tbl_issues <- renderDT({
     req(all_data$lipid_data_filter)
 
     all_data$lipid_data_filter %>%
@@ -1195,9 +1195,15 @@ shinyAppServer <- function(input, output, session) {
       select(.data$my_id:.data$polarity, -.data$scale_DotProduct, -.data$scale_RevDotProduct, .data$keep, .data$comment) %>%
       distinct(.data$my_id,
                .keep_all = TRUE)
-  })
+  },
+  options = list(pageLength = 10,
+                 lengthChange = FALSE,
+                 dom = "pt",
+                 ordering = TRUE),
+  selection = "none",
+  rownames = FALSE)
 
-  output$tbl_issues_class <- renderTable({
+  output$tbl_issues_class <- renderDT({
     req(all_data$lipid_data_filter)
 
     all_data$lipid_data_filter %>%
@@ -1209,7 +1215,13 @@ shinyAppServer <- function(input, output, session) {
       select(.data$LipidClass, .data$class_ion, .data$keep, .data$comment) %>%
       distinct(.data$class_ion,
                .keep_all = TRUE)
-  })
+  },
+  options = list(pageLength = 10,
+                 lengthChange = FALSE,
+                 dom = "pt",
+                 ordering = TRUE),
+  selection = "none",
+  rownames = FALSE)
   #### eind issues part
 
   #### meta data part
