@@ -139,14 +139,16 @@ shinyAppServer <- function(input, output, session) {
     all_data$lipid_data_filter <- all_data$lipid_data_long %>%
       mutate(
         keep = case_when(
+          !(.data$my_id %in% keep_class) ~ FALSE,
           !(.data$my_id %in% keep_rsd) ~ FALSE,
           !(.data$my_id %in% keep_msms) ~ FALSE,
-          !(.data$my_id %in% keep_class) ~ FALSE,
+          # !(.data$my_id %in% keep_class) ~ FALSE,
           TRUE ~ TRUE),
         comment = case_when(
+          !(.data$my_id %in% keep_class) ~ "remove_class",
           !(.data$my_id %in% keep_rsd) ~ "large_rsd",
           !(.data$my_id %in% keep_msms) ~ "no_match",
-          !(.data$my_id %in% keep_class) ~ "remove_class",
+          # !(.data$my_id %in% keep_class) ~ "remove_class",
           TRUE ~ "")
       )
   })
@@ -491,14 +493,16 @@ shinyAppServer <- function(input, output, session) {
     all_data$lipid_data_filter <- tmp_filter %>%
       mutate(
         keep = case_when(
+          !(.data$my_id %in% keep_lipids_class) ~ FALSE,
           !(.data$my_id %in% keep_lipids_rsd) ~ FALSE,
           !(.data$my_id %in% keep_lipids_msms) ~ FALSE,
-          !(.data$my_id %in% keep_lipids_class) ~ FALSE,
+          # !(.data$my_id %in% keep_lipids_class) ~ FALSE,
           TRUE ~ TRUE),
         comment = case_when(
+          !(.data$my_id %in% keep_lipids_class) ~ "remove_class",
           !(.data$my_id %in% keep_lipids_rsd) ~ "large_rsd",
           !(.data$my_id %in% keep_lipids_msms) ~ "no_match",
-          !(.data$my_id %in% keep_lipids_class) ~ "remove_class",
+          # !(.data$my_id %in% keep_lipids_class) ~ "remove_class",
           TRUE ~ "")
       )
   })
