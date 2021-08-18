@@ -101,7 +101,8 @@ bubblePlotServer <- function(id, lipid_data, pattern, title) {
             # group = .data$carbon_db)) +
             geom_point(aes(size = .data$DotProduct),
                        alpha = 0.4) +
-            scale_size(range = c(1, 10)) +
+            scale_size(range = c(1, 10),
+                       limits = c(0, 100)) +
             geom_line() +
             geom_text(aes(label = .data$carbon_db),
                       size = 3.0,
