@@ -80,7 +80,7 @@ bubblePlotServer <- function(id, lipid_data, pattern, title) {
 
       # bubble plot
       output$bubble <- renderPlot({
-        tmp_lipid_data <- isolate(lipid_data())
+        tmp_lipid_data <- lipid_data()
 
         # get the sample_name of the first qcpool sample
         selected_name <- tmp_lipid_data %>%
@@ -107,9 +107,13 @@ bubblePlotServer <- function(id, lipid_data, pattern, title) {
             ggplot(aes(x = .data$AverageRT,
                        y = .data$AverageMZ,
                        color = .data$carbons)) +
-            # group = .data$carbon_db)) +
             geom_point(aes(size = .data$DotProduct),
                        alpha = 0.4) +
+            # show lipid which already should be discarded as grey
+            geom_point(data = plot_data[plot_data$keep == FALSE, ],
+                       aes(size = .data$DotProduct),
+                       color = "grey",
+                       alpha = 1) +
             scale_size(range = c(1, 10),
                        limits = c(0, 100)) +
             geom_line() +
