@@ -83,6 +83,11 @@ shinyAppUI <- fluidPage(
                                  fluidPage(
                                    fluidRow(
                                      column(width = 12,
+                                            p("Only alter these settings BEFORE you start the identification / analysis part. If you started the identification /
+                                              analysis part you will have to start again!!"))
+                                   ),
+                                   fluidRow(
+                                     column(width = 12,
                                             splitLayout(cellWidths = c("35px", NA),
                                                         actionButton(inputId = "btn_info_qcfilter",
                                                                      label = "",

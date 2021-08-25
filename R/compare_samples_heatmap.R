@@ -25,7 +25,8 @@ compare_samples_heatmap <- function(lipid_data, cent_scale, z, clust = FALSE, sa
   lipid_data <- lipid_data %>%
     # only select the samples
     filter(.data$sample_type == "sample",
-           .data$keep == TRUE) %>%
+           .data$keep == TRUE,
+           .data$class_keep == TRUE) %>%
     # total area normalisation
     group_by(.data$sample_name) %>%
     mutate(norm_area = .data$area / sum(.data$area)) %>%

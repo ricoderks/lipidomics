@@ -129,28 +129,33 @@ shinyAppServer <- function(input, output, session) {
       distinct(.data$my_id) %>%
       pull(.data$my_id)
 
+    # tag lipids which have a too low quality
+    # find the lipids to keep
     keep_msms <- all_data$lipid_data %>%
       filter(!(.data$DotProduct <= 50 &
-                 .data$RevDotProduct <= 50 &
-                 .data$keep == TRUE)) %>%
+                 .data$RevDotProduct <= 50)) %>%  # &
+      # .data$keep == TRUE)) %>%
       distinct(.data$my_id) %>%
       pull(.data$my_id)
 
     all_data$lipid_data_filter <- all_data$lipid_data_long %>%
-      mutate(
-        keep = case_when(
-          !(.data$my_id %in% keep_class) ~ FALSE,
-          !(.data$my_id %in% keep_rsd) ~ FALSE,
-          !(.data$my_id %in% keep_msms) ~ FALSE,
-          # !(.data$my_id %in% keep_class) ~ FALSE,
-          TRUE ~ TRUE),
-        comment = case_when(
-          !(.data$my_id %in% keep_class) ~ "remove_class",
-          !(.data$my_id %in% keep_rsd) ~ "large_rsd",
-          !(.data$my_id %in% keep_msms) ~ "no_match",
-          # !(.data$my_id %in% keep_class) ~ "remove_class",
-          TRUE ~ "")
-      )
+      mutate(rsd_keep = if_else(.data$my_id %in% keep_rsd,
+                                TRUE,
+                                FALSE),
+             match_keep = if_else(.data$my_id %in% keep_msms,
+                                  TRUE,
+                                  FALSE),
+             class_keep = if_else(.data$my_id %in% keep_class,
+                                  TRUE,
+                                  FALSE),
+             keep = if_else(.data$rsd_keep == TRUE & .data$match_keep == TRUE,
+                            TRUE,
+                            FALSE),
+             comment = if_else(.data$rsd_keep == FALSE,
+                               "large_rsd",
+                               if_else(.data$match_keep == FALSE,
+                                       "no_match",
+                                       "keep")))
   })
 
   # show the raw data
@@ -226,8 +231,8 @@ shinyAppServer <- function(input, output, session) {
   output$info_prodfilter <- renderUI({
     tagList(
       column(width = 3,
-             p("Lipids are immediately tagged with `no_match` and will not show up in
-               the bubble plots (identification tab) or in the analysis part. Individual
+             p("Lipids are immediately tagged with `no_match`. They will show up in
+               the bubble plots (identification tab), but not in the analysis part. Individual
                lipids can be added back via the bubble plots (identification part). Keep
                in mind that when the value of this filter is changed they might be removed again!!")
       )
@@ -400,11 +405,84 @@ shinyAppServer <- function(input, output, session) {
   })
 
   #### identification part ####
+  # observe which sample needs to be selected
   observeEvent(input$select_samples, {
     req(input$select_samples)
 
     # store which samples are selected
     all_data$samples_selected <- input$select_samples
+  })
+
+  # observe if RSD filtering is changed
+  observeEvent(input$rsd_cutoff, {
+    req(all_data$lipid_data_filter,
+        all_data$qc_results)
+
+    tmp_filter <- isolate(all_data$lipid_data_filter)
+
+    # which lipids have a low RSD
+    if(is.null(input$rsd_cutoff)) {
+      rsd_cutoff <- 0.3
+    } else {
+      rsd_cutoff <- input$rsd_cutoff
+    }
+
+    keep_lipids_rsd <- all_data$qc_results %>%
+      filter(.data$rsd_area <= rsd_cutoff) %>%
+      distinct(.data$my_id) %>%
+      pull(.data$my_id)
+
+    all_data$lipid_data_filter <- tmp_filter %>%
+      mutate(rsd_keep = if_else(.data$my_id %in% keep_lipids_rsd,
+                                TRUE,
+                                FALSE),
+             comment = if_else(.data$my_id %in% keep_lipids_rsd,
+                               "keep",
+                               "large_rsd"),
+             keep = if_else(.data$rsd_keep == TRUE &
+                              .data$match_keep == TRUE &
+                              .data$rt_keep == TRUE,
+                            TRUE,
+                            FALSE))
+  })
+
+  # observe if product/dotproduct filtering is chagned
+  observeEvent({
+    input$dotprod_cutoff
+    input$revdotprod_cutoff
+  }, {
+    req(all_data$lipid_data_filter)
+
+    tmp_filter <- isolate(all_data$lipid_data_filter)
+
+    if(is.null(input$dotprod_cutoff) |
+       is.null(input$revdotprod_cutoff)) {
+      dotprod_cutoff <- 50
+      revdotprod_cutoff <- 50
+    } else {
+      dotprod_cutoff <- input$dotprod_cutoff
+      revdotprod_cutoff <- input$revdotprod_cutoff
+    }
+
+    # which lipids have a high dotproduct and revdotproduct
+    keep_lipids_msms <- tmp_filter %>%
+      filter(!(.data$DotProduct <= dotprod_cutoff &
+                 .data$RevDotProduct <= revdotprod_cutoff)) %>%
+      distinct(.data$my_id) %>%
+      pull(.data$my_id)
+
+    all_data$lipid_data_filter <- tmp_filter %>%
+      mutate(match_keep = if_else(.data$my_id %in% keep_lipids_msms,
+                                  TRUE,
+                                  FALSE),
+             comment = if_else(.data$my_id %in% keep_lipids_msms,
+                               "keep",
+                               "no_match"),
+             keep = if_else(.data$rsd_keep == TRUE &
+                              .data$match_keep == TRUE &
+                              .data$rt_keep == TRUE,
+                            TRUE,
+                            FALSE))
   })
 
   # filter the identification data
@@ -421,12 +499,8 @@ shinyAppServer <- function(input, output, session) {
     input$select_PRL_class
     input$select_SA_class
     input$select_STL_class
-    input$rsd_cutoff
-    input$dotprod_cutoff
-    input$revdotprod_cutoff
   }, {
-    req(all_data$lipid_data_filter,
-        all_data$qc_results)
+    req(all_data$lipid_data_filter)
 
     # get all the selected classes
     class_ion_selected <- c(input$select_PL_class,
@@ -461,51 +535,12 @@ shinyAppServer <- function(input, output, session) {
       distinct(.data$my_id) %>%
       pull(.data$my_id)
 
-    # which lipids have a low RSD
-    if(is.null(input$rsd_cutoff)) {
-      rsd_cutoff <- 0.3
-    } else {
-      rsd_cutoff <- input$rsd_cutoff
-    }
-
-    keep_lipids_rsd <- all_data$qc_results %>%
-      filter(.data$rsd_area <= rsd_cutoff) %>%
-      distinct(.data$my_id) %>%
-      pull(.data$my_id)
-
-    if(is.null(input$dotprod_cutoff) |
-       is.null(input$revdotprod_cutoff)) {
-      dotprod_cutoff <- 50
-      revdotprod_cutoff <- 50
-    } else {
-      dotprod_cutoff <- input$dotprod_cutoff
-      revdotprod_cutoff <- input$revdotprod_cutoff
-    }
-
-    # which lipids have a high dotproduct and revdotproduct
-    keep_lipids_msms <- tmp_filter %>%
-      filter(!(.data$DotProduct <= dotprod_cutoff &
-                 .data$RevDotProduct <= revdotprod_cutoff &
-                 .data$comment != "large_rsd")) %>%
-      distinct(.data$my_id) %>%
-      pull(.data$my_id)
-
     all_data$lipid_data_filter <- tmp_filter %>%
-      mutate(
-        keep = case_when(
-          !(.data$my_id %in% keep_lipids_class) ~ FALSE,
-          !(.data$my_id %in% keep_lipids_rsd) ~ FALSE,
-          !(.data$my_id %in% keep_lipids_msms) ~ FALSE,
-          # !(.data$my_id %in% keep_lipids_class) ~ FALSE,
-          TRUE ~ TRUE),
-        comment = case_when(
-          !(.data$my_id %in% keep_lipids_class) ~ "remove_class",
-          !(.data$my_id %in% keep_lipids_rsd) ~ "large_rsd",
-          !(.data$my_id %in% keep_lipids_msms) ~ "no_match",
-          # !(.data$my_id %in% keep_lipids_class) ~ "remove_class",
-          TRUE ~ "")
-      )
-  })
+      mutate(class_keep = if_else(.data$my_id %in% keep_lipids_class,
+                                  TRUE,
+                                  FALSE))
+  },
+  ignoreInit = TRUE)
 
   ### Fatty acids and conjugates
   filter_FA <- bubblePlotServer(id = "FA",
@@ -1191,8 +1226,8 @@ shinyAppServer <- function(input, output, session) {
                   names_from = .data$sample_name,
                   values_from = .data$area) %>%
       filter(.data$keep == FALSE,
-             .data$comment != "remove_class") %>%
-      select(.data$my_id:.data$polarity, -.data$scale_DotProduct, -.data$scale_RevDotProduct, .data$keep, .data$comment) %>%
+             .data$class_keep == TRUE) %>%
+      select(.data$my_id:.data$polarity, -.data$scale_DotProduct, -.data$scale_RevDotProduct, .data$comment, .data$keep, .data$rsd_keep, .data$match_keep, .data$rt_keep) %>%
       distinct(.data$my_id,
                .keep_all = TRUE)
   },
@@ -1211,8 +1246,8 @@ shinyAppServer <- function(input, output, session) {
       pivot_wider(id_cols = .data$my_id:.data$carbon_db,
                   names_from = .data$sample_name,
                   values_from = .data$area) %>%
-      filter(.data$comment == "remove_class") %>%
-      select(.data$LipidClass, .data$class_ion, .data$keep, .data$comment) %>%
+      filter(.data$class_keep == FALSE) %>%
+      select(.data$LipidClass, .data$class_ion, .data$class_keep) %>%
       distinct(.data$class_ion,
                .keep_all = TRUE)
   },
@@ -1656,7 +1691,8 @@ shinyAppServer <- function(input, output, session) {
       # export needs to be in wide format
       export_wide <- all_data$analysis_data %>%
         filter(.data$sample_type != "blank",
-               .data$keep == TRUE) %>%
+               .data$keep == TRUE,
+               .data$class_keep == TRUE) %>%
         pivot_wider(id_cols = c(.data$my_id, .data$LongLipidName, .data$ShortLipidName, .data$LipidClass),
                     names_from = .data$sample_name,
                     values_from = .data$area) %>%
@@ -1711,4 +1747,4 @@ shinyAppServer <- function(input, output, session) {
   #   req(filter_result)
   #   filter_result()$filter_data
   # })
-  }
+}
