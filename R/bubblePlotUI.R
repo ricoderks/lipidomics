@@ -49,9 +49,9 @@ bubblePlotUI <- function(id, data, pattern) {
     # show table with info about point clicked
     fluidRow(
       # table
-      uiOutput(outputId = ns("info_ui")),
-      # reason selection
-      uiOutput(outputId = ns("reason_ui"))
+      # uiOutput(outputId = ns("info_ui")),
+      # # reason selection
+      # uiOutput(outputId = ns("reason_ui"))
     ),
     # show the bubble plot
     fluidRow(
@@ -64,12 +64,16 @@ bubblePlotUI <- function(id, data, pattern) {
                           delayType = "debounce",
                           resetOnNew = TRUE
                         ),
-                        dblclick = ns("bubble_dbl"),
-                        click = ns("bubble_clk"))
+                        dblclick = dblclickOpts(id = ns("bubble_dbl")),
+                        click = clickOpts(id = ns("bubble_clk")))
       ),
       column(width = 4,
-             plotOutput(outputId = ns("msms_clicked")),
-             uiOutput(outputId = ns("msms_cutoff_ui")))
+             # # reason selection
+             uiOutput(outputId = ns("reason_ui")),
+             # table
+             uiOutput(outputId = ns("info_ui"))
+
+      )
     )
   )
 }

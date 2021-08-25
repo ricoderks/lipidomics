@@ -39,7 +39,8 @@ do_pca <- function(lipid_data, observations = c("all", "samples"), normalization
   # need to make the data wide
   # samples as rows and lipids as columns
   lipid_data_prep <- lipid_data %>%
-    filter(.data$keep == TRUE) %>%
+    filter(.data$keep == TRUE,
+           .data$class_keep == TRUE) %>%
     # select which sample type to keep
     filter(.data$sample_type %in% select_obs) %>%
     # total area normalisation

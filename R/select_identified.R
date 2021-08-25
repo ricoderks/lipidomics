@@ -44,8 +44,17 @@ select_identified <- function(lipid_data) {
                              .data$LongLipidName),
       class_ion = paste(.data$LipidClass, .data$ion,
                         sep = " - "),
+      # general keep
       keep = TRUE,
       comment = "",
+      # if rsd is too high
+      rsd_keep = TRUE,
+      # if quality MSMS is too high
+      match_keep = TRUE,
+      # if retention time is wrong
+      rt_keep = TRUE,
+      # if class is discarded
+      class_keep = TRUE,
       # clean up some levels which might not be present anymore
       ion = droplevels(.data$ion),
       polarity = droplevels(.data$polarity),
