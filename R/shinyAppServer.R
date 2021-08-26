@@ -75,6 +75,15 @@ shinyAppServer <- function(input, output, session) {
     req(input$res_file_pos,
         input$res_file_neg)
 
+    # Initialize the progress bar
+    progress <- Progress$new(min = 0,
+                 max = 100)
+    on.exit(progress$close())
+
+    progress$set(value = 1,
+                 message = "Processing...",
+                 detail = NULL)
+
     # initialize the tibble for storing all the data
     results <- tibble(filename = c(input$res_file_pos$name, input$res_file_neg$name),
                       datapath = c(input$res_file_pos$datapath, input$res_file_neg$datapath),
@@ -86,14 +95,30 @@ shinyAppServer <- function(input, output, session) {
       mutate(raw_data = map(.x = .data$datapath,
                             .f = ~ read_msdial(filename = .x)))
 
+    progress$set(value = 10,
+                 message = "Processing...",
+                 detail = NULL)
+
     # cleanup some column names
     results <- clean_up(lipid_data = results)
+
+    progress$set(value = 20,
+                 message = "Processing...",
+                 detail = NULL)
 
     # keep only the identified lipids and sort by lipid class, lipid
     all_data$lipid_data <- select_identified(lipid_data = results)
 
+    progress$set(value = 30,
+                 message = "Processing...",
+                 detail = NULL)
+
     # make the data long
     all_data$lipid_data_long <- tidy_lipids(lipid_data = all_data$lipid_data)
+
+    progress$set(value = 40,
+                 message = "Processing...",
+                 detail = NULL)
 
     ### can't this be simpler??
 
@@ -114,6 +139,10 @@ shinyAppServer <- function(input, output, session) {
 
     # calculate the RSD values
     all_data$qc_results <- calc_rsd(lipid_data = all_data$lipid_data_long)
+
+    progress$set(value = 60,
+                 message = "Processing...",
+                 detail = NULL)
 
     # tag lipid class/ion which should be removed
     # find the id's to keep
@@ -138,6 +167,10 @@ shinyAppServer <- function(input, output, session) {
       distinct(.data$my_id) %>%
       pull(.data$my_id)
 
+    progress$set(value = 80,
+                 message = "Processing...",
+                 detail = NULL)
+
     all_data$lipid_data_filter <- all_data$lipid_data_long %>%
       mutate(rsd_keep = if_else(.data$my_id %in% keep_rsd,
                                 TRUE,
@@ -156,6 +189,10 @@ shinyAppServer <- function(input, output, session) {
                                if_else(.data$match_keep == FALSE,
                                        "no_match",
                                        "keep")))
+
+    progress$set(value = 100,
+                 message = "Processing...",
+                 detail = NULL)
   })
 
   # show the raw data
