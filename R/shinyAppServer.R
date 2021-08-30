@@ -73,6 +73,20 @@ shinyAppServer <- function(input, output, session) {
                          "PS - [M-H]-", "SHexCer - [M-H]-", "SL - [M-H]-", "SM - [M+H]+", "Sph - [M+H]+",
                          "SQDG - [M-H]-", "SSulfate - [M-H]-", "ST - [M+H-H2O]+", "ST - [M+H]+", "TG - [M+NH4]+", "TG_EST - [M+NH4]+", "VAE - [M+H]+")
 
+  # regular expression patterns
+  pattern_PL <- "^((Ether)?(Ox)?(L)?(LNA)?(MM)?P[ACEGISM]|HBMP|BMP)"
+  pattern_GL <- "^(Ox|Ether|SQ|EtherS|L|A)?[DMT]G"
+  pattern_Cer <- "^Cer[P_]"
+  pattern_HexCer <- "^A?Hex[23]?Cer"
+  pattern_FA <- "^((Ox)?FA|FAHFA|NAGly|NAGlySer|NAOrn|NAE|CAR)"
+  pattern_PSL <- "^(ASM|PE_Cer(\\+O)?|PI_Cer(\\+O)?|SM|SM\\+O)"
+  pattern_SB <- "^(PhytoSph|SL|SL\\+O|DHSph|Sph)"
+  pattern_SA <- "^(GM3|SHexCer|SHexCer\\+O)"
+  pattern_CL <- "^([DM]L)?CL"
+  pattern_ACPIM <- "^Ac[2-4]PIM[12]"
+  pattern_STL <- "^((BA|S)Sulfate|BileAcid|AHex[BCS][AIRTS][S]?|(BRS|CAS|C|SIS|STS|DCA|TDCA)E|SHex|Cholesterol|VitaminD|ST) "
+  pattern_PRL <- "^(VAE|CoQ|VitaminE)"
+
   #### Read the files ####
   # watch the positive mode file
   observe({
@@ -83,127 +97,127 @@ shinyAppServer <- function(input, output, session) {
     if(rdata_status$status == FALSE) {
       # no data from previous work loaded
 
-    # Initialize the progress bar
-    progress <- Progress$new(min = 0,
-                 max = 100)
-    on.exit(progress$close())
+      # Initialize the progress bar
+      progress <- Progress$new(min = 0,
+                               max = 100)
+      on.exit(progress$close())
 
-    progress$set(value = 1,
-                 message = "Processing...",
-                 detail = NULL)
+      progress$set(value = 1,
+                   message = "Processing...",
+                   detail = NULL)
 
-    # when MSDIAl files are loaded do not load RData file
-    rdata_status$load = FALSE
+      # when MSDIAl files are loaded do not load RData file
+      rdata_status$load = FALSE
 
-    # initialize the tibble for storing all the data
-    results <- tibble(filename = c(input$res_file_pos$name, input$res_file_neg$name),
-                      datapath = c(input$res_file_pos$datapath, input$res_file_neg$datapath),
-                      polarity = c("pos", "neg"))
+      # initialize the tibble for storing all the data
+      results <- tibble(filename = c(input$res_file_pos$name, input$res_file_neg$name),
+                        datapath = c(input$res_file_pos$datapath, input$res_file_neg$datapath),
+                        polarity = c("pos", "neg"))
 
-    # read the data
-    results <- results %>%
-      filter(.data$datapath != "") %>%
-      mutate(raw_data = map(.x = .data$datapath,
-                            .f = ~ read_msdial(filename = .x)))
+      # read the data
+      results <- results %>%
+        filter(.data$datapath != "") %>%
+        mutate(raw_data = map(.x = .data$datapath,
+                              .f = ~ read_msdial(filename = .x)))
 
-    progress$set(value = 10,
-                 message = "Processing...",
-                 detail = NULL)
+      progress$set(value = 10,
+                   message = "Processing...",
+                   detail = NULL)
 
-    # cleanup some column names
-    results <- clean_up(lipid_data = results)
+      # cleanup some column names
+      results <- clean_up(lipid_data = results)
 
-    progress$set(value = 20,
-                 message = "Processing...",
-                 detail = NULL)
+      progress$set(value = 20,
+                   message = "Processing...",
+                   detail = NULL)
 
-    # keep only the identified lipids and sort by lipid class, lipid
-    all_data$lipid_data <- select_identified(lipid_data = results)
+      # keep only the identified lipids and sort by lipid class, lipid
+      all_data$lipid_data <- select_identified(lipid_data = results)
 
-    progress$set(value = 30,
-                 message = "Processing...",
-                 detail = NULL)
+      progress$set(value = 30,
+                   message = "Processing...",
+                   detail = NULL)
 
-    # make the data long
-    all_data$lipid_data_long <- tidy_lipids(lipid_data = all_data$lipid_data)
+      # make the data long
+      all_data$lipid_data_long <- tidy_lipids(lipid_data = all_data$lipid_data)
 
-    progress$set(value = 40,
-                 message = "Processing...",
-                 detail = NULL)
+      progress$set(value = 40,
+                   message = "Processing...",
+                   detail = NULL)
 
-    ### can't this be simpler??
+      ### can't this be simpler??
 
-    # get all lipid classes with their respective ion
-    all_data$class_ion <- all_data$lipid_data_long %>%
-      distinct(.data$class_ion) %>%
-      pull(.data$class_ion)
+      # get all lipid classes with their respective ion
+      all_data$class_ion <- all_data$lipid_data_long %>%
+        distinct(.data$class_ion) %>%
+        pull(.data$class_ion)
 
-    # store them
-    all_data$class_ion_selected <- all_data$class_ion[all_data$class_ion %in% default_class_ion]
+      # store them
+      all_data$class_ion_selected <- all_data$class_ion[all_data$class_ion %in% default_class_ion]
 
-    # get all sample name
-    all_data$all_samples <- all_data$lipid_data_long %>%
-      distinct(.data$sample_name) %>%
-      pull(.data$sample_name)
+      # get all sample name
+      all_data$all_samples <- all_data$lipid_data_long %>%
+        distinct(.data$sample_name) %>%
+        pull(.data$sample_name)
 
-    all_data$samples_selected <- all_data$all_samples
+      all_data$samples_selected <- all_data$all_samples
 
-    # calculate the RSD values
-    all_data$qc_results <- calc_rsd(lipid_data = all_data$lipid_data_long)
+      # calculate the RSD values
+      all_data$qc_results <- calc_rsd(lipid_data = all_data$lipid_data_long)
 
-    progress$set(value = 60,
-                 message = "Processing...",
-                 detail = NULL)
+      progress$set(value = 60,
+                   message = "Processing...",
+                   detail = NULL)
 
-    # tag lipid class/ion which should be removed
-    # find the id's to keep
-    keep_class <- all_data$lipid_data %>%
-      filter(.data$class_ion %in% default_class_ion) %>%
-      distinct(.data$my_id) %>%
-      pull(.data$my_id)
+      # tag lipid class/ion which should be removed
+      # find the id's to keep
+      keep_class <- all_data$lipid_data %>%
+        filter(.data$class_ion %in% default_class_ion) %>%
+        distinct(.data$my_id) %>%
+        pull(.data$my_id)
 
-    # tag lipids which have a too high RSD value
-    # find the lipids to keep
-    keep_rsd <- all_data$qc_results %>%
-      filter(.data$rsd_area <= 0.3) %>%
-      distinct(.data$my_id) %>%
-      pull(.data$my_id)
+      # tag lipids which have a too high RSD value
+      # find the lipids to keep
+      keep_rsd <- all_data$qc_results %>%
+        filter(.data$rsd_area <= 0.3) %>%
+        distinct(.data$my_id) %>%
+        pull(.data$my_id)
 
-    # tag lipids which have a too low quality
-    # find the lipids to keep
-    keep_msms <- all_data$lipid_data %>%
-      filter(!(.data$DotProduct <= 50 &
-                 .data$RevDotProduct <= 50)) %>%  # &
-      # .data$keep == TRUE)) %>%
-      distinct(.data$my_id) %>%
-      pull(.data$my_id)
+      # tag lipids which have a too low quality
+      # find the lipids to keep
+      keep_msms <- all_data$lipid_data %>%
+        filter(!(.data$DotProduct <= 50 &
+                   .data$RevDotProduct <= 50)) %>%  # &
+        # .data$keep == TRUE)) %>%
+        distinct(.data$my_id) %>%
+        pull(.data$my_id)
 
-    progress$set(value = 80,
-                 message = "Processing...",
-                 detail = NULL)
+      progress$set(value = 80,
+                   message = "Processing...",
+                   detail = NULL)
 
-    all_data$lipid_data_filter <- all_data$lipid_data_long %>%
-      mutate(rsd_keep = if_else(.data$my_id %in% keep_rsd,
-                                TRUE,
-                                FALSE),
-             match_keep = if_else(.data$my_id %in% keep_msms,
+      all_data$lipid_data_filter <- all_data$lipid_data_long %>%
+        mutate(rsd_keep = if_else(.data$my_id %in% keep_rsd,
                                   TRUE,
                                   FALSE),
-             class_keep = if_else(.data$my_id %in% keep_class,
-                                  TRUE,
-                                  FALSE),
-             keep = if_else(.data$rsd_keep == TRUE & .data$match_keep == TRUE,
-                            TRUE,
-                            FALSE),
-             comment = if_else(.data$rsd_keep == FALSE,
-                               "large_rsd",
-                               if_else(.data$match_keep == FALSE,
-                                       "no_match",
-                                       "keep")))
+               match_keep = if_else(.data$my_id %in% keep_msms,
+                                    TRUE,
+                                    FALSE),
+               class_keep = if_else(.data$my_id %in% keep_class,
+                                    TRUE,
+                                    FALSE),
+               keep = if_else(.data$rsd_keep == TRUE & .data$match_keep == TRUE,
+                              TRUE,
+                              FALSE),
+               comment = if_else(.data$rsd_keep == FALSE,
+                                 "large_rsd",
+                                 if_else(.data$match_keep == FALSE,
+                                         "no_match",
+                                         "keep")))
 
-    progress$set(value = 100,
-                 message = "Processing...",
-                 detail = NULL)
+      progress$set(value = 100,
+                   message = "Processing...",
+                   detail = NULL)
     } else {
       # previous work already loaded, load nothing
       rdata_status$comment <- "There is already data loaded from previous work. Please refresh the page to remove everything!!
@@ -316,15 +330,14 @@ shinyAppServer <- function(input, output, session) {
       # import the data into a new environment
       import_evn <- load_to_env(RData = input$load_rdata$datapath)
 
+      progress$set(value = 75,
+                   message = "Processing...",
+                   detail = NULL)
+
       # load the data into the global environment
       all_data$lipid_data <- import_evn$export$lipid_data
       all_data$lipid_data_long <- import_evn$export$lipid_data_long
       all_data$lipid_data_filter <- import_evn$export$lipid_data_filter
-
-      progress$set(value = 85,
-                   message = "Processing...",
-                   detail = NULL)
-
       all_data$clean_data <- import_evn$export$clean_data
       all_data$analysis_data <- import_evn$export$analysis_data
       all_data$merged_data <- import_evn$export$merged_data
@@ -336,6 +349,31 @@ shinyAppServer <- function(input, output, session) {
       all_data$samples_selected <- import_evn$export$samples_selected
       all_data$pca_score_plot <- import_evn$export$pca_score_plot
 
+      progress$set(value = 85,
+                   message = "Processing...",
+                   detail = NULL)
+
+      # load settings
+      updateNumericInput(inputId = "rsd_cutoff",
+                         label = "RSD cut off value:",
+                         value = import_evn$export$input_rsd_cutoff,
+                         min = 0,
+                         max = 1,
+                         step = 0.01)
+      updateNumericInput(inputId = "dotprod_cutoff",
+                         label = "Dot product cut off value:",
+                         value = import_evn$export$input_dotprod_cutoff,
+                         min = 0,
+                         max = 100,
+                         step = 1)
+      updateNumericInput(inputId = "revdotprod_cutoff",
+                         label = "Reverse dot product cut off value:",
+                         value = import_evn$export$input_revdotprod_cutoff,
+                         min = 0,
+                         max = 100,
+                         step = 1)
+
+      # done
       progress$set(value = 100,
                    message = "Processing...",
                    detail = NULL)
@@ -371,20 +409,6 @@ shinyAppServer <- function(input, output, session) {
   # get the lipid classes
   output$select_lipid_classes <- renderUI({
     req(all_data$lipid_data_long)
-
-    # regular expression patterns
-    pattern_PL <- "^((Ether)?(Ox)?(L)?(LNA)?(MM)?P[ACEGISM]|HBMP|BMP)"
-    pattern_GL <- "^(Ox|Ether|SQ|EtherS|L|A)?[DMT]G"
-    pattern_Cer <- "^Cer[P_]"
-    pattern_HexCer <- "^A?Hex[23]?Cer"
-    pattern_FA <- "^((Ox)?FA|FAHFA|NAGly|NAGlySer|NAOrn|NAE|CAR)"
-    pattern_PSL <- "^(ASM|PE_Cer(\\+O)?|PI_Cer(\\+O)?|SM|SM\\+O)"
-    pattern_SB <- "^(PhytoSph|SL|SL\\+O|DHSph|Sph)"
-    pattern_SA <- "^(GM3|SHexCer|SHexCer\\+O)"
-    pattern_CL <- "^([DM]L)?CL"
-    pattern_ACPIM <- "^Ac[2-4]PIM[12]"
-    pattern_STL <- "^((BA|S)Sulfate|BileAcid|AHex[BCS][AIRTS][S]?|(BRS|CAS|C|SIS|STS|DCA|TDCA)E|SHex|Cholesterol|VitaminD|ST) "
-    pattern_PRL <- "^(VAE|CoQ|VitaminE)"
 
     my_col_width <- 3
 
@@ -1851,8 +1875,9 @@ shinyAppServer <- function(input, output, session) {
     },
     content = function(file) {
       # create object to be saved
-      # Do I need to export everything?!
+      # Initialize list
       export <- list()
+      # export the data
       export$lipid_data <- all_data$lipid_data
       export$lipid_data_long <- all_data$lipid_data_long
       export$lipid_data_filter <- all_data$lipid_data_filter
@@ -1866,6 +1891,26 @@ shinyAppServer <- function(input, output, session) {
       export$all_samples <- all_data$all_samples
       export$samples_selected <- all_data$samples_selected
       export$pca_score_plot <- all_data$pca_score_plot
+      # export the settings
+      # filter settings
+      export$input_rsd_cutoff <- input$rsd_cutoff
+      export$input_dotprod_cutoff <- input$dotprod_cutoff
+      export$input_revdotprod_cutoff <- input$revdotprod_cutoff
+      # lipid class selection
+      export$input_select_PL_class <- input$select_PL_class
+      export$input_select_Cer_class <- input$select_Cer_class
+      export$input_select_HexCer_class <- input$select_HexCer_class
+      export$input_select_FA_class <- input$select_FA_class
+      export$input_select_PSL_class <- input$select_PSL_class
+      export$input_select_SB_class <- input$select_SB_class
+      export$input_select_SA_class <- input$select_SA_class
+      export$input_select_GL_class <- input$select_GL_class
+      export$input_select_CL_class <- input$select_CL_class
+      export$input_select_STL_class <- input$select_STL_class
+      export$input_select_ACPIM_class <- input$select_ACPIM_class
+      export$input_select_PRL_class <- input$select_PRL_class
+      # sample selection
+      export$input_select_samples <- input$select_samples
 
       # save the object
       save(export,
