@@ -497,7 +497,7 @@ shinyAppUI <- fluidPage(
                       hr(),
                       h3("Save work"),
                       p("Save the current state of your work into a Rdata file."),
-                      downloadButton(outputId = "save_work",
+                      downloadButton(outputId = "save_rdata",
                                      label = "Save (Rdata)"),
                       hr(),
                       h3("Lipid list"),

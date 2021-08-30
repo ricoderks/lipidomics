@@ -1721,7 +1721,7 @@ shinyAppServer <- function(input, output, session) {
   output$download_lipid_xlsx <- downloadHandler(
     filename = function() {
       # create a filename
-      paste("Lipid_list_", Sys.Date(), ".xlsx", sep="")
+      paste("Lipid_list_", Sys.Date(), ".xlsx", sep = "")
     },
     content = function(file) {
       req(all_data$analysis_data)
@@ -1763,6 +1763,36 @@ shinyAppServer <- function(input, output, session) {
 
       write.xlsx(x = export_wide,
                  file = file)
+    }
+  )
+
+  # save the current state of your work
+  output$save_rdata <- downloadHandler(
+    filename = function() {
+      # create a filename
+      paste("Current_state_", Sys.Date(), ".Rdata", sep = "")
+    },
+    content = function(file) {
+      # create object to be saved
+      # Do I need to export everything?!
+      export <- list()
+      export$lipid_data <- all_data$lipid_data
+      export$lipid_data_long <- all_data$lipid_data_long
+      export$lipid_data_filter <- all_data$lipid_data_filter
+      export$clean_data <- all_data$clean_data
+      export$analysis_data <- all_data$analysis_data
+      export$merged_data <- all_data$merged_data
+      export$qc_results <- all_data$qc_results
+      export$class_ion <- all_data$class_ion
+      export$class_ion_selected <- all_data$class_ion_selected
+      export$num_lipid_classes <- all_data$num_lipid_classes
+      export$all_samples <- all_data$all_samples
+      export$samples_selected <- all_data$samples_selected
+      export$pca_score_plot <- all_data$pca_score_plot
+
+      # save the object
+      save(export,
+           file = file)
     }
   )
 
