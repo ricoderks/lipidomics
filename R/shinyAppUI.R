@@ -490,8 +490,7 @@ shinyAppUI <- fluidPage(
                                                                      type = 5))
                                    )
                                  )
-                        ), # end tabpanel PCA
-                        tabPanel(title = "UMAP")
+                        ) # end tabpanel PCA
              ), # end navbarmenu analysis
              tabPanel(title = "Export",
                       p("Here, several export options will be shown!"),
