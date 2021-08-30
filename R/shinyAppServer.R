@@ -301,8 +301,26 @@ shinyAppServer <- function(input, output, session) {
         rdata_status)
 
     if(rdata_status$load == TRUE) {
+      # set the status that previous work is loaded
       rdata_status$status <- TRUE
+      # import the data into a new environment
       import_evn <- load_to_env(RData = input$load_rdata$datapath)
+
+      # load the data into the global environment
+      all_data$lipid_data <- import_evn$export$lipid_data
+      all_data$lipid_data_long <- import_evn$export$lipid_data_long
+      all_data$lipid_data_filter <- import_evn$export$lipid_data_filter
+      all_data$clean_data <- import_evn$export$clean_data
+      all_data$analysis_data <- import_evn$export$analysis_data
+      all_data$merged_data <- import_evn$export$merged_data
+      all_data$qc_results <- import_evn$export$qc_results
+      all_data$class_ion <- import_evn$export$class_ion
+      all_data$class_ion_selected <- import_evn$export$class_ion_selected
+      all_data$num_lipid_classes <- import_evn$export$num_lipid_classes
+      all_data$all_samples <-  import_evn$export$all_samples
+      all_data$samples_selected <- import_evn$export$samples_selected
+      all_data$pca_score_plot <- import_evn$export$pca_score_plot
+
     } else {
       rdata_status$comment <- "There are already MSDIAL files loaded. Please refresh the page to remove everything!!
       Nothing is imported now!!"
