@@ -495,8 +495,17 @@ shinyAppUI <- fluidPage(
              ), # end navbarmenu analysis
              tabPanel(title = "Export",
                       p("Here, several export options will be shown!"),
+                      hr(),
+                      h3("Save work"),
+                      p("Save the current state of your work into a Rdata file."),
+                      downloadButton(outputId = "save_work",
+                                     label = "Save (Rdata)"),
+                      hr(),
+                      h3("Lipid list"),
+                      p("Save the lipids into an Excel file (.xlsx)."),
                       downloadButton(outputId = "download_lipid_xlsx",
-                                     label = "Download lipid list (xlsx)")
+                                     label = "Download lipid list (xlsx)"),
+                      hr()
              ),
              # tabPanel About
              navbarMenu(title = "Help",
