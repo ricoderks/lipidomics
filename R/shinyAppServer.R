@@ -303,6 +303,16 @@ shinyAppServer <- function(input, output, session) {
     if(rdata_status$load == TRUE) {
       # set the status that previous work is loaded
       rdata_status$status <- TRUE
+
+      # Initialize the progress bar
+      progress <- Progress$new(min = 0,
+                               max = 100)
+      on.exit(progress$close())
+
+      progress$set(value = 50,
+                   message = "Processing...",
+                   detail = NULL)
+
       # import the data into a new environment
       import_evn <- load_to_env(RData = input$load_rdata$datapath)
 
@@ -310,6 +320,11 @@ shinyAppServer <- function(input, output, session) {
       all_data$lipid_data <- import_evn$export$lipid_data
       all_data$lipid_data_long <- import_evn$export$lipid_data_long
       all_data$lipid_data_filter <- import_evn$export$lipid_data_filter
+
+      progress$set(value = 85,
+                   message = "Processing...",
+                   detail = NULL)
+
       all_data$clean_data <- import_evn$export$clean_data
       all_data$analysis_data <- import_evn$export$analysis_data
       all_data$merged_data <- import_evn$export$merged_data
@@ -320,6 +335,10 @@ shinyAppServer <- function(input, output, session) {
       all_data$all_samples <-  import_evn$export$all_samples
       all_data$samples_selected <- import_evn$export$samples_selected
       all_data$pca_score_plot <- import_evn$export$pca_score_plot
+
+      progress$set(value = 100,
+                   message = "Processing...",
+                   detail = NULL)
 
     } else {
       rdata_status$comment <- "There are already MSDIAL files loaded. Please refresh the page to remove everything!!
