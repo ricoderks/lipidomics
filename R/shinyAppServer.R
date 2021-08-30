@@ -354,6 +354,7 @@ shinyAppServer <- function(input, output, session) {
                    detail = NULL)
 
       # load settings
+      # filter settings
       updateNumericInput(inputId = "rsd_cutoff",
                          label = "RSD cut off value:",
                          value = import_evn$export$input_rsd_cutoff,
@@ -372,6 +373,27 @@ shinyAppServer <- function(input, output, session) {
                          min = 0,
                          max = 100,
                          step = 1)
+      # lipid classes
+      class_ion_selected <- c(import_evn$export$input_select_PL_class,
+                              import_evn$export$input_select_GL_class,
+                              import_evn$export$input_select_Cer_class,
+                              import_evn$export$input_select_HexCer_class,
+                              import_evn$export$input_select_FA_class,
+                              import_evn$export$input_select_PSL_class,
+                              import_evn$export$input_select_SB_class,
+                              import_evn$export$input_select_CL_class,
+                              import_evn$export$input_select_ACPIM_class,
+                              import_evn$export$input_select_PRL_class,
+                              import_evn$export$input_select_SA_class,
+                              import_evn$export$input_select_STL_class)
+
+      all_data$class_ion_selected <- class_ion_selected
+      # sample selection
+      all_data$samples_selected <- import_evn$export$input_select_samples
+      # updateCheckboxGroupInput(inputId = "select_samples",
+      #                          label = "(De-)select samples:",
+      #                          choices = all_data$all_samples,
+      #                          selected = all_data$samples_selected)
 
       # done
       progress$set(value = 100,
