@@ -40,6 +40,18 @@ shinyAppUI <- fluidPage(
                                            width = 400)),
                           style = "background-color: #E8E8E8"
                         ),
+                        fluidRow(
+                          column(width = 12,
+                                 p("or load previously saved work."),
+                                 fileInput(inputId = "load_rdata",
+                                           label = "Load Rdata file",
+                                           multiple = FALSE,
+                                           accept = c(".Rdata", ".RData")),
+                                 textOutput(outputId = "status_rdata")
+                          ),
+                          style = "background-color: #E8E8E8"
+                        ),
+
                         # create some empty space
                         fluidRow(column = 12,
                                  p("")),

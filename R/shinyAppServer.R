@@ -31,6 +31,10 @@ shinyAppServer <- function(input, output, session) {
   # increase upload limit
   options(shiny.maxRequestSize = 30 * 1024^2)
 
+  rdata_status <- reactiveValues(status = FALSE,
+                                 load = TRUE,
+                                 comment = "")
+
   file_info <- reactiveValues(pos_file = NULL,
                               pos_datapath = NULL,
                               neg_file = NULL,
@@ -73,7 +77,11 @@ shinyAppServer <- function(input, output, session) {
   # watch the positive mode file
   observe({
     req(input$res_file_pos,
-        input$res_file_neg)
+        input$res_file_neg,
+        rdata_status)
+
+    if(rdata_status$status == FALSE) {
+      # no data from previous work loaded
 
     # Initialize the progress bar
     progress <- Progress$new(min = 0,
@@ -83,6 +91,9 @@ shinyAppServer <- function(input, output, session) {
     progress$set(value = 1,
                  message = "Processing...",
                  detail = NULL)
+
+    # when MSDIAl files are loaded do not load RData file
+    rdata_status$load = FALSE
 
     # initialize the tibble for storing all the data
     results <- tibble(filename = c(input$res_file_pos$name, input$res_file_neg$name),
@@ -193,6 +204,12 @@ shinyAppServer <- function(input, output, session) {
     progress$set(value = 100,
                  message = "Processing...",
                  detail = NULL)
+    } else {
+      # previous work already loaded, load nothing
+      rdata_status$comment <- "There is already data loaded from previous work. Please refresh the page to remove everything!!
+      Nothing is imported now!!"
+    }
+
   })
 
   # show the raw data
@@ -275,6 +292,29 @@ shinyAppServer <- function(input, output, session) {
       )
     )
   })
+  ####
+
+  #### Load previously saved data
+
+  observe({
+    req(input$load_rdata,
+        rdata_status)
+
+    if(rdata_status$load == TRUE) {
+      rdata_status$status <- TRUE
+      import_evn <- load_to_env(RData = input$load_rdata$datapath)
+    } else {
+      rdata_status$comment <- "There are already MSDIAL files loaded. Please refresh the page to remove everything!!
+      Nothing is imported now!!"
+    }
+  })
+
+  output$status_rdata <- renderText({
+    req(rdata_status)
+
+    rdata_status$comment
+  })
+
   ####
 
   #### select samples
