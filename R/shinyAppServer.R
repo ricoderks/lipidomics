@@ -18,11 +18,12 @@
 #' @importFrom tidyselect last_col everything matches
 #' @importFrom utils head
 #' @importFrom tools file_ext
-#' @importFrom readxl read_xlsx
 #' @importFrom DT renderDT
+#' @importFrom readxl read_xlsx
 #' @importFrom plotly renderPlotly plotlyOutput plot_ly add_markers event_data
 #' @importFrom shinycssloaders withSpinner
 #' @importFrom openxlsx write.xlsx
+#' @importFrom rmarkdown render
 #'
 #' @author Rico Derks
 
@@ -1937,6 +1938,46 @@ shinyAppServer <- function(input, output, session) {
       # save the object
       save(export,
            file = file)
+    }
+  )
+
+  # download report
+  output$download_report <- downloadHandler(
+    filename = function() {
+      # create a filename
+      paste("Report_", Sys.Date(), ".html", sep = "")
+    },
+    content = function(file) {
+      # create copy of Rmd document in temp location
+      # here you should have write permission
+      temp_report <- file.path(tempdir(), "report.Rmd")
+      # create the location of the original Rmd file
+      report_file <- system.file("report", "report.Rmd",
+                                 package = "lipidomics")
+      # copy the original file to the temporary location
+      file.copy(from = report_file,
+                to = temp_report,
+                overwrite = TRUE)
+
+      # setup parameters to pass to Rmd document
+      params <- list(qc_results = all_data$qc_results,
+                     lipid_data = all_data$lipid_data,
+                     lipid_data_long = all_data$lipid_data_long,
+                     lipid_data_filter = all_data$lipid_data_filter)
+
+      # show progress of downloading and creating the report
+      withProgress(message = "Downloading....",
+                   value = 0,
+                   { # first mimmick some progress
+                     incProgress(1/10)
+                     Sys.sleep(1)
+                     incProgress(5/10)
+                     # create the document
+                     render(input = temp_report,
+                            output_file = file,
+                            params = params,
+                            envir = new.env(parent = globalenv()))
+                   })
     }
   )
 

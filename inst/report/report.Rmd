@@ -2,29 +2,124 @@
 title: "Untargeted lipidomics"
 author: "R.J.E. Derks"
 date: "`r Sys.Date()`"
-output: html_document
+output: 
+  html_document:
+    code_folding: hide
+    toc: true
+    toc_float: true
 params:
   qc_results: NA
+  lipid_data: NA
+  lipid_data_long: NA
+  lipid_data_filter: NA
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
-
 # some libraries
 library(tidyverse)
 library(ggCPM)
+library(sessioninfo)
+library(lipidomics)
+library(DT)
 
 qc_results <- params$qc_results
+lipid_data <- params$lipid_data
+lipid_data_long <- params$lipid_data_long
+lipid_data_filter <- params$lipid_data_filter
 ```
 
+# Introduction
+
+# QC
+
+Overall overview RSD values.
+
+```{r fig.width=10}
+show_rsd_histogram(qc_data = qc_results,
+                   rsd = 0.3)
+```
+
+RSD values per lipid class.
+
+```{r include=FALSE}
+# get the number of lipid class and use this to calculate the height of the violin plot
+fig_height_lipid_class <- ceiling(length(unique(qc_results$LipidClass)) / 4)
+```
+
+```{r fig.width=10, fig.height=fig_height_lipid_class, warning=FALSE, message=FALSE}
+show_rsd_lipidclass_violin(qc_data = qc_results,
+                           rsd = 0.3)
+```
+
+Quick comparison between the samples.
+
+```{r include=FALSE}
+# get the number of samples to calculate the height of the correlation heatmap
+fig_height_cor_heatmap <- ceiling(length(unique(lipid_data_long$sample_name)) / 5)
+```
+
+```{r fig.width=10, fig.heigth=fig_height_cor_heatmap}
+cor_heatmap(lipid_data = lipid_data)
+```
+
+# Identification
+
+## Issues
+
+Below on overview of the lipids excluded from the analysis.
+
 ```{r}
-head(qc_results)
+lipid_data_filter %>%
+      select(-sample_type) %>%
+      pivot_wider(id_cols = my_id:carbon_db,
+                  names_from = sample_name,
+                  values_from = area) %>%
+      filter(keep == FALSE,
+             class_keep == TRUE) %>%
+      select(my_id, ion, LipidName, LipidClass, -scale_DotProduct, -scale_RevDotProduct, -polarity, comment) %>%
+      distinct(my_id,
+               .keep_all = TRUE) %>% 
+  mutate(comment = case_when(
+    comment == "no_match" ~ "Not a convicing match",
+    comment == "large_rsd" ~ "High RSD value",
+    comment == "wrong_rt" ~ "Wrong retention time",
+    TRUE ~ comment
+  )) %>% 
+  arrange(LipidName) %>% 
+  datatable(caption = "Table 1: Overview of lipids excluded from further analysis.",
+            options = list(pageLength = 10,
+                           lengthChange = FALSE,
+                           dom = "pt",
+                           ordering = TRUE),
+            rownames = FALSE,
+            colnames = c("ID", "Ion", "Lipid name", "Lipid class", "Reason"))
+```
+
+Below are the lipid classes shown which where used in the data analysis.
+
+```{r}
+lipid_data_filter %>% 
+  select(-sample_type) %>%
+      pivot_wider(id_cols = my_id:carbon_db,
+                  names_from = sample_name,
+                  values_from = area) %>%
+      filter(class_keep == TRUE) %>%
+      select(LipidClass, class_ion) %>%
+      distinct(class_ion,
+               .keep_all = TRUE) %>% 
+  datatable(caption = "Table 2: Overview of lipid classes used in the data analysis.",
+            options = list(pageLength = 10,
+                           lengthChange = FALSE,
+                           dom = "pt",
+                           ordering = TRUE),
+            rownames = FALSE,
+            colnames = c("Lipid class", "Ion"))
 ```
 
 
 # Session info
 
 ```{r session_info}
-sessioninfo::session_info()
+session_info()
 ```
 

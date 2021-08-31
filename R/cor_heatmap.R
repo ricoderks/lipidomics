@@ -15,6 +15,8 @@
 #' @importFrom stats cor
 #' @importFrom grDevices colorRamp
 #'
+#' @export
+#'
 #' @author Rico Derks
 #'
 cor_heatmap <- function(lipid_data) {

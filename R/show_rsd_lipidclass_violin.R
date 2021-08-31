@@ -13,6 +13,7 @@
 #' @importFrom ggCPM theme_cpm cpm_cols
 #' @importFrom rlang .data
 #'
+#' @export
 #'
 #' @author Rico Derks
 #'
