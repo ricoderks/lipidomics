@@ -1973,7 +1973,13 @@ shinyAppServer <- function(input, output, session) {
                      lipid_data = all_data$lipid_data,
                      lipid_data_long = all_data$lipid_data_long,
                      lipid_data_filter = all_data$lipid_data_filter,
-                     rsd_cutoff = input$rsd_cutoff)
+                     rsd_cutoff = input$rsd_cutoff,
+                     show_analysis = input$select_analysis_download,
+                     analysis_data = all_data$analysis_data,
+                     heatmap_input = list(select_z_heatmap = input$select_z_heatmap,
+                                          heatmap_zscore = input$heatmap_zscore,
+                                          heatmap_use_clust = input$heatmap_use_clust,
+                                          select_heatmap_group = input$select_heatmap_group))
 
       # show progress of downloading and creating the report
       withProgress(message = "Downloading....",

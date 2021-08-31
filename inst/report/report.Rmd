@@ -4,7 +4,6 @@ author: "R.J.E. Derks"
 date: "`r Sys.Date()`"
 output: 
   html_document:
-    code_folding: hide
     toc: true
     toc_float: true
 params:
@@ -13,21 +12,30 @@ params:
   lipid_data_long: NA
   lipid_data_filter: NA
   rsd_cutoff: NA
+  show_analysis: NA
+  analysis_data: NA
+  heatmap_input: NA
 ---
 
 ```{r setup, include=FALSE}
-# some libraries
+# do not add any code
+knitr::opts_chunk$set(echo = FALSE)
+# load some libraries
 library(tidyverse)
 library(ggCPM)
 library(sessioninfo)
 library(lipidomics)
 library(DT)
 
+# get all the information/data
 qc_results <- params$qc_results
 lipid_data <- params$lipid_data
 lipid_data_long <- params$lipid_data_long
 lipid_data_filter <- params$lipid_data_filter
 rsd_cutoff <- params$rsd_cutoff
+show_analysis <- params$show_analysis
+analysis_data <- params$analysis_data
+heatmap_input <- params$heatmap_input
 ```
 
 # Introduction
@@ -72,15 +80,15 @@ Below on overview of the lipids excluded from the analysis.
 
 ```{r}
 lipid_data_filter %>%
-      select(-sample_type) %>%
-      pivot_wider(id_cols = my_id:carbon_db,
-                  names_from = sample_name,
-                  values_from = area) %>%
-      filter(keep == FALSE,
-             class_keep == TRUE) %>%
-      select(my_id, ion, LipidName, LipidClass, -scale_DotProduct, -scale_RevDotProduct, -polarity, comment) %>%
-      distinct(my_id,
-               .keep_all = TRUE) %>% 
+  select(-sample_type) %>%
+  pivot_wider(id_cols = my_id:carbon_db,
+              names_from = sample_name,
+              values_from = area) %>%
+  filter(keep == FALSE,
+         class_keep == TRUE) %>%
+  select(my_id, ion, LipidName, LipidClass, -scale_DotProduct, -scale_RevDotProduct, -polarity, comment) %>%
+  distinct(my_id,
+           .keep_all = TRUE) %>% 
   mutate(comment = case_when(
     comment == "no_match" ~ "Not a convicing match",
     comment == "large_rsd" ~ "High RSD value",
@@ -102,13 +110,13 @@ Below are the lipid classes shown which where used in the data analysis.
 ```{r}
 lipid_data_filter %>% 
   select(-sample_type) %>%
-      pivot_wider(id_cols = my_id:carbon_db,
-                  names_from = sample_name,
-                  values_from = area) %>%
-      filter(class_keep == TRUE) %>%
-      select(LipidClass, class_ion) %>%
-      distinct(class_ion,
-               .keep_all = TRUE) %>% 
+  pivot_wider(id_cols = my_id:carbon_db,
+              names_from = sample_name,
+              values_from = area) %>%
+  filter(class_keep == TRUE) %>%
+  select(LipidClass, class_ion) %>%
+  distinct(class_ion,
+           .keep_all = TRUE) %>% 
   datatable(caption = "Table 2: Overview of lipid classes used in the data analysis.",
             options = list(pageLength = 10,
                            lengthChange = FALSE,
@@ -176,7 +184,7 @@ lipid_classes <- list("Fatty acyls" = data.frame(class = c("Fatty acids and conj
                                                                "^SSulfate$",
                                                                "^((BR|CA|SI|ST)?[CS]E|Cholesterol|SHex)$",
                                                                "^AHex(CAS|CS|SIS|BRS|STS)$"))
-                      )
+)
 ```
 
 ```{r results="asis", warning=FALSE, message=FALSE}
@@ -194,6 +202,40 @@ for(a in names(lipid_classes)) {
 }
 ```
 
+```{r results="asis"}
+if(length(show_analysis) > 0) {
+  cat("# Analysis\n")
+  cat("\n")
+}
+```
+
+```{r results="asis"}
+if(length(show_analysis) > 0) {
+  if("heatmap" %in% show_analysis) {
+    cat("## Heatmap\n")
+    cat("\n")
+  }
+}
+```
+
+```{r fig.width=10, fig.height=10}
+if(length(show_analysis) > 0) {
+  if("heatmap" %in% show_analysis) {
+    if(heatmap_input$select_heatmap_group == "none") {
+      compare_samples_heatmap(lipid_data = analysis_data,
+                              cent_scale = heatmap_input$heatmap_zscore,
+                              z = heatmap_input$select_z_heatmap,
+                              clust = heatmap_input$heatmap_use_clust)
+    } else {
+      compare_samples_heatmap(lipid_data = analysis_data,
+                              cent_scale = heatmap_input$heatmap_zscore,
+                              z = heatmap_input$select_z_heatmap,
+                              clust = heatmap_input$heatmap_use_clust,
+                              sample_group = heatmap_input$select_heatmap_group)
+    }
+  }
+}
+```
 
 # Session info
 
