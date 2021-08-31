@@ -1,0 +1,26 @@
+---
+title: "Untargeted lipidomics"
+author: "R.J.E. Derks"
+date: "`r Sys.Date()`"
+output: html_document
+params:
+  my_data: NA
+  info: NA
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+# some libraries
+library(tidyverse)
+library(ggCPM)
+
+my_data <- params$my_data
+```
+
+# Session info
+
+```{r session_info}
+sessioninfo::session_info()
+```
+
