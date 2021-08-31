@@ -12,6 +12,7 @@ params:
   lipid_data: NA
   lipid_data_long: NA
   lipid_data_filter: NA
+  rsd_cutoff: NA
 ---
 
 ```{r setup, include=FALSE}
@@ -26,6 +27,7 @@ qc_results <- params$qc_results
 lipid_data <- params$lipid_data
 lipid_data_long <- params$lipid_data_long
 lipid_data_filter <- params$lipid_data_filter
+rsd_cutoff <- params$rsd_cutoff
 ```
 
 # Introduction
@@ -36,7 +38,7 @@ Overall overview RSD values.
 
 ```{r fig.width=10}
 show_rsd_histogram(qc_data = qc_results,
-                   rsd = 0.3)
+                   rsd = rsd_cutoff)
 ```
 
 RSD values per lipid class.
@@ -48,7 +50,7 @@ fig_height_lipid_class <- ceiling(length(unique(qc_results$LipidClass)) / 4)
 
 ```{r fig.width=10, fig.height=fig_height_lipid_class, warning=FALSE, message=FALSE}
 show_rsd_lipidclass_violin(qc_data = qc_results,
-                           rsd = 0.3)
+                           rsd = rsd_cutoff)
 ```
 
 Quick comparison between the samples.
@@ -62,7 +64,7 @@ fig_height_cor_heatmap <- ceiling(length(unique(lipid_data_long$sample_name)) / 
 cor_heatmap(lipid_data = lipid_data)
 ```
 
-# Identification
+# Identification {.tabset}
 
 ## Issues
 
@@ -114,6 +116,82 @@ lipid_data_filter %>%
                            ordering = TRUE),
             rownames = FALSE,
             colnames = c("Lipid class", "Ion"))
+```
+
+```{r include=FALSE}
+# create a list with 
+lipid_classes <- list("Fatty acyls" = data.frame(class = c("Fatty acids and conjugates",
+                                                           "Fatty amides",
+                                                           "Fatty esters"),
+                                                 pattern = c("^(Ox)?FA$",
+                                                             "^(NAGly|NAGlySer|NAOrn|NAE)",
+                                                             "^(CAR|FAHFA)")),
+                      "Glycerolipids" = data.frame(class = c("Ether glycerolipids",
+                                                             "Glycerolipids",
+                                                             "Glycosyldiradylglycerols",
+                                                             "Other glycerolipids"),
+                                                   pattern = c("^(Ether|Ox)[MDT]G$",
+                                                               "^[MDT]G$",
+                                                               "^(Ether|EtherS)?[DMS][GQ]DG$",
+                                                               "^([AL]?DG(GA|CC|TS/A)|TG_EST)$")),
+                      "Glycerophospholipids" = data.frame(class = c("Glycerophosphates (PA)",
+                                                                    "Glycerophosphocholines (PC)",
+                                                                    "Glycerophospho ethanolamines (PE)",
+                                                                    "Glycerophosphoglycerols (PG)",
+                                                                    "Glycerophosphoglycerophosphoglycerols (CL)",
+                                                                    "Glycerophosphoinositolglycans",
+                                                                    "Glycerophosphoinositols (PI)",
+                                                                    "Glycerophosphoserines (PS)",
+                                                                    "Oxidized glycerophospholipids",
+                                                                    "Other Glycerophospholipids"),
+                                                          pattern = c("^L?PA$",
+                                                                      "^(Ether)?L?PC$",
+                                                                      "^(LNA)?(Ether)?L?PE(\\(P\\))?$",
+                                                                      "^(H?BMP|(Ether)?L?PG)$",
+                                                                      "^([DM]L)?CL$",
+                                                                      "^Ac[2-4]PIM[12]$",
+                                                                      "^(Ether)?L?PI$",
+                                                                      "^(LNA)?(Ether)?L?PS$",
+                                                                      "^OxP[ACEGIS]$",
+                                                                      "^P(Et|Me)OH$")),
+                      "Prenol lipids" = data.frame(class = "Prenol lipids",
+                                                   pattern = "^(VAE|CoQ|VitaminE)$"),
+                      "Sphingolipids" = data.frame(class = c("Acidic glycosphingolipids",
+                                                             "Ceramides",
+                                                             "Phosphosphingolipids",
+                                                             "Neutral glycosphingolipids",
+                                                             "Sphingoid bases"),
+                                                   pattern = c("^(GM3|SHexCer(\\+O)?)$",
+                                                               "^Cer[P_]",
+                                                               "^(ASM|PE_Cer(\\+O)?|PI_Cer(\\+O)?|SM|SM\\+O)",
+                                                               "^A?Hex[23]?Cer",
+                                                               "^((Phyto|DH)?Sph|SL(\\+O)?)$")),
+                      "Sterol lipids" = data.frame(class = c("Bile acids and conjugates",
+                                                             "Secosteroids",
+                                                             "Steroid conjugates",
+                                                             "Sterols",
+                                                             "Other sterol lipids"),
+                                                   pattern = c("^(BASulfate|BileAcid|DCAE)$",
+                                                               "^VitaminD$",
+                                                               "^SSulfate$",
+                                                               "^((BR|CA|SI|ST)?[CS]E|Cholesterol|SHex)$",
+                                                               "^AHex(CAS|CS|SIS|BRS|STS)$"))
+                      )
+```
+
+```{r results="asis", warning=FALSE, message=FALSE}
+# Check this: https://www.r-bloggers.com/2020/07/programmatically-create-new-headings-and-outputs-in-rmarkdown/
+for(a in names(lipid_classes)) {
+  cat("\n")
+  cat("## ", a, "{.tabset}\n")
+  for(b in 1:nrow(lipid_classes[[a]])) {
+    cat("\n")
+    cat("### ", lipid_classes[[a]]$class[b], "\n")
+    print(bubble_plot(lipid_data = lipid_data_filter,
+                      pattern = lipid_classes[[a]]$pattern[b]))
+    cat("\n")
+  }
+}
 ```
 
 

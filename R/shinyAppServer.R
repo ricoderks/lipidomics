@@ -1016,7 +1016,7 @@ shinyAppServer <- function(input, output, session) {
   })
   ###
 
-  ### Glycerophosphoglycerols
+  ### Glycerophosphoinositols
   filter_PI <- bubblePlotServer(id = "PI",
                                 lipid_data = reactive(all_data$lipid_data_filter),
                                 pattern = "^(Ether)?L?PI$",
@@ -1963,7 +1963,8 @@ shinyAppServer <- function(input, output, session) {
       params <- list(qc_results = all_data$qc_results,
                      lipid_data = all_data$lipid_data,
                      lipid_data_long = all_data$lipid_data_long,
-                     lipid_data_filter = all_data$lipid_data_filter)
+                     lipid_data_filter = all_data$lipid_data_filter,
+                     rsd_cutoff = input$rsd_cutoff)
 
       # show progress of downloading and creating the report
       withProgress(message = "Downloading....",
