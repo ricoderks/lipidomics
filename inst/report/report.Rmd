@@ -34,7 +34,7 @@ rsd_cutoff <- params$rsd_cutoff
 
 # QC
 
-Overall overview RSD values.
+Overall overview RSD values. Lipids above the threshold of **`r rsd_cutoff`** are excluded.
 
 ```{r fig.width=10}
 show_rsd_histogram(qc_data = qc_results,
@@ -57,7 +57,7 @@ Quick comparison between the samples.
 
 ```{r include=FALSE}
 # get the number of samples to calculate the height of the correlation heatmap
-fig_height_cor_heatmap <- ceiling(length(unique(lipid_data_long$sample_name)) / 6)
+fig_height_cor_heatmap <- ceiling(length(unique(lipid_data_long$sample_name)) / 7)
 ```
 
 ```{r fig.width=10, fig.height=fig_height_cor_heatmap}
