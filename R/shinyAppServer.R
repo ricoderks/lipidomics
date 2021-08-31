@@ -389,11 +389,10 @@ shinyAppServer <- function(input, output, session) {
 
       all_data$class_ion_selected <- class_ion_selected
       # sample selection
-      all_data$samples_selected <- import_evn$export$input_select_samples
-      # updateCheckboxGroupInput(inputId = "select_samples",
-      #                          label = "(De-)select samples:",
-      #                          choices = all_data$all_samples,
-      #                          selected = all_data$samples_selected)
+      updateCheckboxGroupInput(inputId = "select_samples",
+                               label = "(De-)select samples:",
+                               choices = all_data$all_samples,
+                               selected = all_data$samples_selected)
 
       # done
       progress$set(value = 100,
@@ -423,7 +422,7 @@ shinyAppServer <- function(input, output, session) {
       checkboxGroupInput(inputId = "select_samples",
                          label = "(De-)select samples:",
                          choices = all_data$all_samples,
-                         selected = all_data$all_samples)
+                         selected = all_data$samples_selected)
     )
   })
 
@@ -567,7 +566,8 @@ shinyAppServer <- function(input, output, session) {
   #### identification part ####
   # observe which sample needs to be selected
   observeEvent(input$select_samples, {
-    req(input$select_samples)
+    req(input$select_samples,
+        all_data$samples_selected)
 
     # store which samples are selected
     all_data$samples_selected <- input$select_samples
