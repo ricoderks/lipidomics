@@ -40,6 +40,18 @@ shinyAppUI <- fluidPage(
                                            width = 400)),
                           style = "background-color: #E8E8E8"
                         ),
+                        fluidRow(
+                          column(width = 12,
+                                 p("or load previously saved work."),
+                                 fileInput(inputId = "load_rdata",
+                                           label = "Load Rdata file",
+                                           multiple = FALSE,
+                                           accept = c(".Rdata", ".RData")),
+                                 textOutput(outputId = "status_rdata")
+                          ),
+                          style = "background-color: #E8E8E8"
+                        ),
+
                         # create some empty space
                         fluidRow(column = 12,
                                  p("")),
@@ -490,13 +502,21 @@ shinyAppUI <- fluidPage(
                                                                      type = 5))
                                    )
                                  )
-                        ), # end tabpanel PCA
-                        tabPanel(title = "UMAP")
+                        ) # end tabpanel PCA
              ), # end navbarmenu analysis
              tabPanel(title = "Export",
                       p("Here, several export options will be shown!"),
+                      hr(),
+                      h3("Save work"),
+                      p("Save the current state of your work into a Rdata file."),
+                      downloadButton(outputId = "save_rdata",
+                                     label = "Save (Rdata)"),
+                      hr(),
+                      h3("Lipid list"),
+                      p("Save the lipids into an Excel file (.xlsx)."),
                       downloadButton(outputId = "download_lipid_xlsx",
-                                     label = "Download lipid list (xlsx)")
+                                     label = "Download lipid list (xlsx)"),
+                      hr()
              ),
              # tabPanel About
              navbarMenu(title = "Help",
