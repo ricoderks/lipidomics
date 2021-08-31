@@ -28,6 +28,7 @@ Imports:
     readxl,
     recipes,
     rlang,
+    rmarkdown,
     scales,
     sessioninfo,
     shiny,
