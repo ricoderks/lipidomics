@@ -597,9 +597,11 @@ shinyAppServer <- function(input, output, session) {
       mutate(rsd_keep = if_else(.data$my_id %in% keep_lipids_rsd,
                                 TRUE,
                                 FALSE),
-             comment = if_else(.data$my_id %in% keep_lipids_rsd,
-                               "keep",
-                               "large_rsd"),
+             comment = if_else(.data$rsd_keep == FALSE,
+                               "large_rsd",
+                               if_else(.data$match_keep == FALSE,
+                                       "no_match",
+                                       "keep")),
              keep = if_else(.data$rsd_keep == TRUE &
                               .data$match_keep == TRUE &
                               .data$rt_keep == TRUE,
@@ -636,9 +638,11 @@ shinyAppServer <- function(input, output, session) {
       mutate(match_keep = if_else(.data$my_id %in% keep_lipids_msms,
                                   TRUE,
                                   FALSE),
-             comment = if_else(.data$my_id %in% keep_lipids_msms,
-                               "keep",
-                               "no_match"),
+             comment = if_else(.data$rsd_keep == FALSE,
+                               "large_rsd",
+                               if_else(.data$match_keep == FALSE,
+                                       "no_match",
+                                       "keep")),
              keep = if_else(.data$rsd_keep == TRUE &
                               .data$match_keep == TRUE &
                               .data$rt_keep == TRUE,
