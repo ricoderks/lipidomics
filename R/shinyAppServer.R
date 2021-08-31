@@ -1392,16 +1392,19 @@ shinyAppServer <- function(input, output, session) {
                   values_from = .data$area) %>%
       filter(.data$keep == FALSE,
              .data$class_keep == TRUE) %>%
-      select(.data$my_id:.data$polarity, -.data$scale_DotProduct, -.data$scale_RevDotProduct, .data$comment, .data$keep, .data$rsd_keep, .data$match_keep, .data$rt_keep) %>%
+      select(.data$my_id, .data$ion, .data$LipidName, .data$LipidClass, -.data$scale_DotProduct, -.data$scale_RevDotProduct, -.data$polarity, .data$comment) %>%
       distinct(.data$my_id,
-               .keep_all = TRUE)
+               .keep_all = TRUE) %>%
+      arrange(.data$LipidName)
   },
   options = list(pageLength = 10,
                  lengthChange = FALSE,
                  dom = "pt",
                  ordering = TRUE),
   selection = "none",
-  rownames = FALSE)
+  rownames = FALSE,
+  colnames = c("ID", "Ion", "Lipid name", "Lipid class", "Reason"),
+  caption = "Lipids excluded from further analysis.")
 
   output$tbl_issues_class <- renderDT({
     req(all_data$lipid_data_filter)
@@ -1412,7 +1415,7 @@ shinyAppServer <- function(input, output, session) {
                   names_from = .data$sample_name,
                   values_from = .data$area) %>%
       filter(.data$class_keep == FALSE) %>%
-      select(.data$LipidClass, .data$class_ion, .data$class_keep) %>%
+      select(.data$LipidClass, .data$class_ion) %>%
       distinct(.data$class_ion,
                .keep_all = TRUE)
   },
@@ -1421,7 +1424,9 @@ shinyAppServer <- function(input, output, session) {
                  dom = "pt",
                  ordering = TRUE),
   selection = "none",
-  rownames = FALSE)
+  rownames = FALSE,
+  colnames = c("Lipid class", "Ion"),
+  caption = "Lipid classes excluded from further analysis.")
   #### eind issues part
 
   #### meta data part
