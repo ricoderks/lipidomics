@@ -197,6 +197,7 @@ bubblePlotServer <- function(id, lipid_data, pattern, title) {
             lipid_status <- "keep"
           }
         }
+
         if(nrow(selected_data$data) == 1) {
           tagList(
             fluidRow(
@@ -205,7 +206,8 @@ bubblePlotServer <- function(id, lipid_data, pattern, title) {
                                  label = "Keep :",
                                  choices = c("Keep" = "keep",
                                              "No convincing match" = "no_match",
-                                             "Incorrect ret. time" = "wrong_rt"),
+                                             "Incorrect ret. time" = "wrong_rt",
+                                             "High background" = "high_bg"),
                                  selected = lipid_status)
               )
             )

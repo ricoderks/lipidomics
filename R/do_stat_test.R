@@ -19,6 +19,8 @@
 #' @importFrom magrittr %>%
 #' @importFrom rlang .data
 #'
+#' @export
+#'
 #' @author Rico Derks
 #'
 do_stat_test <- function(lipid_data, group, group1_name, group2_name, normalization = c("raw", "tot_area"), transformation = c("none", "log10"),

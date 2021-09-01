@@ -21,15 +21,18 @@ set_issue_info <- function(lipid_data, info) {
              "keep" = {
                lipid_data$match_keep[lipid_data$my_id == info$filter_data$my_id[a]] <- TRUE
                lipid_data$rt_keep[lipid_data$my_id == info$filter_data$my_id[a]] <- TRUE
+               lipid_data$background_keep[lipid_data$my_id == info$filter_data$my_id[a]] <- TRUE
              },
              "no_match" = lipid_data$match_keep[lipid_data$my_id == info$filter_data$my_id[a]] <- FALSE,
-             "wrong_rt" = lipid_data$rt_keep[lipid_data$my_id == info$filter_data$my_id[a]] <- FALSE)
+             "wrong_rt" = lipid_data$rt_keep[lipid_data$my_id == info$filter_data$my_id[a]] <- FALSE,
+             "high_bg" = lipid_data$background_keep[lipid_data$my_id == info$filter_data$my_id[a]] <- FALSE)
     }
 
     lipid_data <- lipid_data %>%
       mutate(keep = if_else(.data$rsd_keep == TRUE &
                               .data$match_keep == TRUE &
-                              .data$rt_keep == TRUE,
+                              .data$rt_keep == TRUE &
+                              .data$background_keep == TRUE,
                             TRUE,
                             FALSE))
   }
