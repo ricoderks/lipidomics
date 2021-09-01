@@ -520,7 +520,7 @@ shinyAppUI <- fluidPage(
                       checkboxGroupInput(inputId = "select_analysis_download",
                                          label = "Include analysis in report :",
                                          choices = c("Heatmap" = "heatmap",
-                                                     "Compare samples (not yet working)" = "compare_samples",
+                                                     "Compare samples" = "compare_samples",
                                                      "PCA (not yet working)" = "pca")),
                       br(),
                       downloadButton(outputId = "download_report",

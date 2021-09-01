@@ -15,6 +15,8 @@ params:
   show_analysis: NA
   analysis_data: NA
   heatmap_input: NA
+  test_result: NA
+  test_input: NA
 ---
 
 ```{r setup, include=FALSE}
@@ -36,6 +38,8 @@ rsd_cutoff <- params$rsd_cutoff
 show_analysis <- params$show_analysis
 analysis_data <- params$analysis_data
 heatmap_input <- params$heatmap_input
+test_result <- params$test_result
+test_input <- params$test_input
 ```
 
 # Introduction
@@ -218,7 +222,7 @@ if(length(show_analysis) > 0) {
 }
 ```
 
-```{r fig.width=10, fig.height=10}
+```{r fig.width=10, fig.height=10, warning=FALSE, message=FALSE}
 if(length(show_analysis) > 0) {
   if("heatmap" %in% show_analysis) {
     if(heatmap_input$select_heatmap_group == "none") {
@@ -233,6 +237,25 @@ if(length(show_analysis) > 0) {
                               clust = heatmap_input$heatmap_use_clust,
                               sample_group = heatmap_input$select_heatmap_group)
     }
+  }
+}
+```
+
+```{r results="asis"}
+if(length(show_analysis) > 0) {
+  if("compare_samples" %in% show_analysis) {
+    cat("## Compare samples\n")
+    cat("\n")
+  }
+}
+```
+
+```{r fig.width=10, warning=FALSE, message=FALSE}
+if(length(show_analysis) > 0) {
+  if("compare_samples" %in% show_analysis) {
+    volcano_plot(lipid_data = test_result,
+                 pvalue_adjust = test_input$test_cor_pvalue,
+                 title = paste0(test_input$test_group1, " vs ", test_input$test_group2))
   }
 }
 ```

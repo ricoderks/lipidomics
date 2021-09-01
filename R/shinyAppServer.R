@@ -1979,7 +1979,11 @@ shinyAppServer <- function(input, output, session) {
                      heatmap_input = list(select_z_heatmap = input$select_z_heatmap,
                                           heatmap_zscore = input$heatmap_zscore,
                                           heatmap_use_clust = input$heatmap_use_clust,
-                                          select_heatmap_group = input$select_heatmap_group))
+                                          select_heatmap_group = input$select_heatmap_group),
+                     test_result = isolate(test_result()),
+                     test_input = list(test_cor_pvalue = input$test_cor_pvalue,
+                                       test_group1 = input$test_group1,
+                                       test_group2 = input$test_group2))
 
       # show progress of downloading and creating the report
       withProgress(message = "Downloading....",
