@@ -56,7 +56,8 @@ shinyAppServer <- function(input, output, session) {
                              num_lipid_classes = NULL,
                              all_samples = NULL,
                              samples_selected = NULL,
-                             pca_score_plot = FALSE)
+                             pca_score_plot = FALSE,
+                             select_groups = NULL)
 
   default_class_ion <- c("ADGGA - [M-H]-", "AHexBRS - [M+HCOO]-", "AHexCAS - [M+HCOO]-", "AHexCS - [M+HCOO]-", "AHexSIS - [M+HCOO]-", "ASM - [M+H]+", "BASulfate - [M-H]-",
                          "BileAcid - [M-H]-", "BMP - [M+NH4]+", "CAR - [M+H]+", "CE - [M+NH4]+", "Cer_ADS - [M+HCOO]-", "Cer_AP - [M+HCOO]-",
@@ -349,6 +350,23 @@ shinyAppServer <- function(input, output, session) {
       all_data$all_samples <-  import_evn$export$all_samples
       all_data$samples_selected <- import_evn$export$samples_selected
       all_data$pca_score_plot <- import_evn$export$pca_score_plot
+      all_data$merged_data <- import_evn$export$merged_data
+      all_data$meta_data <- reactive(import_evn$export$meta_data)
+
+      if(all_data$merged_data == TRUE) {
+        # get the column names for grouping
+        all_data$select_groups <- import_evn$export$input_select_group_column
+
+        # get the column names of the meta data
+        merge_colnames <- colnames(all_data$meta_data())
+
+        # update the select input for which column was used for merging
+        updateSelectInput(session = session,
+                          inputId = "select_meta_column",
+                          label = "Select column for merging:",
+                          choices = c("none", merge_colnames),
+                          selected = import_evn$export$input_select_meta_column)
+      }
 
       progress$set(value = 85,
                    message = "Processing...",
@@ -1461,22 +1479,27 @@ shinyAppServer <- function(input, output, session) {
 
   # update on which column to merge
   observe({
-    req(all_data$meta_data)
+    req(all_data$meta_data,
+        rdata_status)
 
-    # get the column names of the meta data
-    merge_colnames <- colnames(all_data$meta_data())
+    # no previous work loaded
+    if(rdata_status$status == FALSE) {
+      # get the column names of the meta data
+      merge_colnames <- colnames(all_data$meta_data())
 
-    # update the select input
-    updateSelectInput(session = session,
-                      inputId = "select_meta_column",
-                      label = "Select column for merging:",
-                      choices = c("none", merge_colnames),
-                      selected = "none")
+      # update the select input
+      updateSelectInput(session = session,
+                        inputId = "select_meta_column",
+                        label = "Select column for merging:",
+                        choices = c("none", merge_colnames),
+                        selected = "none")
+    }
   })
 
   output$select_group_column_ui <- renderUI({
     req(all_data$meta_data)
 
+    # also check if there is no previous loaded data present
     if(all_data$merged_data == TRUE) {
       # get the column names of the meta data
       all_colnames <- colnames(all_data$meta_data())
@@ -1486,7 +1509,7 @@ shinyAppServer <- function(input, output, session) {
         checkboxGroupInput(inputId = "select_group_column",
                            label = "Select column to be used for grouping:",
                            choices = all_colnames,
-                           selected = NULL)
+                           selected = all_data$select_groups)
       )
     }
   })
@@ -1943,6 +1966,11 @@ shinyAppServer <- function(input, output, session) {
       export$input_select_PRL_class <- input$select_PRL_class
       # sample selection
       export$input_select_samples <- input$select_samples
+      # export meta data status
+      export$merged_data <- all_data$merged_data
+      export$input_select_group_column <- input$select_group_column
+      export$meta_data <- isolate(all_data$meta_data())
+      export$input_select_meta_column <- input$select_meta_column
 
       # save the object
       save(export,
