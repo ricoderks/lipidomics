@@ -505,8 +505,6 @@ shinyAppUI <- fluidPage(
                         ) # end tabpanel PCA
              ), # end navbarmenu analysis
              tabPanel(title = "Export",
-                      p("Here, several export options will be shown!"),
-                      hr(),
                       h3("Save work"),
                       p("Save the current state of your work into a Rdata file."),
                       downloadButton(outputId = "save_rdata",
@@ -516,6 +514,17 @@ shinyAppUI <- fluidPage(
                       p("Save the lipids into an Excel file (.xlsx)."),
                       downloadButton(outputId = "download_lipid_xlsx",
                                      label = "Download lipid list (xlsx)"),
+                      hr(),
+                      h3("Analysis report"),
+                      p("A report (as html file) can be downloaded here. If an analysis is added, this will be added with the current settings."),
+                      checkboxGroupInput(inputId = "select_analysis_download",
+                                         label = "Include analysis in report :",
+                                         choices = c("Heatmap" = "heatmap",
+                                                     "Compare samples" = "compare_samples",
+                                                     "PCA (not yet working)" = "pca")),
+                      br(),
+                      downloadButton(outputId = "download_report",
+                                     label = "Download report (html)"),
                       hr()
              ),
              # tabPanel About

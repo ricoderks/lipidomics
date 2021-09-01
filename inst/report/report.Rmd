@@ -1,0 +1,268 @@
+---
+title: "Untargeted lipidomics"
+author: "R.J.E. Derks"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+params:
+  qc_results: NA
+  lipid_data: NA
+  lipid_data_long: NA
+  lipid_data_filter: NA
+  rsd_cutoff: NA
+  show_analysis: NA
+  analysis_data: NA
+  heatmap_input: NA
+  test_result: NA
+  test_input: NA
+---
+
+```{r setup, include=FALSE}
+# do not add any code
+knitr::opts_chunk$set(echo = FALSE)
+# load some libraries
+library(tidyverse)
+library(ggCPM)
+library(sessioninfo)
+library(lipidomics)
+library(DT)
+
+# get all the information/data
+qc_results <- params$qc_results
+lipid_data <- params$lipid_data
+lipid_data_long <- params$lipid_data_long
+lipid_data_filter <- params$lipid_data_filter
+rsd_cutoff <- params$rsd_cutoff
+show_analysis <- params$show_analysis
+analysis_data <- params$analysis_data
+heatmap_input <- params$heatmap_input
+test_result <- params$test_result
+test_input <- params$test_input
+```
+
+# Introduction
+
+# QC
+
+Overall overview RSD values. Lipids above the threshold of **`r rsd_cutoff`** are excluded.
+
+```{r fig.width=10}
+show_rsd_histogram(qc_data = qc_results,
+                   rsd = rsd_cutoff)
+```
+
+RSD values per lipid class.
+
+```{r include=FALSE}
+# get the number of lipid class and use this to calculate the height of the violin plot
+fig_height_lipid_class <- ceiling(length(unique(qc_results$LipidClass)) / 4)
+```
+
+```{r fig.width=10, fig.height=fig_height_lipid_class, warning=FALSE, message=FALSE}
+show_rsd_lipidclass_violin(qc_data = qc_results,
+                           rsd = rsd_cutoff)
+```
+
+Quick comparison between the samples.
+
+```{r include=FALSE}
+# get the number of samples to calculate the height of the correlation heatmap
+fig_height_cor_heatmap <- ceiling(length(unique(lipid_data_long$sample_name)) / 7)
+```
+
+```{r fig.width=10, fig.height=fig_height_cor_heatmap}
+cor_heatmap(lipid_data = lipid_data)
+```
+
+# Identification {.tabset}
+
+## Issues
+
+Below on overview of the lipids excluded from the analysis.
+
+```{r}
+lipid_data_filter %>%
+  select(-sample_type) %>%
+  pivot_wider(id_cols = my_id:carbon_db,
+              names_from = sample_name,
+              values_from = area) %>%
+  filter(keep == FALSE,
+         class_keep == TRUE) %>%
+  select(my_id, ion, LipidName, LipidClass, -scale_DotProduct, -scale_RevDotProduct, -polarity, comment) %>%
+  distinct(my_id,
+           .keep_all = TRUE) %>% 
+  mutate(comment = case_when(
+    comment == "no_match" ~ "Not a convicing match",
+    comment == "large_rsd" ~ "High RSD value",
+    comment == "wrong_rt" ~ "Wrong retention time",
+    TRUE ~ comment
+  )) %>% 
+  arrange(LipidName) %>% 
+  datatable(caption = "Table 1: Overview of lipids excluded from further analysis.",
+            options = list(pageLength = 10,
+                           lengthChange = FALSE,
+                           dom = "pt",
+                           ordering = TRUE),
+            rownames = FALSE,
+            colnames = c("ID", "Ion", "Lipid name", "Lipid class", "Reason"))
+```
+
+Below are the lipid classes shown which where used in the data analysis.
+
+```{r}
+lipid_data_filter %>% 
+  select(-sample_type) %>%
+  pivot_wider(id_cols = my_id:carbon_db,
+              names_from = sample_name,
+              values_from = area) %>%
+  filter(class_keep == TRUE) %>%
+  select(LipidClass, class_ion) %>%
+  distinct(class_ion,
+           .keep_all = TRUE) %>% 
+  datatable(caption = "Table 2: Overview of lipid classes used in the data analysis.",
+            options = list(pageLength = 10,
+                           lengthChange = FALSE,
+                           dom = "pt",
+                           ordering = TRUE),
+            rownames = FALSE,
+            colnames = c("Lipid class", "Ion"))
+```
+
+```{r include=FALSE}
+# create a list with 
+lipid_classes <- list("Fatty acyls" = data.frame(class = c("Fatty acids and conjugates",
+                                                           "Fatty amides",
+                                                           "Fatty esters"),
+                                                 pattern = c("^(Ox)?FA$",
+                                                             "^(NAGly|NAGlySer|NAOrn|NAE)",
+                                                             "^(CAR|FAHFA)")),
+                      "Glycerolipids" = data.frame(class = c("Ether glycerolipids",
+                                                             "Glycerolipids",
+                                                             "Glycosyldiradylglycerols",
+                                                             "Other glycerolipids"),
+                                                   pattern = c("^(Ether|Ox)[MDT]G$",
+                                                               "^[MDT]G$",
+                                                               "^(Ether|EtherS)?[DMS][GQ]DG$",
+                                                               "^([AL]?DG(GA|CC|TS/A)|TG_EST)$")),
+                      "Glycerophospholipids" = data.frame(class = c("Glycerophosphates (PA)",
+                                                                    "Glycerophosphocholines (PC)",
+                                                                    "Glycerophospho ethanolamines (PE)",
+                                                                    "Glycerophosphoglycerols (PG)",
+                                                                    "Glycerophosphoglycerophosphoglycerols (CL)",
+                                                                    "Glycerophosphoinositolglycans",
+                                                                    "Glycerophosphoinositols (PI)",
+                                                                    "Glycerophosphoserines (PS)",
+                                                                    "Oxidized glycerophospholipids",
+                                                                    "Other Glycerophospholipids"),
+                                                          pattern = c("^L?PA$",
+                                                                      "^(Ether)?L?PC$",
+                                                                      "^(LNA)?(Ether)?L?PE(\\(P\\))?$",
+                                                                      "^(H?BMP|(Ether)?L?PG)$",
+                                                                      "^([DM]L)?CL$",
+                                                                      "^Ac[2-4]PIM[12]$",
+                                                                      "^(Ether)?L?PI$",
+                                                                      "^(LNA)?(Ether)?L?PS$",
+                                                                      "^OxP[ACEGIS]$",
+                                                                      "^P(Et|Me)OH$")),
+                      "Prenol lipids" = data.frame(class = "Prenol lipids",
+                                                   pattern = "^(VAE|CoQ|VitaminE)$"),
+                      "Sphingolipids" = data.frame(class = c("Acidic glycosphingolipids",
+                                                             "Ceramides",
+                                                             "Phosphosphingolipids",
+                                                             "Neutral glycosphingolipids",
+                                                             "Sphingoid bases"),
+                                                   pattern = c("^(GM3|SHexCer(\\+O)?)$",
+                                                               "^Cer[P_]",
+                                                               "^(ASM|PE_Cer(\\+O)?|PI_Cer(\\+O)?|SM|SM\\+O)",
+                                                               "^A?Hex[23]?Cer",
+                                                               "^((Phyto|DH)?Sph|SL(\\+O)?)$")),
+                      "Sterol lipids" = data.frame(class = c("Bile acids and conjugates",
+                                                             "Secosteroids",
+                                                             "Steroid conjugates",
+                                                             "Sterols",
+                                                             "Other sterol lipids"),
+                                                   pattern = c("^(BASulfate|BileAcid|DCAE)$",
+                                                               "^VitaminD$",
+                                                               "^SSulfate$",
+                                                               "^((BR|CA|SI|ST)?[CS]E|Cholesterol|SHex)$",
+                                                               "^AHex(CAS|CS|SIS|BRS|STS)$"))
+)
+```
+
+```{r results="asis", warning=FALSE, message=FALSE}
+# Check this: https://www.r-bloggers.com/2020/07/programmatically-create-new-headings-and-outputs-in-rmarkdown/
+for(a in names(lipid_classes)) {
+  cat("\n")
+  cat("## ", a, "{.tabset}\n")
+  for(b in 1:nrow(lipid_classes[[a]])) {
+    cat("\n")
+    cat("### ", lipid_classes[[a]]$class[b], "\n")
+    print(bubble_plot(lipid_data = lipid_data_filter,
+                      pattern = lipid_classes[[a]]$pattern[b]))
+    cat("\n")
+  }
+}
+```
+
+```{r results="asis"}
+if(length(show_analysis) > 0) {
+  cat("# Analysis\n")
+  cat("\n")
+}
+```
+
+```{r results="asis"}
+if(length(show_analysis) > 0) {
+  if("heatmap" %in% show_analysis) {
+    cat("## Heatmap\n")
+    cat("\n")
+  }
+}
+```
+
+```{r fig.width=10, fig.height=10, warning=FALSE, message=FALSE}
+if(length(show_analysis) > 0) {
+  if("heatmap" %in% show_analysis) {
+    if(heatmap_input$select_heatmap_group == "none") {
+      compare_samples_heatmap(lipid_data = analysis_data,
+                              cent_scale = heatmap_input$heatmap_zscore,
+                              z = heatmap_input$select_z_heatmap,
+                              clust = heatmap_input$heatmap_use_clust)
+    } else {
+      compare_samples_heatmap(lipid_data = analysis_data,
+                              cent_scale = heatmap_input$heatmap_zscore,
+                              z = heatmap_input$select_z_heatmap,
+                              clust = heatmap_input$heatmap_use_clust,
+                              sample_group = heatmap_input$select_heatmap_group)
+    }
+  }
+}
+```
+
+```{r results="asis"}
+if(length(show_analysis) > 0) {
+  if("compare_samples" %in% show_analysis) {
+    cat("## Compare samples\n")
+    cat("\n")
+  }
+}
+```
+
+```{r fig.width=10, warning=FALSE, message=FALSE}
+if(length(show_analysis) > 0) {
+  if("compare_samples" %in% show_analysis) {
+    volcano_plot(lipid_data = test_result,
+                 pvalue_adjust = test_input$test_cor_pvalue,
+                 title = paste0(test_input$test_group1, " vs ", test_input$test_group2))
+  }
+}
+```
+
+# Session info
+
+```{r session_info}
+session_info()
+```
+

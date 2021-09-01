@@ -18,11 +18,12 @@
 #' @importFrom tidyselect last_col everything matches
 #' @importFrom utils head
 #' @importFrom tools file_ext
-#' @importFrom readxl read_xlsx
 #' @importFrom DT renderDT
+#' @importFrom readxl read_xlsx
 #' @importFrom plotly renderPlotly plotlyOutput plot_ly add_markers event_data
 #' @importFrom shinycssloaders withSpinner
 #' @importFrom openxlsx write.xlsx
+#' @importFrom rmarkdown render
 #'
 #' @author Rico Derks
 
@@ -55,7 +56,8 @@ shinyAppServer <- function(input, output, session) {
                              num_lipid_classes = NULL,
                              all_samples = NULL,
                              samples_selected = NULL,
-                             pca_score_plot = FALSE)
+                             pca_score_plot = FALSE,
+                             select_groups = NULL)
 
   default_class_ion <- c("ADGGA - [M-H]-", "AHexBRS - [M+HCOO]-", "AHexCAS - [M+HCOO]-", "AHexCS - [M+HCOO]-", "AHexSIS - [M+HCOO]-", "ASM - [M+H]+", "BASulfate - [M-H]-",
                          "BileAcid - [M-H]-", "BMP - [M+NH4]+", "CAR - [M+H]+", "CE - [M+NH4]+", "Cer_ADS - [M+HCOO]-", "Cer_AP - [M+HCOO]-",
@@ -348,6 +350,23 @@ shinyAppServer <- function(input, output, session) {
       all_data$all_samples <-  import_evn$export$all_samples
       all_data$samples_selected <- import_evn$export$samples_selected
       all_data$pca_score_plot <- import_evn$export$pca_score_plot
+      all_data$merged_data <- import_evn$export$merged_data
+      all_data$meta_data <- reactive(import_evn$export$meta_data)
+
+      if(all_data$merged_data == TRUE) {
+        # get the column names for grouping
+        all_data$select_groups <- import_evn$export$input_select_group_column
+
+        # get the column names of the meta data
+        merge_colnames <- colnames(all_data$meta_data())
+
+        # update the select input for which column was used for merging
+        updateSelectInput(session = session,
+                          inputId = "select_meta_column",
+                          label = "Select column for merging:",
+                          choices = c("none", merge_colnames),
+                          selected = import_evn$export$input_select_meta_column)
+      }
 
       progress$set(value = 85,
                    message = "Processing...",
@@ -596,9 +615,11 @@ shinyAppServer <- function(input, output, session) {
       mutate(rsd_keep = if_else(.data$my_id %in% keep_lipids_rsd,
                                 TRUE,
                                 FALSE),
-             comment = if_else(.data$my_id %in% keep_lipids_rsd,
-                               "keep",
-                               "large_rsd"),
+             comment = if_else(.data$rsd_keep == FALSE,
+                               "large_rsd",
+                               if_else(.data$match_keep == FALSE,
+                                       "no_match",
+                                       "keep")),
              keep = if_else(.data$rsd_keep == TRUE &
                               .data$match_keep == TRUE &
                               .data$rt_keep == TRUE,
@@ -635,9 +656,11 @@ shinyAppServer <- function(input, output, session) {
       mutate(match_keep = if_else(.data$my_id %in% keep_lipids_msms,
                                   TRUE,
                                   FALSE),
-             comment = if_else(.data$my_id %in% keep_lipids_msms,
-                               "keep",
-                               "no_match"),
+             comment = if_else(.data$rsd_keep == FALSE,
+                               "large_rsd",
+                               if_else(.data$match_keep == FALSE,
+                                       "no_match",
+                                       "keep")),
              keep = if_else(.data$rsd_keep == TRUE &
                               .data$match_keep == TRUE &
                               .data$rt_keep == TRUE,
@@ -1015,7 +1038,7 @@ shinyAppServer <- function(input, output, session) {
   })
   ###
 
-  ### Glycerophosphoglycerols
+  ### Glycerophosphoinositols
   filter_PI <- bubblePlotServer(id = "PI",
                                 lipid_data = reactive(all_data$lipid_data_filter),
                                 pattern = "^(Ether)?L?PI$",
@@ -1387,16 +1410,19 @@ shinyAppServer <- function(input, output, session) {
                   values_from = .data$area) %>%
       filter(.data$keep == FALSE,
              .data$class_keep == TRUE) %>%
-      select(.data$my_id:.data$polarity, -.data$scale_DotProduct, -.data$scale_RevDotProduct, .data$comment, .data$keep, .data$rsd_keep, .data$match_keep, .data$rt_keep) %>%
+      select(.data$my_id, .data$ion, .data$LipidName, .data$LipidClass, -.data$scale_DotProduct, -.data$scale_RevDotProduct, -.data$polarity, .data$comment) %>%
       distinct(.data$my_id,
-               .keep_all = TRUE)
+               .keep_all = TRUE) %>%
+      arrange(.data$LipidName)
   },
   options = list(pageLength = 10,
                  lengthChange = FALSE,
                  dom = "pt",
                  ordering = TRUE),
   selection = "none",
-  rownames = FALSE)
+  rownames = FALSE,
+  colnames = c("ID", "Ion", "Lipid name", "Lipid class", "Reason"),
+  caption = "Lipids excluded from further analysis.")
 
   output$tbl_issues_class <- renderDT({
     req(all_data$lipid_data_filter)
@@ -1407,7 +1433,7 @@ shinyAppServer <- function(input, output, session) {
                   names_from = .data$sample_name,
                   values_from = .data$area) %>%
       filter(.data$class_keep == FALSE) %>%
-      select(.data$LipidClass, .data$class_ion, .data$class_keep) %>%
+      select(.data$LipidClass, .data$class_ion) %>%
       distinct(.data$class_ion,
                .keep_all = TRUE)
   },
@@ -1416,7 +1442,9 @@ shinyAppServer <- function(input, output, session) {
                  dom = "pt",
                  ordering = TRUE),
   selection = "none",
-  rownames = FALSE)
+  rownames = FALSE,
+  colnames = c("Lipid class", "Ion"),
+  caption = "Lipid classes excluded from further analysis.")
   #### eind issues part
 
   #### meta data part
@@ -1451,22 +1479,27 @@ shinyAppServer <- function(input, output, session) {
 
   # update on which column to merge
   observe({
-    req(all_data$meta_data)
+    req(all_data$meta_data,
+        rdata_status)
 
-    # get the column names of the meta data
-    merge_colnames <- colnames(all_data$meta_data())
+    # no previous work loaded
+    if(rdata_status$status == FALSE) {
+      # get the column names of the meta data
+      merge_colnames <- colnames(all_data$meta_data())
 
-    # update the select input
-    updateSelectInput(session = session,
-                      inputId = "select_meta_column",
-                      label = "Select column for merging:",
-                      choices = c("none", merge_colnames),
-                      selected = "none")
+      # update the select input
+      updateSelectInput(session = session,
+                        inputId = "select_meta_column",
+                        label = "Select column for merging:",
+                        choices = c("none", merge_colnames),
+                        selected = "none")
+    }
   })
 
   output$select_group_column_ui <- renderUI({
     req(all_data$meta_data)
 
+    # also check if there is no previous loaded data present
     if(all_data$merged_data == TRUE) {
       # get the column names of the meta data
       all_colnames <- colnames(all_data$meta_data())
@@ -1476,7 +1509,7 @@ shinyAppServer <- function(input, output, session) {
         checkboxGroupInput(inputId = "select_group_column",
                            label = "Select column to be used for grouping:",
                            choices = all_colnames,
-                           selected = NULL)
+                           selected = all_data$select_groups)
       )
     }
   })
@@ -1933,10 +1966,66 @@ shinyAppServer <- function(input, output, session) {
       export$input_select_PRL_class <- input$select_PRL_class
       # sample selection
       export$input_select_samples <- input$select_samples
+      # export meta data status
+      export$merged_data <- all_data$merged_data
+      export$input_select_group_column <- input$select_group_column
+      export$meta_data <- isolate(all_data$meta_data())
+      export$input_select_meta_column <- input$select_meta_column
 
       # save the object
       save(export,
            file = file)
+    }
+  )
+
+  # download report
+  output$download_report <- downloadHandler(
+    filename = function() {
+      # create a filename
+      paste("Report_", Sys.Date(), ".html", sep = "")
+    },
+    content = function(file) {
+      # create copy of Rmd document in temp location
+      # here you should have write permission
+      temp_report <- file.path(tempdir(), "report.Rmd")
+      # create the location of the original Rmd file
+      report_file <- system.file("report", "report.Rmd",
+                                 package = "lipidomics")
+      # copy the original file to the temporary location
+      file.copy(from = report_file,
+                to = temp_report,
+                overwrite = TRUE)
+
+      # setup parameters to pass to Rmd document
+      params <- list(qc_results = all_data$qc_results,
+                     lipid_data = all_data$lipid_data,
+                     lipid_data_long = all_data$lipid_data_long,
+                     lipid_data_filter = all_data$lipid_data_filter,
+                     rsd_cutoff = input$rsd_cutoff,
+                     show_analysis = input$select_analysis_download,
+                     analysis_data = all_data$analysis_data,
+                     heatmap_input = list(select_z_heatmap = input$select_z_heatmap,
+                                          heatmap_zscore = input$heatmap_zscore,
+                                          heatmap_use_clust = input$heatmap_use_clust,
+                                          select_heatmap_group = input$select_heatmap_group),
+                     test_result = isolate(test_result()),
+                     test_input = list(test_cor_pvalue = input$test_cor_pvalue,
+                                       test_group1 = input$test_group1,
+                                       test_group2 = input$test_group2))
+
+      # show progress of downloading and creating the report
+      withProgress(message = "Downloading....",
+                   value = 0,
+                   { # first mimmick some progress
+                     incProgress(1/10)
+                     Sys.sleep(1)
+                     incProgress(5/10)
+                     # create the document
+                     render(input = temp_report,
+                            output_file = file,
+                            params = params,
+                            envir = new.env(parent = globalenv()))
+                   })
     }
   )
 

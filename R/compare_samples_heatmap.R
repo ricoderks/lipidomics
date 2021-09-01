@@ -19,6 +19,8 @@
 #' @importFrom heatmaply heatmaply
 #' @importFrom tibble column_to_rownames
 #'
+#' @export
+#'
 #' @author Rico Derks
 #'
 compare_samples_heatmap <- function(lipid_data, cent_scale, z, clust = FALSE, sample_group = NULL) {

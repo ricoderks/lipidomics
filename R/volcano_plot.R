@@ -14,6 +14,8 @@
 #' @importFrom plotly plot_ly add_markers layout event_register
 #' @importFrom grDevices rainbow
 #'
+#' @export
+#'
 #' @author Rico Derks
 #'
 volcano_plot <- function(lipid_data, pvalue_adjust = FALSE, title = "") {
