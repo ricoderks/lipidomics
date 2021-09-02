@@ -24,6 +24,7 @@
 #' @importFrom shinycssloaders withSpinner
 #' @importFrom openxlsx write.xlsx
 #' @importFrom rmarkdown render
+#' @importFrom iheatmapr renderIheatmap
 #'
 #' @author Rico Derks
 
@@ -578,7 +579,7 @@ shinyAppServer <- function(input, output, session) {
       length()
 
     # calculate the new height for the correlation plot
-    new_height <- ceiling(num_samples * 15 + 25)
+    new_height <- ceiling(num_samples * 20 + 25)
 
     tagList(
       plotlyOutput(outputId = "create_corplot",
@@ -1614,27 +1615,23 @@ shinyAppServer <- function(input, output, session) {
       updateSelectInput(session = session,
                         inputId = "select_heatmap_group",
                         label = "Group color:",
-                        choices = c("none", input$select_group_column),
-                        selected = "none")
+                        choices = input$select_group_column,
+                        selected = NULL)
     }
   })
 
-  output$compare_samples <- renderPlotly({
+  output$compare_samples <- renderIheatmap({
     req(all_data$lipid_data_filter,
         input$select_z_heatmap)
 
-    # no merge
-    if("none" %in% input$select_heatmap_group) {
-      compare_samples_heatmap(lipid_data = all_data$analysis_data,
-                              cent_scale = input$heatmap_zscore,
-                              z = input$select_z_heatmap,
-                              clust = input$heatmap_use_clust)
-    } else {
+    if(!is.null(all_data$analysis_data)) {
       compare_samples_heatmap(lipid_data = all_data$analysis_data,
                               cent_scale = input$heatmap_zscore,
                               z = input$select_z_heatmap,
                               clust = input$heatmap_use_clust,
                               sample_group = input$select_heatmap_group)
+    } else {
+      NULL
     }
   })
   #### end heatmap

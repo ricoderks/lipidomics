@@ -7,6 +7,7 @@
 #' @importFrom DT DTOutput
 #' @importFrom plotly plotlyOutput
 #' @importFrom shinycssloaders withSpinner
+#' @importFrom iheatmapr iheatmaprOutput
 
 # create the shiny application user interface
 shinyAppUI <- fluidPage(
@@ -384,13 +385,13 @@ shinyAppUI <- fluidPage(
                                                               label = "Apply clustering"),
                                                 selectInput(inputId = "select_heatmap_group",
                                                             label = "Group color:",
-                                                            choices = "none",
-                                                            selected = "none",
+                                                            choices = NULL,
+                                                            selected = NULL,
                                                             multiple = TRUE,
                                                             width = 225)),
                                    mainPanel(width = 10,
-                                             shinycssloaders::withSpinner(plotlyOutput(outputId = "compare_samples",
-                                                                                       height = "900px"),
+                                             shinycssloaders::withSpinner(iheatmapr::iheatmaprOutput(outputId = "compare_samples",
+                                                                                                     height = "900px"),
                                                                           type = 5))
                                  )
                         ), # end tabpanel heatmap

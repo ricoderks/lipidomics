@@ -253,18 +253,11 @@ if(length(show_analysis) > 0) {
 ```{r fig.width=10, fig.height=10, warning=FALSE, message=FALSE}
 if(length(show_analysis) > 0) {
   if("heatmap" %in% show_analysis) {
-    if("none" %in% heatmap_input$select_heatmap_group) {
-      compare_samples_heatmap(lipid_data = analysis_data,
-                              cent_scale = heatmap_input$heatmap_zscore,
-                              z = heatmap_input$select_z_heatmap,
-                              clust = heatmap_input$heatmap_use_clust)
-    } else {
-      compare_samples_heatmap(lipid_data = analysis_data,
-                              cent_scale = heatmap_input$heatmap_zscore,
-                              z = heatmap_input$select_z_heatmap,
-                              clust = heatmap_input$heatmap_use_clust,
-                              sample_group = heatmap_input$select_heatmap_group)
-    }
+    compare_samples_heatmap(lipid_data = analysis_data,
+                            cent_scale = heatmap_input$heatmap_zscore,
+                            z = heatmap_input$select_z_heatmap,
+                            clust = heatmap_input$heatmap_use_clust,
+                            sample_group = heatmap_input$select_heatmap_group)
   }
 }
 ```
