@@ -74,9 +74,10 @@ compare_samples_heatmap <- function(lipid_data, cent_scale, z, clust = FALSE, sa
                                     alpha = 0.5),
                    xlab = "Sample name",
                    ylab = "Lipid",
-                   fontsize_row = 6)
+                   fontsize_row = 6,
+                   plot_method = "plotly")
   } else {
-    # extra the sample group info
+    # extract the sample group info
     col_group <- lipid_data %>%
       select(.data$sample_name, matches(paste0("^", sample_group, "$"))) %>%
       distinct(.data$sample_name,
@@ -92,7 +93,8 @@ compare_samples_heatmap <- function(lipid_data, cent_scale, z, clust = FALSE, sa
                    xlab = "Sample name",
                    ylab = "Lipid",
                    fontsize_row = 6,
-                   col_side_colors = col_group)
+                   col_side_colors = col_group,
+                   plot_method = "plotly")
   }
 
   return(p)
