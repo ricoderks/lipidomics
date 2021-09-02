@@ -1624,7 +1624,7 @@ shinyAppServer <- function(input, output, session) {
         input$select_z_heatmap)
 
     # no merge
-    if(input$select_heatmap_group == "none") {
+    if("none" %in% input$select_heatmap_group) {
       compare_samples_heatmap(lipid_data = all_data$analysis_data,
                               cent_scale = input$heatmap_zscore,
                               z = input$select_z_heatmap,
