@@ -67,7 +67,7 @@ Quick comparison between the samples.
 
 ```{r include=FALSE}
 # get the number of samples to calculate the height of the correlation heatmap
-fig_height_cor_heatmap <- ceiling(length(unique(lipid_data_long$sample_name)) / 7)
+fig_height_cor_heatmap <- ceiling(length(unique(lipid_data_long$sample_name)) / 5)
 ```
 
 ```{r fig.width=10, fig.height=fig_height_cor_heatmap}
@@ -198,8 +198,15 @@ for(a in names(lipid_classes)) {
   for(b in 1:nrow(lipid_classes[[a]])) {
     cat("\n")
     cat("### ", lipid_classes[[a]]$class[b], "\n")
-    print(bubble_plot(lipid_data = lipid_data_filter,
-                      pattern = lipid_classes[[a]]$pattern[b]))
+    p <- bubble_plot(lipid_data = lipid_data_filter,
+                      pattern = lipid_classes[[a]]$pattern[b])
+    
+    # if nothing is returned show some text
+    if(!is.null(p)) {
+      print(p)
+    } else {
+      cat("No lipids selected.\n")
+    }
     cat("\n")
   }
 }
@@ -221,10 +228,32 @@ if(length(show_analysis) > 0) {
 }
 ```
 
+```{r results="asis"}
+if(length(show_analysis) > 0) {
+  if("heatmap" %in% show_analysis) {
+    cat("Settings: \n\n")
+    # raw or normalized data
+    cat(ifelse(heatmap_input$select_z_heatmap == "raw",
+        "- The raw data is used. \n",
+        "- Total area normalization is applied to the data. \n"))
+    # center / scaling
+    cat(ifelse(heatmap_input$heatmap_zscore == TRUE,
+           "- The data is centered and scaled. \n",
+           "- The data is not centerd and scaled.\n"))
+    # hierarchical clustering
+    if(heatmap_input$heatmap_use_clust == TRUE) {
+      cat("- Hierarchical clustering is applied to the data.\n")
+    }
+    cat("\n")
+  }
+}
+```
+
+
 ```{r fig.width=10, fig.height=10, warning=FALSE, message=FALSE}
 if(length(show_analysis) > 0) {
   if("heatmap" %in% show_analysis) {
-    if(heatmap_input$select_heatmap_group == "none") {
+    if("none" %in% heatmap_input$select_heatmap_group) {
       compare_samples_heatmap(lipid_data = analysis_data,
                               cent_scale = heatmap_input$heatmap_zscore,
                               z = heatmap_input$select_z_heatmap,
