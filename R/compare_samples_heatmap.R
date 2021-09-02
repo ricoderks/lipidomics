@@ -15,9 +15,8 @@
 #' @importFrom rlang .data
 #' @importFrom tidyr pivot_wider
 #' @importFrom tidyselect matches
-#' @importFrom plotly plot_ly add_heatmap layout
-#' @importFrom heatmaply heatmaply
 #' @importFrom tibble column_to_rownames
+#' @import iheatmapr
 #'
 #' @export
 #'
@@ -57,43 +56,40 @@ compare_samples_heatmap <- function(lipid_data, cent_scale, z, clust = FALSE, sa
     z == "totnorm" ~ "Tot. area norm."
   )
 
-  # need to make the data wide for heatmaply
+  # need to make the data wide and into a matrix
   plot_data <- lipid_data %>%
     pivot_wider(id_cols = c(.data$ShortLipidName, .data$LipidClass),
                 names_from = .data$sample_name,
                 values_from = .data$plot_z) %>%
     arrange(desc(.data$LipidClass), .data$ShortLipidName) %>%
-    column_to_rownames(var = "ShortLipidName")
+    column_to_rownames(var = "ShortLipidName") %>%
+    select(-.data$LipidClass) %>%
+    as.matrix()
 
-  if(is.null(sample_group)){
-    p <- heatmaply(x = plot_data %>%
-                     select(-.data$LipidClass),
-                   dendrogram = ifelse(clust == TRUE, "both", "none"),
-                   scale = "none",
-                   colors = rainbow(n = 10,
-                                    alpha = 0.5),
-                   xlab = "Sample name",
-                   ylab = "Lipid",
-                   fontsize_row = 6)
-  } else {
+  # create the heatmap
+  p <- main_heatmap(data = plot_data) %>%
+    add_col_labels(textangle = -45) %>%
+    add_row_labels()
+
+  if(!is.null(sample_group)){
     # extract the sample group info
-    col_group <- lipid_data %>%
-      select(.data$sample_name, any_of(sample_group)) %>% #matches(paste0("^", sample_group, "$"))) %>%
+    col_groups <- lipid_data %>%
+      select(.data$sample_name, any_of(sample_group)) %>%
       distinct(.data$sample_name,
                .keep_all = TRUE) %>%
       select(-.data$sample_name)
 
-    p <- heatmaply(x = plot_data %>%
-                     select(-.data$LipidClass),
-                   dendrogram = ifelse(clust == TRUE, "both", "none"),
-                   scale = "none",
-                   colors = rainbow(n = 10,
-                                    alpha = 0.5),
-                   xlab = "Sample name",
-                   ylab = "Lipid",
-                   fontsize_row = 6,
-                   col_side_colors = col_group)
+    # add coloring groups
+    p <- p %>%
+      add_col_annotation(col_groups)
   }
 
+  # add clustering
+  if(clust == TRUE) {
+    p <- p %>%
+      add_row_clustering(method = "hclust",
+                         side = "right") %>%
+      add_col_clustering(method = "hclust")
+  }
   return(p)
 }
