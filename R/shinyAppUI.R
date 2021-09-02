@@ -386,6 +386,7 @@ shinyAppUI <- fluidPage(
                                                             label = "Group color:",
                                                             choices = "none",
                                                             selected = "none",
+                                                            multiple = TRUE,
                                                             width = 225)),
                                    mainPanel(width = 10,
                                              shinycssloaders::withSpinner(plotlyOutput(outputId = "compare_samples",

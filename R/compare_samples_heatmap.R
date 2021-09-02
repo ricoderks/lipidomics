@@ -70,15 +70,15 @@ compare_samples_heatmap <- function(lipid_data, cent_scale, z, clust = FALSE, sa
                      select(-.data$LipidClass),
                    dendrogram = ifelse(clust == TRUE, "both", "none"),
                    scale = "none",
-                   colors = rainbow(n = 100,
+                   colors = rainbow(n = 10,
                                     alpha = 0.5),
                    xlab = "Sample name",
                    ylab = "Lipid",
                    fontsize_row = 6)
   } else {
-    # extra the sample group info
+    # extract the sample group info
     col_group <- lipid_data %>%
-      select(.data$sample_name, matches(paste0("^", sample_group, "$"))) %>%
+      select(.data$sample_name, any_of(sample_group)) %>% #matches(paste0("^", sample_group, "$"))) %>%
       distinct(.data$sample_name,
                .keep_all = TRUE) %>%
       select(-.data$sample_name)
@@ -87,7 +87,7 @@ compare_samples_heatmap <- function(lipid_data, cent_scale, z, clust = FALSE, sa
                      select(-.data$LipidClass),
                    dendrogram = ifelse(clust == TRUE, "both", "none"),
                    scale = "none",
-                   colors = rainbow(n = 100,
+                   colors = rainbow(n = 10,
                                     alpha = 0.5),
                    xlab = "Sample name",
                    ylab = "Lipid",

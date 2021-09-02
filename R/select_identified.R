@@ -53,6 +53,8 @@ select_identified <- function(lipid_data) {
       match_keep = TRUE,
       # if retention time is wrong
       rt_keep = TRUE,
+      # if the background is too high
+      background_keep = TRUE,
       # if class is discarded
       class_keep = TRUE,
       # clean up some levels which might not be present anymore

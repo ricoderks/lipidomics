@@ -15,7 +15,6 @@ params:
   show_analysis: NA
   analysis_data: NA
   heatmap_input: NA
-  test_result: NA
   test_input: NA
 ---
 
@@ -38,7 +37,6 @@ rsd_cutoff <- params$rsd_cutoff
 show_analysis <- params$show_analysis
 analysis_data <- params$analysis_data
 heatmap_input <- params$heatmap_input
-test_result <- params$test_result
 test_input <- params$test_input
 ```
 
@@ -69,7 +67,7 @@ Quick comparison between the samples.
 
 ```{r include=FALSE}
 # get the number of samples to calculate the height of the correlation heatmap
-fig_height_cor_heatmap <- ceiling(length(unique(lipid_data_long$sample_name)) / 7)
+fig_height_cor_heatmap <- ceiling(length(unique(lipid_data_long$sample_name)) / 5)
 ```
 
 ```{r fig.width=10, fig.height=fig_height_cor_heatmap}
@@ -97,6 +95,7 @@ lipid_data_filter %>%
     comment == "no_match" ~ "Not a convicing match",
     comment == "large_rsd" ~ "High RSD value",
     comment == "wrong_rt" ~ "Wrong retention time",
+    comment == "high_bg" ~ "High background",
     TRUE ~ comment
   )) %>% 
   arrange(LipidName) %>% 
@@ -199,8 +198,15 @@ for(a in names(lipid_classes)) {
   for(b in 1:nrow(lipid_classes[[a]])) {
     cat("\n")
     cat("### ", lipid_classes[[a]]$class[b], "\n")
-    print(bubble_plot(lipid_data = lipid_data_filter,
-                      pattern = lipid_classes[[a]]$pattern[b]))
+    p <- bubble_plot(lipid_data = lipid_data_filter,
+                      pattern = lipid_classes[[a]]$pattern[b])
+    
+    # if nothing is returned show some text
+    if(!is.null(p)) {
+      print(p)
+    } else {
+      cat("No lipids selected.\n")
+    }
     cat("\n")
   }
 }
@@ -222,10 +228,32 @@ if(length(show_analysis) > 0) {
 }
 ```
 
+```{r results="asis"}
+if(length(show_analysis) > 0) {
+  if("heatmap" %in% show_analysis) {
+    cat("Settings: \n\n")
+    # raw or normalized data
+    cat(ifelse(heatmap_input$select_z_heatmap == "raw",
+        "- The raw data is used. \n",
+        "- Total area normalization is applied to the data. \n"))
+    # center / scaling
+    cat(ifelse(heatmap_input$heatmap_zscore == TRUE,
+           "- The data is centered and scaled. \n",
+           "- The data is not centerd and scaled.\n"))
+    # hierarchical clustering
+    if(heatmap_input$heatmap_use_clust == TRUE) {
+      cat("- Hierarchical clustering is applied to the data.\n")
+    }
+    cat("\n")
+  }
+}
+```
+
+
 ```{r fig.width=10, fig.height=10, warning=FALSE, message=FALSE}
 if(length(show_analysis) > 0) {
   if("heatmap" %in% show_analysis) {
-    if(heatmap_input$select_heatmap_group == "none") {
+    if("none" %in% heatmap_input$select_heatmap_group) {
       compare_samples_heatmap(lipid_data = analysis_data,
                               cent_scale = heatmap_input$heatmap_zscore,
                               z = heatmap_input$select_z_heatmap,
@@ -250,10 +278,18 @@ if(length(show_analysis) > 0) {
 }
 ```
 
-```{r fig.width=10, warning=FALSE, message=FALSE}
+```{r fig.width=7, fig.height=8, warning=FALSE, message=FALSE}
 if(length(show_analysis) > 0) {
   if("compare_samples" %in% show_analysis) {
-    volcano_plot(lipid_data = test_result,
+    results_test <- do_stat_test(lipid_data = analysis_data,
+                                 group = test_input$test_select_group,
+                                 group1_name = test_input$test_group1,
+                                 group2_name = test_input$test_group2,
+                                 normalization = test_input$select_test_normalization,
+                                 transformation = test_input$select_test_transformation,
+                                 test = test_input$select_test)
+
+    volcano_plot(lipid_data = results_test,
                  pvalue_adjust = test_input$test_cor_pvalue,
                  title = paste0(test_input$test_group1, " vs ", test_input$test_group2))
   }

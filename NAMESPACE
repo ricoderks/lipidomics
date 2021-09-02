@@ -3,6 +3,7 @@
 export(bubble_plot)
 export(compare_samples_heatmap)
 export(cor_heatmap)
+export(do_stat_test)
 export(launchApp)
 export(show_rsd_histogram)
 export(show_rsd_lipidclass_violin)

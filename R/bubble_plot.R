@@ -38,7 +38,6 @@ bubble_plot <- function(lipid_data, pattern = NULL, title = "") {
            # show only lipids which have a low enough RSD
            .data$rsd_keep == TRUE)
 
-
   # create the plot
   if(nrow(plot_data) > 0) {
     p <- plot_data %>%

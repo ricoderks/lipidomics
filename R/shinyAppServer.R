@@ -57,7 +57,11 @@ shinyAppServer <- function(input, output, session) {
                              all_samples = NULL,
                              samples_selected = NULL,
                              pca_score_plot = FALSE,
-                             select_groups = NULL)
+                             select_groups = NULL,
+                             select_group_column = NULL,
+                             select_group_options = NULL,
+                             select_group1 = NULL,
+                             select_group2 = NULL)
 
   default_class_ion <- c("ADGGA - [M-H]-", "AHexBRS - [M+HCOO]-", "AHexCAS - [M+HCOO]-", "AHexCS - [M+HCOO]-", "AHexSIS - [M+HCOO]-", "ASM - [M+H]+", "BASulfate - [M-H]-",
                          "BileAcid - [M-H]-", "BMP - [M+NH4]+", "CAR - [M+H]+", "CE - [M+NH4]+", "Cer_ADS - [M+HCOO]-", "Cer_AP - [M+HCOO]-",
@@ -208,7 +212,8 @@ shinyAppServer <- function(input, output, session) {
                class_keep = if_else(.data$my_id %in% keep_class,
                                     TRUE,
                                     FALSE),
-               keep = if_else(.data$rsd_keep == TRUE & .data$match_keep == TRUE,
+               keep = if_else(.data$rsd_keep == TRUE &
+                                .data$match_keep == TRUE,
                               TRUE,
                               FALSE),
                comment = if_else(.data$rsd_keep == FALSE,
@@ -622,7 +627,8 @@ shinyAppServer <- function(input, output, session) {
                                        "keep")),
              keep = if_else(.data$rsd_keep == TRUE &
                               .data$match_keep == TRUE &
-                              .data$rt_keep == TRUE,
+                              .data$rt_keep == TRUE &
+                              .data$background_keep == TRUE,
                             TRUE,
                             FALSE))
   })
@@ -659,11 +665,11 @@ shinyAppServer <- function(input, output, session) {
              comment = if_else(.data$rsd_keep == FALSE,
                                "large_rsd",
                                if_else(.data$match_keep == FALSE,
-                                       "no_match",
-                                       "keep")),
+                                       "no_match")),
              keep = if_else(.data$rsd_keep == TRUE &
                               .data$match_keep == TRUE &
-                              .data$rt_keep == TRUE,
+                              .data$rt_keep == TRUE &
+                              .data$background == TRUE,
                             TRUE,
                             FALSE))
   })
@@ -1410,9 +1416,16 @@ shinyAppServer <- function(input, output, session) {
                   values_from = .data$area) %>%
       filter(.data$keep == FALSE,
              .data$class_keep == TRUE) %>%
-      select(.data$my_id, .data$ion, .data$LipidName, .data$LipidClass, -.data$scale_DotProduct, -.data$scale_RevDotProduct, -.data$polarity, .data$comment) %>%
+      select(.data$my_id, .data$ion, .data$LipidName, .data$LipidClass, .data$comment) %>%
       distinct(.data$my_id,
                .keep_all = TRUE) %>%
+      mutate(comment = case_when(
+        comment == "no_match" ~ "Not a convicing match",
+        comment == "large_rsd" ~ "High RSD value",
+        comment == "wrong_rt" ~ "Wrong retention time",
+        comment == "high_bg" ~ "High background",
+        TRUE ~ comment
+      ))  %>%
       arrange(.data$LipidName)
   },
   options = list(pageLength = 10,
@@ -1537,11 +1550,29 @@ shinyAppServer <- function(input, output, session) {
       all_data$lipid_data_filter <- merge_data(lipid_data = isolate(all_data$lipid_data_filter),
                                                meta_data = all_data$meta_data(),
                                                by = selected_column)
+
+      # set status merged data
       all_data$merged_data <- TRUE
     } else {
       all_data$lipid_data_filter <- isolate(all_data$lipid_data_filter)
       all_data$merged_data <- FALSE
     }
+  })
+
+  observeEvent(input$select_group_column, {
+    # this is not possible yet
+    all_data$select_group_column <- input$select_group_column[1]
+
+    all_data$group_options <- all_data$meta_data() %>%
+      mutate(across(everything(), as.character)) %>%
+      select(matches(paste0("^", all_data$select_group_column, "$"))) %>%
+      pull() %>%
+      unique()
+
+    all_data$group_options <- all_data$group_options[!is.na(all_data$group_options)]
+
+    all_data$select_group1 <- all_data$group_options[1]
+    all_data$select_group2 <- all_data$group_options[2]
   })
 
   # show the merged data
@@ -1593,7 +1624,7 @@ shinyAppServer <- function(input, output, session) {
         input$select_z_heatmap)
 
     # no merge
-    if(input$select_heatmap_group == "none") {
+    if("none" %in% input$select_heatmap_group) {
       compare_samples_heatmap(lipid_data = all_data$analysis_data,
                               cent_scale = input$heatmap_zscore,
                               z = input$select_z_heatmap,
@@ -1637,7 +1668,7 @@ shinyAppServer <- function(input, output, session) {
         selectInput(inputId = "test_select_group",
                     label = "Select a group:",
                     choices = input$select_group_column,
-                    selected = input$select_group_column[1]),
+                    selected = all_data$select_group_column),
         uiOutput(outputId = "test_vs_groups")
       )
     }
@@ -1659,26 +1690,39 @@ shinyAppServer <- function(input, output, session) {
     req(all_data$meta_data)
 
     if(input$test_select_group != "none") {
-      # get the groups
-      group_options <- all_data$meta_data() %>%
+      # get the new group
+      all_data$select_group_column <- input$test_select_group
+      # get the new group options
+      all_data$group_options <- all_data$meta_data() %>%
         mutate(across(everything(), as.character)) %>%
-        select(matches(paste0("^", input$test_select_group, "$"))) %>%
+        select(matches(paste0("^", all_data$select_group_column, "$"))) %>%
         pull() %>%
         unique()
+      # remove any NA's
+      all_data$group_options <- all_data$group_options[!is.na(all_data$group_options)]
+      # set the default options
+      all_data$select_group1 <- all_data$group_options[1]
+      all_data$select_group2 <- all_data$group_options[2]
 
-      # remove NA
-      group_options <- group_options[!is.na(group_options)]
-
+      # update the select inputs
       updateSelectInput(inputId = "test_group1",
                         label = "Group 1:",
-                        choices = group_options,
-                        selected = group_options[1])
+                        choices = all_data$group_options,
+                        selected = all_data$select_group1)
 
       updateSelectInput(inputId = "test_group2",
                         label = "Group 2:",
-                        choices = group_options,
-                        selected = group_options[2])
+                        choices = all_data$group_options,
+                        selected = all_data$select_group2)
     }
+  })
+
+  observeEvent(input$test_group1, {
+    all_data$select_group1 <- input$test_group1
+  })
+
+  observeEvent(input$test_group2, {
+    all_data$select_group2 <- input$test_group2
   })
 
   output$volcano_plot <- renderPlotly({
@@ -2008,15 +2052,19 @@ shinyAppServer <- function(input, output, session) {
                                           heatmap_zscore = input$heatmap_zscore,
                                           heatmap_use_clust = input$heatmap_use_clust,
                                           select_heatmap_group = input$select_heatmap_group),
-                     test_result = isolate(test_result()),
                      test_input = list(test_cor_pvalue = input$test_cor_pvalue,
-                                       test_group1 = input$test_group1,
-                                       test_group2 = input$test_group2))
+                                       test_select_group = all_data$select_group_column,
+                                       test_group1 = all_data$select_group1,
+                                       test_group2 = all_data$select_group2,
+                                       select_test_normalization = input$select_test_normalization,
+                                       select_test_transformation = input$select_test_transformation,
+                                       select_test = input$select_test)
+      )
 
       # show progress of downloading and creating the report
       withProgress(message = "Downloading....",
                    value = 0,
-                   { # first mimmick some progress
+                   { # first mimic some progress
                      incProgress(1/10)
                      Sys.sleep(1)
                      incProgress(5/10)
