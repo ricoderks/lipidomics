@@ -172,7 +172,7 @@ bubblePlotServer <- function(id, lipid_data, pattern, title) {
                "<tr><td>Ion :</td><td>", as.character(selected_data$data$ion), "</td></tr>",
                "<tr><td>Short lipid name :</td><td>", selected_data$data$ShortLipidName, "</td></tr>",
                "<tr><td>Long lipid name :</td><td>", selected_data$data$LongLipidName, "</td></tr>",
-               "<tr><td>Lipid class :</td><td>", selected_data$data$LipidClass, "</td></tr>",
+               "<tr><td>Lipid class :</td><td>", as.character(selected_data$data$LipidClass), "</td></tr>",
                "<tr><td>Dot product :</td><td>", selected_data$data$DotProduct, "</td></tr>",
                "<tr><td>Reverse dot product :</td><td>", selected_data$data$RevDotProduct, "</td></tr>",
                "</table>")
