@@ -2009,9 +2009,12 @@ shinyAppServer <- function(input, output, session) {
       export$input_select_samples <- input$select_samples
       # export meta data status
       export$merged_data <- all_data$merged_data
-      export$input_select_group_column <- input$select_group_column
-      export$meta_data <- isolate(all_data$meta_data())
-      export$input_select_meta_column <- input$select_meta_column
+      # meta data can only be saved when merge is done
+      if(all_data$merged_data == TRUE) {
+        export$input_select_group_column <- input$select_group_column
+        export$meta_data <- isolate(all_data$meta_data())
+        export$input_select_meta_column <- input$select_meta_column
+      }
 
       # save the object
       save(export,
