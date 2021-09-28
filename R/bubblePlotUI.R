@@ -30,7 +30,8 @@ bubblePlotUI <- function(id, data, pattern) {
     num_lipid_class <- data %>%
       filter(.data$sample_name == selected_name,
              grepl(x = .data$LipidClass,
-                   pattern = pattern)) %>%
+                   pattern = pattern),
+             class_keep == TRUE) %>%
       distinct(.data$LipidClass) %>%
       pull(.data$LipidClass) %>%
       length()
