@@ -82,6 +82,10 @@ bubblePlotServer <- function(id, lipid_data, pattern, title) {
       output$bubble <- renderPlot({
         tmp_lipid_data <- lipid_data()
 
+        # if I use this function the zooming stops working
+        # p <- bubble_plot(lipid_data = tmp_lipid_data,
+        #                  pattern = pattern)
+
         # get the sample_name of the first qcpool sample
         selected_name <- tmp_lipid_data %>%
           filter(grepl(x = .data$sample_type,
@@ -90,6 +94,17 @@ bubblePlotServer <- function(id, lipid_data, pattern, title) {
           distinct(.data$sample_name) %>%
           slice(1) %>%
           pull(.data$sample_name)
+
+        if(selected_name == "") {
+          # if no QCpool is in the dataset select the first sample
+          selected_name <- tmp_lipid_data %>%
+            filter(grepl(x = .data$sample_type,
+                         pattern = "[sS][aA][mM][pP][lL][eE]")) %>%
+            arrange(.data$sample_name) %>%
+            distinct(.data$sample_name) %>%
+            slice(1) %>%
+            pull(.data$sample_name)
+        }
 
         # get the data to be plotted
         plot_data <-  tmp_lipid_data %>%
@@ -103,6 +118,7 @@ bubblePlotServer <- function(id, lipid_data, pattern, title) {
 
         # only make plot if data is available
         if(nrow(plot_data) > 0) {
+
           p <- plot_data %>%
             ggplot(aes(x = .data$AverageRT,
                        y = .data$AverageMZ,

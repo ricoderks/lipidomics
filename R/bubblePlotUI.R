@@ -21,11 +21,23 @@ bubblePlotUI <- function(id, data, pattern) {
   if(nrow(data) > 0) {
     # get the sample_name of the first qcpool sample
     selected_name <- data %>%
-      filter(.data$sample_type == "qcpool") %>%
+      filter(grepl(x = .data$sample_type,
+                   pattern = "[qQ][cC][pP][oO][oO][lL]")) %>%
       arrange(.data$sample_name) %>%
       distinct(.data$sample_name) %>%
       slice(1) %>%
       pull(.data$sample_name)
+
+    if(selected_name == "") {
+      # if no QCpool is in the dataset select the first sample
+      selected_name <- tmp_lipid_data %>%
+        filter(grepl(x = .data$sample_type,
+                     pattern = "[sS][aA][mM][pP][lL][eE]")) %>%
+        arrange(.data$sample_name) %>%
+        distinct(.data$sample_name) %>%
+        slice(1) %>%
+        pull(.data$sample_name)
+    }
 
     num_lipid_class <- data %>%
       filter(.data$sample_name == selected_name,
