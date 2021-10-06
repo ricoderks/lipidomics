@@ -28,6 +28,17 @@ bubble_plot <- function(lipid_data, pattern = NULL, title = "") {
     slice(1) %>%
     pull(.data$sample_name)
 
+  if(length(selected_name) == 0) {
+    # if no QCpool is in the dataset select the first sample
+    selected_name <- lipid_data %>%
+      filter(grepl(x = .data$sample_type,
+                   pattern = "[sS][aA][mM][pP][lL][eE]")) %>%
+      arrange(.data$sample_name) %>%
+      distinct(.data$sample_name) %>%
+      slice(1) %>%
+      pull(.data$sample_name)
+  }
+
   # get the data to be plotted
   plot_data <-  lipid_data %>%
     filter(.data$sample_name == selected_name,
