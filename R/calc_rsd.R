@@ -16,7 +16,8 @@
 calc_rsd <- function(lipid_data) {
   # create long table
   qc_df <- lipid_data %>%
-    filter(.data$sample_type == "qcpool") %>%
+    filter(grepl(x = .data$sample_type,
+                 pattern = "[qQ][cC][pP][oO][oO][lL]")) %>%
     group_by(.data$my_id, .data$polarity) %>%
     summarise(rsd_area = sd(.data$area, na.rm = TRUE) / mean(.data$area, na.rm = TRUE),
               LipidClass = .data$LipidClass[1],
