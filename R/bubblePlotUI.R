@@ -28,9 +28,9 @@ bubblePlotUI <- function(id, data, pattern) {
       slice(1) %>%
       pull(.data$sample_name)
 
-    if(selected_name == "") {
+    if(length(selected_name) == 0) {
       # if no QCpool is in the dataset select the first sample
-      selected_name <- tmp_lipid_data %>%
+      selected_name <- data %>%
         filter(grepl(x = .data$sample_type,
                      pattern = "[sS][aA][mM][pP][lL][eE]")) %>%
         arrange(.data$sample_name) %>%
