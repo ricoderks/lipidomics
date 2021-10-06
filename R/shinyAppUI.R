@@ -8,12 +8,13 @@
 #' @importFrom plotly plotlyOutput
 #' @importFrom shinycssloaders withSpinner
 #' @importFrom iheatmapr iheatmaprOutput
+#' @importFrom utils packageVersion
 
 # create the shiny application user interface
 shinyAppUI <- fluidPage(
   shinyjs::useShinyjs(),
 
-  navbarPage(title = "CPM - Lipidomics",
+  navbarPage(title = paste0("CPM - Lipidomics | v", packageVersion("lipidomics")),
              id = "navbar_selection",
              # tabPanel Files
              tabPanel(title = "Files",
