@@ -70,6 +70,9 @@ do_pca <- function(lipid_data, observations = c("all", "samples"), normalization
       scaling == "pareto" ~ .data$par_value
     ))
 
+  # get the number of samples
+  num_samp <- length(unique(lipid_data_prep$sample_name))
+
   # return the preprocessed data
   pca_data$preprocess_data <- lipid_data_prep %>%
     select(.data$sample_name, .data$ShortLipidName, .data$LipidClass, .data$value)
@@ -89,7 +92,8 @@ do_pca <- function(lipid_data, observations = c("all", "samples"), normalization
     update_role(.data$sample_name, .data$sample_type,
                 new_role = "id") %>%
     step_pca(all_predictors(),
-             num_comp = 5)
+             # limit the number of components
+             num_comp = ifelse(num_samp > 5, 5, num_samp))
 
   # do the pca
   pca_prep <- prep(pca_rec)
