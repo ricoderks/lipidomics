@@ -990,7 +990,7 @@ shinyAppServer <- function(input, output, session) {
   observe({
     req(filter_PG)
 
-    if(nrow(filter_PE()$filter_data) > 0) {
+    if(nrow(filter_PG()$filter_data) > 0) {
       all_data$lipid_data_filter <- set_issue_info(lipid_data = all_data$lipid_data_filter,
                                                    info = filter_PG())
     }
