@@ -20,33 +20,33 @@
 tidy_lipids <- function(lipid_data) {
   # create long table
   df_long <- lipid_data %>%
-    pivot_longer(cols = matches("^([sS]ample|[qQ][cC]pool|[bB]lank).*"),
-                 names_to = "sample_name",
-                 values_to = "area") %>%
-    mutate(
+    tidyr::pivot_longer(cols = tidyselect::matches("^([sS]ample|[qQ][cC]pool|[bB]lank).*"),
+                        names_to = "sample_name",
+                        values_to = "area") %>%
+    dplyr::mutate(
       # a column with number of carbons and double bonds is needed for the bubble plots
-      carbons = factor(str_extract(string = .data$ShortLipidName,
-                                   pattern = "[0-9]{1,2}")),
-      carbon_db = str_extract(string = .data$ShortLipidName,
-                              pattern = "[0-9]{1,2}:?[0-9]{0,2}"),
-      sample_type = factor(tolower(str_extract(string = .data$sample_name,
-                                               pattern = "([bB]lank|[qQ][cC]pool|[sS]ample)"))))
+      carbons = factor(stringr::str_extract(string = .data$ShortLipidName,
+                                            pattern = "[0-9]{1,2}")),
+      carbon_db = stringr::str_extract(string = .data$ShortLipidName,
+                                       pattern = "[0-9]{1,2}:?[0-9]{0,2}"),
+      sample_type = factor(tolower(stringr::str_extract(string = .data$sample_name,
+                                                        pattern = "([bB]lank|[qQ][cC]pool|[sS]ample)"))))
 
   ### rename duplicate lipids
   df_long <- df_long %>%
     # determine what are the duplicates
-    group_by(.data$ShortLipidName, .data$sample_name) %>%
-    arrange(.data$AverageRT) %>%
-    mutate(count_duplicates = n(),
-           append_name = paste0("_", 1:n())) %>%
-    ungroup() %>%
+    dplyr::group_by(.data$ShortLipidName, .data$sample_name) %>%
+    dplyr::arrange(.data$AverageRT) %>%
+    dplyr::mutate(count_duplicates = dplyr::n(),
+                  append_name = paste0("_", 1:dplyr::n())) %>%
+    dplyr::ungroup() %>%
     # rename them
-    mutate(ShortLipidName = if_else(.data$count_duplicates > 1,
-                                    paste0(.data$ShortLipidName, .data$append_name),
-                                    .data$ShortLipidName)) %>%
+    dplyr::mutate(ShortLipidName = dplyr::if_else(.data$count_duplicates > 1,
+                                                  paste0(.data$ShortLipidName, .data$append_name),
+                                                  .data$ShortLipidName)) %>%
     # sort back
-    arrange(.data$LipidClass, .data$ShortLipidName) %>%
-    select(-.data$count_duplicates, -.data$append_name)
+    dplyr::arrange(.data$LipidClass, .data$ShortLipidName) %>%
+    dplyr::select(-.data$count_duplicates, -.data$append_name)
 
-    return(df_long)
+  return(df_long)
 }
