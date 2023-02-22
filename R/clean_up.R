@@ -38,7 +38,9 @@ clean_up <- function(lipid_data) {
                     FragPresence = .data$`Matched peaks percentage`,
                     RefFile = .data$`Spectrum reference file name`,
                     MSMSspectrum = .data$`MS/MS spectrum`) %>%
-      dplyr::mutate(scale_DotProduct = .data$DotProduct / 10,
+      dplyr::mutate(DotProduct = .data$DotProduct * 100,
+                    RevDotProduct = .data$RevDotProduct * 100,
+                    scale_DotProduct = .data$DotProduct / 10,
                     scale_RevDotProduct = .data$RevDotProduct / 10,
                     my_id = paste(.data$polarity, "_", .data$AlignmentID, sep = ""),
                     ion = factor(.data$ion),
