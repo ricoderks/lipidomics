@@ -5,7 +5,7 @@
 \alias{shinyAppUI}
 \title{Shiny app server object}
 \format{
-An object of class \code{shiny.tag.list} (inherits from \code{list}) of length 3.
+An object of class \code{shiny.tag.list} (inherits from \code{list}) of length 4.
 }
 \usage{
 shinyAppUI
