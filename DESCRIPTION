@@ -1,7 +1,7 @@
 Package: lipidomics
 Type: Package
 Title: Lipidomics workflow
-Version: 0.9.9.9000
+Version: 0.9.10
 Author: Rico Derks
 Maintainer: Rico Derks <r.j.e.derks@lumc.nl>
 Description: Lipidomics workflow to proces the result files (export alignment)
