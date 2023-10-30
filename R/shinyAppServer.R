@@ -1924,8 +1924,7 @@ shinyAppServer <- function(input, output, session) {
       req(all_data$analysis_data)
       # export needs to be in wide format
       export_wide <- all_data$analysis_data %>%
-        filter(.data$sample_type != "blank",
-               .data$keep == TRUE,
+        filter(.data$keep == TRUE,
                .data$class_keep == TRUE) %>%
         pivot_wider(id_cols = c(.data$my_id, .data$LongLipidName, .data$ShortLipidName, .data$LipidClass),
                     names_from = .data$sample_name,
@@ -1934,8 +1933,6 @@ shinyAppServer <- function(input, output, session) {
 
       if(all_data$merged_data == TRUE) {
         t_meta <- all_data$analysis_data %>%
-          # remove blanks
-          filter(.data$sample_type != "blank") %>%
           # select the columns
           select(.data$sample_name, .data$sample_type:last_col()) %>%
           select(-matches("\\.y")) %>%
