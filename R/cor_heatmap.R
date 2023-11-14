@@ -24,6 +24,8 @@ cor_heatmap <- function(lipid_data) {
     select(matches("([qQ][cC]pool|[sS]ample)"))
 
   # calculate the correlation
+  # make sure there are no zero's
+  df_m[df_m == 0] <- 1
   cormat <- cor(log10(df_m))
 
   p <- plot_ly(x = colnames(df_m),
