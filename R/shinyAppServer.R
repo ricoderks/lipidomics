@@ -169,6 +169,9 @@ shinyAppServer <- function(input, output, session) {
 
       all_data$samples_selected <- all_data$all_samples
 
+      # calculate the blank ratio
+      all_data$lipid_blank_long <- calc_blank_ratio(lipid_data = all_data$lipid_data_long)
+
       # calculate the RSD values
       all_data$qc_results <- calc_rsd(lipid_data = all_data$lipid_data_long)
 
@@ -199,6 +202,14 @@ shinyAppServer <- function(input, output, session) {
         distinct(.data$my_id) %>%
         pull(.data$my_id)
 
+      # tag lipids which have a too low signal compare to blank
+      # find the lipids to keep
+      keep_blank <- all_data$lipid_blank_long %>%
+        filter(.data$blankRatio >= 5) %>%  # &
+        # .data$keep == TRUE)) %>%
+        distinct(.data$my_id) %>%
+        pull(.data$my_id)
+
       progress$set(value = 80,
                    message = "Processing...",
                    detail = NULL)
@@ -213,15 +224,25 @@ shinyAppServer <- function(input, output, session) {
                class_keep = if_else(.data$my_id %in% keep_class,
                                     TRUE,
                                     FALSE),
+               background_keep = if_else(.data$my_id %in% keep_blank ,
+                                         TRUE,
+                                         FALSE),
                keep = if_else(.data$rsd_keep == TRUE &
-                                .data$match_keep == TRUE,
+                                .data$match_keep == TRUE &
+                                .data$background_keep == TRUE,
                               TRUE,
                               FALSE),
-               comment = if_else(.data$rsd_keep == FALSE,
-                                 "large_rsd",
-                                 if_else(.data$match_keep == FALSE,
-                                         "no_match",
-                                         "keep")))
+               comment = case_when(
+                 .data$rsd_keep == FALSE ~ "large_rsd",
+                 .data$match_keep == FALSE ~ "no_match",
+                 .data$background_keep == FALSE ~ "high_bg",
+                 .default = "keep"
+               ))
+               # comment = if_else(.data$rsd_keep == FALSE,
+               #                   "large_rsd",
+               #                   if_else(.data$match_keep == FALSE,
+               #                           "no_match",
+               #                           "keep")))
 
       progress$set(value = 100,
                    message = "Processing...",
@@ -311,6 +332,21 @@ shinyAppServer <- function(input, output, session) {
                the bubble plots (identification tab), but not in the analysis part. Individual
                lipids can be added back via the bubble plots (identification part). Keep
                in mind that when the value of this filter is changed they might be removed again!!")
+      )
+    )
+  })
+
+  # show/hide info about dot product filter
+  observeEvent(input$btn_info_blankfilter, {
+    toggle(id = "info_blankfilter")
+  })
+
+  # the text to show
+  output$info_blankfilter <- renderUI({
+    tagList(
+      column(width = 3,
+             p("Lipids which have a Sample / average blank ratio below the set value
+               will be tagged 'high background'!")
       )
     )
   })
