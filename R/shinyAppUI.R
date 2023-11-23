@@ -168,6 +168,12 @@ shinyAppUI <- fluidPage(
                                                          min = 0,
                                                          step = 0.01,
                                                          width = "150px"),
+                                            sliderInput(inputId = "blankfilter_threshold",
+                                                        label = "Threshold",
+                                                        min = 0,
+                                                        max = 1,
+                                                        value = 0.8,
+                                                        step = 0.01),
                                             style = "background-color: #E8E8E8")
                                    ),
                                  )

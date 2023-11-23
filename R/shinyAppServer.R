@@ -170,7 +170,8 @@ shinyAppServer <- function(input, output, session) {
       all_data$samples_selected <- all_data$all_samples
 
       # calculate the blank ratio
-      all_data$lipid_blank_long <- calc_blank_ratio(lipid_data = all_data$lipid_data_long)
+      all_data$lipid_blank_long <- calc_blank_ratio(lipid_data = all_data$lipid_data_long,
+                                                    ratio = 5)
 
       # calculate the RSD values
       all_data$qc_results <- calc_rsd(lipid_data = all_data$lipid_data_long)
@@ -205,7 +206,8 @@ shinyAppServer <- function(input, output, session) {
       # tag lipids which have a too low signal compare to blank
       # find the lipids to keep
       keep_blank <- all_data$lipid_blank_long %>%
-        filter(.data$blankRatio >= 5) %>%  # &
+        filter(.data$blankRatio >= 5 &
+                 .data$blank_threshold >= 0.8) %>%  # &
         # .data$keep == TRUE)) %>%
         distinct(.data$my_id) %>%
         pull(.data$my_id)
@@ -345,8 +347,10 @@ shinyAppServer <- function(input, output, session) {
   output$info_blankfilter <- renderUI({
     tagList(
       column(width = 3,
-             p("Lipids which have a Sample / average blank ratio below the set value
-               will be tagged 'high background'!")
+             p("For all samples are sample / blank ratio is calculated. In 80%
+               (default threshold) of the samples this value should be higher
+               than the sample / blank ratio cut off. If it is not the lipid
+               species is removed from the data set (set as high background).")
       )
     )
   })
@@ -434,6 +438,16 @@ shinyAppServer <- function(input, output, session) {
                          min = 0,
                          max = 100,
                          step = 1)
+      updateNumericInput(inputId = "blankfilter_cutoff",
+                         label = "Sample / average blank ratio:",
+                         value = import_evn$export$input_blankfilter_cutoff,
+                         min = 0,
+                         step = 0.01)
+      updateSliderInput(inputId = "blankfilter_threshold",
+                        value = import_evn$export$input_blankfilter_threshold,
+                        min = 0,
+                        max = 1,
+                        step = 0.01)
       # lipid classes
       class_ion_selected <- c(import_evn$export$input_select_PL_class,
                               import_evn$export$input_select_GL_class,
@@ -661,7 +675,9 @@ shinyAppServer <- function(input, output, session) {
                                "large_rsd",
                                if_else(.data$match_keep == FALSE,
                                        "no_match",
-                                       "keep")),
+                                       if_else(.data$match_background == FALSE,
+                                               "high_bg",
+                                               "keep"))),
              keep = if_else(.data$rsd_keep == TRUE &
                               .data$match_keep == TRUE &
                               .data$rt_keep == TRUE &
@@ -670,7 +686,7 @@ shinyAppServer <- function(input, output, session) {
                             FALSE))
   })
 
-  # observe if product/dotproduct filtering is chagned
+  # observe if product/dotproduct filtering is changed
   observeEvent({
     input$dotprod_cutoff
     input$revdotprod_cutoff
@@ -702,11 +718,53 @@ shinyAppServer <- function(input, output, session) {
              comment = if_else(.data$rsd_keep == FALSE,
                                "large_rsd",
                                if_else(.data$match_keep == FALSE,
-                                       "no_match")),
+                                       "no_match",
+                                       if_else(.data$background_keep == FALSE,
+                                               "high_bg",
+                                               "keep"))),
              keep = if_else(.data$rsd_keep == TRUE &
                               .data$match_keep == TRUE &
                               .data$rt_keep == TRUE &
-                              .data$background == TRUE,
+                              .data$background_keep == TRUE,
+                            TRUE,
+                            FALSE))
+  })
+
+  observeEvent({
+    input$blankfilter_cutoff
+    input$blankfilter_threshold
+  }, {
+    req(all_data$lipid_data_filter)
+
+    tmp_filter <- isolate(all_data$lipid_data_filter)
+
+    # calculate the blank ratio
+    tmp_blank <- calc_blank_ratio(lipid_data = tmp_filter,
+                                  ratio = input$blankfilter_cutoff)
+
+    # which lipids pass the sample / blank ratio settings
+    keep_blank <- tmp_blank %>%
+      filter(.data$blankRatio >= input$blankfilter_cutoff &
+               .data$blank_threshold >= input$blankfilter_threshold) %>%  # &
+      # .data$keep == TRUE)) %>%
+      distinct(.data$my_id) %>%
+      pull(.data$my_id)
+
+    all_data$lipid_data_filter <- tmp_filter %>%
+      mutate(background_keep = if_else(.data$my_id %in% keep_blank,
+                                       TRUE,
+                                       FALSE),
+             comment = if_else(.data$rsd_keep == FALSE,
+                               "large_rsd",
+                               if_else(.data$match_keep == FALSE,
+                                       "no_match",
+                                       if_else(.data$background_keep == FALSE,
+                                               "high_bg",
+                                               "keep"))),
+             keep = if_else(.data$rsd_keep == TRUE &
+                              .data$match_keep == TRUE &
+                              .data$rt_keep == TRUE &
+                              .data$background_keep == TRUE,
                             TRUE,
                             FALSE))
   })
@@ -2025,6 +2083,8 @@ shinyAppServer <- function(input, output, session) {
       export$input_rsd_cutoff <- input$rsd_cutoff
       export$input_dotprod_cutoff <- input$dotprod_cutoff
       export$input_revdotprod_cutoff <- input$revdotprod_cutoff
+      export$input_blankfilter_cutoff <- input$blankfilter_cutoff
+      export$input_blankfilter_threshold <- input$blankfilter_threshold
       # lipid class selection
       export$input_select_PL_class <- input$select_PL_class
       export$input_select_Cer_class <- input$select_Cer_class

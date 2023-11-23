@@ -4,13 +4,16 @@
 \alias{calc_blank_ratio}
 \title{Calculate the sample to average blank ratio}
 \usage{
-calc_blank_ratio(lipid_data)
+calc_blank_ratio(lipid_data, ratio = 5)
 }
 \arguments{
 \item{lipid_data}{tibble in tidy format}
+
+\item{ratio}{numeric(1) cutoff ratio of sample/ blank}
 }
 \value{
-Returns a tibble in tidy with RSD values for each lipid.
+Returns a tibble in tidy with sample / blank ratio for each lipid
+    species.
 }
 \description{
 Calculate for each lipid the ratio between the sample and the
