@@ -150,7 +150,32 @@ shinyAppUI <- fluidPage(
                                                            max = 100,
                                                            step = 1)),
                                             style = "background-color: #E8E8E8")
-                                   )
+                                   ),
+                                   fluidRow(
+                                     column(width = 12,
+                                            splitLayout(cellWidths = c("35px", NA),
+                                                        actionButton(inputId = "btn_info_blankfilter",
+                                                                     label = "",
+                                                                     icon = icon("info")),
+                                                        h4("Sample / blank ratio filter")))
+                                   ),
+                                   fluidRow(
+                                     shinyjs::hidden(uiOutput(outputId = "info_blankfilter")),
+                                     column(width = 9,
+                                            numericInput(inputId = "blankfilter_cutoff",
+                                                         label = "Sample / average blank ratio:",
+                                                         value = 5,
+                                                         min = 0,
+                                                         step = 0.01,
+                                                         width = "150px"),
+                                            sliderInput(inputId = "blankfilter_threshold",
+                                                        label = "Threshold",
+                                                        min = 0,
+                                                        max = 1,
+                                                        value = 0.8,
+                                                        step = 0.01),
+                                            style = "background-color: #E8E8E8")
+                                   ),
                                  )
                         ), # end of tabpanel settings
                         # tabPanel lipid classes
