@@ -20,6 +20,9 @@ clean_up <- function(lipid_data) {
     dplyr::select(.data$polarity, .data$raw_data) %>%
     tidyr::unnest(c(.data$polarity, .data$raw_data))
 
+  # remove spaces at the front or at the back of the column name
+  colnames(lipid_data) <- trimws(colnames(lipid_data))
+
   column_names <- colnames(lipid_data)
 
   if("Simple dot product" %in% column_names) {
