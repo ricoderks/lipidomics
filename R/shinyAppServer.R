@@ -100,7 +100,7 @@ shinyAppServer <- function(input, output, session) {
     req(input$res_file_pos,
         input$res_file_neg,
         rdata_status)
-
+    print("Loading files......")
     if(rdata_status$status == FALSE) {
       # no data from previous work loaded
 
@@ -206,8 +206,8 @@ shinyAppServer <- function(input, output, session) {
       # tag lipids which have a too low signal compare to blank
       # find the lipids to keep
       keep_blank <- all_data$lipid_blank_long %>%
-        filter(.data$blankRatio >= 5 &
-                 .data$blank_threshold >= 0.8) %>%  # &
+        filter(.data$blank_threshold >= 0.8,
+               .data$sample_type == "sample") %>%  # &
         # .data$keep == TRUE)) %>%
         distinct(.data$my_id) %>%
         pull(.data$my_id)
@@ -744,8 +744,8 @@ shinyAppServer <- function(input, output, session) {
 
     # which lipids pass the sample / blank ratio settings
     keep_blank <- tmp_blank %>%
-      filter(.data$blankRatio >= input$blankfilter_cutoff &
-               .data$blank_threshold >= input$blankfilter_threshold) %>%  # &
+      filter(.data$blank_threshold >= input$blankfilter_threshold,
+             .data$sample_type == "sample") %>%  # &
       # .data$keep == TRUE)) %>%
       distinct(.data$my_id) %>%
       pull(.data$my_id)

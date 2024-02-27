@@ -39,6 +39,5 @@ calc_blank_ratio <- function(lipid_data,
     dplyr::mutate(blank_threshold = mean(.data$blankRatio > ratio, na.rm = TRUE)) |>
     dplyr::ungroup()
 
-
   return(lipid_data)
 }
