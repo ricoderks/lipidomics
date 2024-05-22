@@ -21,7 +21,9 @@ select_identified <- function(lipid_data) {
            !grepl(x = .data$LipidName,
                   pattern = "w/o *"),
            !grepl(x = .data$LipidName,
-                  pattern = "RIKEN")) %>%
+                  pattern = "RIKEN"),
+           !grepl(x = .data$LipidName,
+                  pattern = "no MS2*")) %>%
     arrange(.data$LipidClass, .data$LipidName, .data$polarity)%>%
     # add some extra columns
     mutate(
