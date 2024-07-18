@@ -1,7 +1,7 @@
 Package: lipidomics
 Type: Package
 Title: Lipidomics workflow
-Version: 0.9.17
+Version: 0.9.17.9000
 Author: Rico Derks
 Maintainer: Rico Derks <r.j.e.derks@lumc.nl>
 Description: Lipidomics workflow to proces the result files (export alignment)
@@ -42,4 +42,4 @@ Imports:
     utils
 Remotes:
     github::ricoderks/ggCPM
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
