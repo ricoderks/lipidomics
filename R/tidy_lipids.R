@@ -28,7 +28,7 @@ tidy_lipids <- function(lipid_data) {
       carbons = factor(stringr::str_extract(string = .data$ShortLipidName,
                                             pattern = "[0-9]{1,2}")),
       carbon_db = stringr::str_extract(string = .data$ShortLipidName,
-                                       pattern = "[0-9]{1,2}:?[0-9]{0,2}"),
+                                       pattern = "[0-9]{1,2}:[0-9]{1,2}"),
       sample_type = factor(tolower(stringr::str_extract(string = .data$sample_name,
                                                         pattern = "([bB]lank|[qQ][cC]pool|[sS]ample)"))))
 
