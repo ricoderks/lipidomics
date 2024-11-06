@@ -675,7 +675,7 @@ shinyAppServer <- function(input, output, session) {
                                "large_rsd",
                                if_else(.data$match_keep == FALSE,
                                        "no_match",
-                                       if_else(.data$match_background == FALSE,
+                                       if_else(.data$background_keep == FALSE,
                                                "high_bg",
                                                "keep"))),
              keep = if_else(.data$rsd_keep == TRUE &
