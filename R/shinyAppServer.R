@@ -1318,7 +1318,7 @@ shinyAppServer <- function(input, output, session) {
 
     bubblePlotUI(id = "PSL",
                  data = all_data$lipid_data_filter,
-                 pattern = "^(ASM|PE_Cer(\\+O)?|PI_Cer(\\+O)?|SM|SM\\+O)")
+                 pattern = "^(MIPC|ASM|PE_Cer(\\+O)?|PI_Cer(\\+O)?|SM|SM\\+O)")
   })
 
   observe({
