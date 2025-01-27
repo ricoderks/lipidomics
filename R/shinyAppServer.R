@@ -81,17 +81,17 @@ shinyAppServer <- function(input, output, session) {
                          "SQDG - [M-H]-", "SSulfate - [M-H]-", "ST - [M+H-H2O]+", "ST - [M+H]+", "TG - [M+NH4]+", "TG_EST - [M+NH4]+", "VAE - [M+H]+")
 
   # regular expression patterns
-  pattern_PL <- "^((Ether)?(Ox)?(L)?(LNA)?(MM)?P[ACEGISM]|HBMP|BMP)"
+  pattern_PL <- "^((Ether)?(Ox)?(L)?(LNA|MM|DM)?P[ACEGISM]|HBMP|BMP|GPNAE)"
   pattern_GL <- "^(Ox|Ether|SQ|EtherS|L|A)?[DMT]G"
   pattern_Cer <- "^Cer[P_]"
   pattern_HexCer <- "^A?Hex[23]?Cer"
-  pattern_FA <- "^((Ox)?FA|FAHFA|NAGly|NAGlySer|NAOrn|NAE|CAR)"
-  pattern_PSL <- "^(ASM|PE_Cer(\\+O)?|PI_Cer(\\+O)?|SM|SM\\+O)"
+  pattern_FA <- "^((Ox)?FA|FAHFA|NAGly|NAGlySer|NA(Orn|Tau)|NAE|CAR)"
+  pattern_PSL <- "^(MIPC|ASM|PE_Cer(\\+O)?|PI_Cer(\\+O)?|SM|SM\\+O)"
   pattern_SB <- "^(PhytoSph|SL|SL\\+O|DHSph|Sph)"
-  pattern_SA <- "^(GM3|SHexCer|SHexCer\\+O)"
+  pattern_SA <- "^((NGc)?G[DMQT][123][ab]?|SHexCer|SHexCer\\+O)"
   pattern_CL <- "^([DM]L)?CL"
   pattern_ACPIM <- "^Ac[2-4]PIM[12]"
-  pattern_STL <- "^((BA|S)Sulfate|BileAcid|AHex[BCS][AIRTS][S]?|(BRS|CAS|C|SIS|STS|DCA|TDCA)E|SHex|Cholesterol|VitaminD|ST) "
+  pattern_STL <- "^((BA|S)Sulfate|BileAcid|AHex[BCS][AIRTS][S]?|(EGS|DEGS|BRS|CAS|C|SIS|STS|[GK]?[DL]CA|TDCA)E|SHex|Cholesterol|VitaminD|ST)"
   pattern_PRL <- "^(VAE|CoQ|VitaminE)"
 
   #### Read the files ####
@@ -854,7 +854,7 @@ shinyAppServer <- function(input, output, session) {
   ### Fatty amides
   filter_FAM <- bubblePlotServer(id = "FAM",
                                  lipid_data = reactive(all_data$lipid_data_filter),
-                                 pattern = "^(NAGly|NAGlySer|NAOrn|NAE)",
+                                 pattern = "^(NAGly|NAGlySer|NA(Orn|Tau)|NAE)",
                                  title = input$navbar_selection)
 
   output$FAM_UI <- renderUI({
@@ -862,7 +862,7 @@ shinyAppServer <- function(input, output, session) {
 
     bubblePlotUI(id = "FAM",
                  data = all_data$lipid_data_filter,
-                 pattern = "^(NAGly|NAGlySer|NAOrn|NAE)")
+                 pattern = "^(NAGly|NAGlySer|NA(Orn|Tau)|NAE)")
   })
 
   observe({
@@ -1046,7 +1046,7 @@ shinyAppServer <- function(input, output, session) {
   ### Glycerophospho ethanolamines
   filter_PE <- bubblePlotServer(id = "PE",
                                 lipid_data = reactive(all_data$lipid_data_filter),
-                                pattern = "^(LNA)?(Ether)?L?PE(\\(P\\))?$",
+                                pattern = "^(LNA|DM)?(Ether)?L?PE(\\(P\\))?$",
                                 title = input$navbar_selection)
 
   output$PE_UI <- renderUI({
@@ -1054,7 +1054,7 @@ shinyAppServer <- function(input, output, session) {
 
     bubblePlotUI(id = "PE",
                  data = all_data$lipid_data_filter,
-                 pattern = "^(LNA)?(Ether)?L?PE(\\(P\\))?$")
+                 pattern = "^(LNA|DM)?(Ether)?L?PE(\\(P\\))?$")
   })
 
   observe({
@@ -1214,7 +1214,7 @@ shinyAppServer <- function(input, output, session) {
   ### Other Glycerophospholipids
   filter_OGPL <- bubblePlotServer(id = "OGPL",
                                   lipid_data = reactive(all_data$lipid_data_filter),
-                                  pattern = "^P(Et|Me)OH$",
+                                  pattern = "^(P(Et|Me)OH|GPNAE)$",
                                   title = input$navbar_selection)
 
   output$OGPL_UI <- renderUI({
@@ -1222,7 +1222,7 @@ shinyAppServer <- function(input, output, session) {
 
     bubblePlotUI(id = "OGPL",
                  data = all_data$lipid_data_filter,
-                 pattern = "^P(Et|Me)OH$")
+                 pattern = "^(P(Et|Me)OH|GPNAE)$")
   })
 
   observe({
@@ -1262,7 +1262,7 @@ shinyAppServer <- function(input, output, session) {
   ### Acidic glycosphingolipids
   filter_AcGL <- bubblePlotServer(id = "AcGL",
                                   lipid_data = reactive(all_data$lipid_data_filter),
-                                  pattern = "^(GM3|SHexCer(\\+O)?)$",
+                                  pattern = "^((NGc)?G[DMQT][123][ab]?|SHexCer|SHexCer\\+O)$",
                                   title = input$navbar_selection)
 
   output$AcGL_UI <- renderUI({
@@ -1270,7 +1270,7 @@ shinyAppServer <- function(input, output, session) {
 
     bubblePlotUI(id = "AcGL",
                  data = all_data$lipid_data_filter,
-                 pattern = "^(GM3|SHexCer(\\+O)?)$")
+                 pattern = "^((NGc)?G[DMQT][123][ab]?|SHexCer|SHexCer\\+O)$")
   })
 
   observe({
@@ -1310,7 +1310,7 @@ shinyAppServer <- function(input, output, session) {
   ### phosphosphingolipids
   filter_PSL <- bubblePlotServer(id = "PSL",
                                  lipid_data = reactive(all_data$lipid_data_filter),
-                                 pattern = "^(ASM|PE_Cer(\\+O)?|PI_Cer(\\+O)?|SM|SM\\+O)",
+                                 pattern = "^(MIPC|ASM|PE_Cer(\\+O)?|PI_Cer(\\+O)?|SM|SM\\+O)",
                                  title = input$navbar_selection)
 
   output$PSL_UI <- renderUI({
@@ -1382,7 +1382,7 @@ shinyAppServer <- function(input, output, session) {
   ### Bile acids and conjugates
   filter_BA <- bubblePlotServer(id = "BA",
                                 lipid_data = reactive(all_data$lipid_data_filter),
-                                pattern = "^(BASulfate|BileAcid|DCAE)$",
+                                pattern = "^(BASulfate|BileAcid|[GKT]?[DL]CAE)$",
                                 title = input$navbar_selection)
 
   output$BA_UI <- renderUI({
@@ -1390,7 +1390,7 @@ shinyAppServer <- function(input, output, session) {
 
     bubblePlotUI(id = "BA",
                  data = all_data$lipid_data_filter,
-                 pattern = "^(BASulfate|BileAcid|DCAE)$")
+                 pattern = "^(BASulfate|BileAcid|[GKT]?[DL]CAE)$")
   })
 
   observe({
@@ -1454,7 +1454,7 @@ shinyAppServer <- function(input, output, session) {
   ### Sterols
   filter_ST <- bubblePlotServer(id = "ST",
                                 lipid_data = reactive(all_data$lipid_data_filter),
-                                pattern = "^((BR|CA|SI|ST)?[CS]E|Cholesterol|SHex|ST)$",
+                                pattern = "^((EG|DEG|BR|CA|SI|ST)?[CS]E|Cholesterol|SHex|ST)$",
                                 title = input$navbar_selection)
 
   output$ST_UI <- renderUI({
@@ -1462,7 +1462,7 @@ shinyAppServer <- function(input, output, session) {
 
     bubblePlotUI(id = "ST",
                  data = all_data$lipid_data_filter,
-                 pattern = "^((BR|CA|SI|ST)?[CS]E|Cholesterol|SHex)$")
+                 pattern = "^((EG|DEG|BR|CA|SI|ST)?[CS]E|Cholesterol|SHex|ST)$")
   })
 
   observe({
