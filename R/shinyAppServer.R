@@ -950,7 +950,7 @@ shinyAppServer <- function(input, output, session) {
   ### Glycosyldiradylglycerols
   filter_GLDG <- bubblePlotServer(id = "GLDG",
                                   lipid_data = reactive(all_data$lipid_data_filter),
-                                  pattern = "^(Ether|EtherS)?[DMS][GQ]DG$",
+                                  pattern = "^(Ether)?[S]?[DMS][GQ]DG$",
                                   title = input$navbar_selection)
 
   output$GLDG_UI <- renderUI({
@@ -958,7 +958,7 @@ shinyAppServer <- function(input, output, session) {
 
     bubblePlotUI(id = "GLDG",
                  data = all_data$lipid_data_filter,
-                 pattern = "^(Ether|EtherS)?[DMS][GQ]DG$")
+                 pattern = "^(Ether)?[S]?[DMS][GQ]DG$")
   })
 
   observe({
