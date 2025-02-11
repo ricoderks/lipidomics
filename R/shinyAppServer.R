@@ -974,7 +974,7 @@ shinyAppServer <- function(input, output, session) {
   ### Other glycerolipids
   filter_OGL <- bubblePlotServer(id = "OGL",
                                  lipid_data = reactive(all_data$lipid_data_filter),
-                                 pattern = "^([AL]?DG(GA|CC|TS/A)|TG_EST)$",
+                                 pattern = "^([AL]?DG(GA|CC|TS(/A)?)|TG_EST)$",
                                  title = input$navbar_selection)
 
   output$OGL_UI <- renderUI({
@@ -982,7 +982,7 @@ shinyAppServer <- function(input, output, session) {
 
     bubblePlotUI(id = "OGL",
                  data = all_data$lipid_data_filter,
-                 pattern = "^([AL]?DG(GA|CC|TS/A)|TG_EST)$")
+                 pattern = "^([AL]?DG(GA|CC|TS(/A)?)|TG_EST)$")
   })
 
   observe({
@@ -1046,7 +1046,7 @@ shinyAppServer <- function(input, output, session) {
   ### Glycerophospho ethanolamines
   filter_PE <- bubblePlotServer(id = "PE",
                                 lipid_data = reactive(all_data$lipid_data_filter),
-                                pattern = "^(LNA|DM)?(Ether)?L?PE(\\(P\\))?$",
+                                pattern = "^(LNA|DM|MM)?(Ether)?L?PE(\\(P\\))?$",
                                 title = input$navbar_selection)
 
   output$PE_UI <- renderUI({
@@ -1054,7 +1054,7 @@ shinyAppServer <- function(input, output, session) {
 
     bubblePlotUI(id = "PE",
                  data = all_data$lipid_data_filter,
-                 pattern = "^(LNA|DM)?(Ether)?L?PE(\\(P\\))?$")
+                 pattern = "^(LNA|DM|MM)?(Ether)?L?PE(\\(P\\))?$")
   })
 
   observe({
