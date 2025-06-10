@@ -19,5 +19,6 @@
 launchApp <- function() {
   useShinyjs()
 
-  shinyApp(ui = shinyAppUI, server = shinyAppServer)
+  shinyApp(ui = shinyAppUI, server = shinyAppServer,
+           options = list(port = 3838))
 }
